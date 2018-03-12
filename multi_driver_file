@@ -1,0 +1,19 @@
+MODNAME=demo
+ifeq ($(PLATFORM),PC)
+        KERNELDIR=/lib/modules/$(shell uname -r)/build
+else
+        #KERNELDIR=/usr/src/kernels/3.10.0-123.el7.x86_64 
+        KERNELDIR=/home/duyongze/linux-3.10.108
+endif
+
+RESMAIN_CORE_OBJS :=  
+RESMAIN_GLUE_OBJS := e1000_80003es2lan.o e1000_82540.o e1000_82541.o e1000_82542.o e1000_82543.o e1
+000_82571.o e1000_api.o e1000_ich8lan.o e1000_mac.o e1000_manage.o e1000_nvm.o e1000_osdep.o e1000_
+phy.o em_compat.o if_em.o if_lem.o
+$(MODNAME)-objs := $(RESMAIN_GLUE_OBJS) $(RESMAIN_CORE_OBJS)  
+obj-m += $(MODNAME).o
+
+default:
+        $(MAKE) -C $(KERNELDIR) M=$(PWD) modules
+clean:
+        rm -fr *.mod.* *.o .$(MODNAME).* .tmp* Module.* modules.*
