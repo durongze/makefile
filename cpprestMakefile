@@ -1,0 +1,123 @@
+exec=execute
+platform=linux
+srcs=$(wildcard *.cpp)
+objs=$(patsubst %.cpp,out/$(platform)/%.o,$(srcs))
+
+
+CC=gcc
+CXX=g++ -static
+RM=rm
+MKDIR=mkdir
+
+INCS_DIR+=-I/opt/boost_1_69_0/include/
+INCS_DIR+=-I/opt/apr-util-1_5_4/include/
+INCS_DIR+=-I/opt/zinclude-1_2_11/include/
+INCS_DIR+=-I/opt/lua51/include/
+INCS_DIR+=-I/opt/apr-1_5_2/include/
+INCS_DIR+=-I/opt/pcre-8_42/include/
+INCS_DIR+=-I/opt/readline-7_0/include/
+INCS_DIR+=-I/opt/openssl-1_1_1/include/
+INCS_DIR+=-I/opt/vc/include/
+INCS_DIR+=-I/opt/includexml2-2_9_8/include/
+INCS_DIR+=-I/opt/cpprestsdk-master/include/
+INCS_DIR+=-I/opt/gdal-2_3_0/include
+
+LIBS_DIR+=-L/opt/boost_1_69_0/lib/
+LIBS_DIR+=-L/opt/apr-util-1_5_4/lib/
+LIBS_DIR+=-L/opt/zlib-1_2_11/lib/
+LIBS_DIR+=-L/opt/lua51/lib/
+LIBS_DIR+=-L/opt/apr-1_5_2/lib/
+LIBS_DIR+=-L/opt/pcre-8_42/lib/
+LIBS_DIR+=-L/opt/readline-7_0/lib/
+LIBS_DIR+=-L/opt/openssl-1_1_1/lib/
+LIBS_DIR+=-L/opt/vc/lib/
+LIBS_DIR+=-L/opt/libxml2-2_9_8/lib/
+LIBS_DIR+=-L/opt/cpprestsdk-master/lib
+LIBS_DIR+=-L/opt/gdal-2_3_0/lib/
+
+LIBS+=-lcpprest
+LIBS+=-lboost_math_tr1l
+LIBS+=-lboost_log_setup
+#LIBS+=-lboost_python27
+LIBS+=-lboost_unit_test_framework
+LIBS+=-lboost_log
+LIBS+=-lboost_math_c99
+LIBS+=-lboost_prg_exec_monitor
+LIBS+=-lboost_coroutine
+LIBS+=-lboost_test_exec_monitor
+LIBS+=-lboost_timer
+LIBS+=-lboost_graph
+#LIBS+=-lboost_numpy27
+LIBS+=-lboost_system
+LIBS+=-lboost_fiber
+LIBS+=-lboost_wave
+LIBS+=-lboost_locale
+LIBS+=-lboost_contract
+LIBS+=-lboost_math_tr1
+LIBS+=-lboost_stacktrace_addr2line
+LIBS+=-lboost_program_options
+LIBS+=-lboost_thread
+LIBS+=-lboost_stacktrace_basic
+LIBS+=-lboost_math_tr1f
+LIBS+=-lboost_random
+LIBS+=-lboost_stacktrace_backtrace
+LIBS+=-lboost_regex
+LIBS+=-lboost_wserialization
+LIBS+=-lboost_context
+LIBS+=-lboost_math_c99f
+LIBS+=-lboost_iostreams
+LIBS+=-lboost_atomic
+LIBS+=-lboost_date_time
+LIBS+=-lboost_container
+LIBS+=-lboost_type_erasure
+LIBS+=-lboost_serialization
+LIBS+=-lboost_stacktrace_noop
+LIBS+=-lboost_chrono
+LIBS+=-lboost_filesystem
+LIBS+=-lboost_math_c99l
+LIBS+=-lboost_exception
+LIBS+=-laprutil-1
+LIBS+=-lgdal
+LIBS+=-lz
+LIBS+=-llua
+LIBS+=-lapr-1
+LIBS+=-lpcre
+LIBS+=-lpcreposix
+LIBS+=-lpcrecpp
+#LIBS+=-lhistory
+#LIBS+=-lreadline
+LIBS+=-lcrypto
+LIBS+=-lssl
+LIBS+=-ldebug_sym_static
+#LIBS+=-lvchostif
+#LIBS+=-lkhrn_static
+#LIBS+=-lvcilcs
+#LIBS+=-lGLESv2_static
+#LIBS+=-lEGL_static
+#LIBS+=-lvcfiled_check
+#LIBS+=-lkhrn_client
+#LIBS+=-lxml2
+LIBS+=-lpthread
+LIBS+=-lm
+CPPFLAGS=-std=c++11
+
+#SHARED=ON
+
+ifneq ($(SHARED),)
+        CPPFLAGS+=-fPIC
+        LDFLAGS+=-shared
+else
+        #sudo yum install libstdc++-static.x86_64
+        LDFLAGS+=-static
+endif
+all:$(objs)
+        $(CXX) -g -o $(exec) $(objs) $(LIBS) $(INCS_DIR) $(LIBS_DIR)
+
+out/${platform}/%.o:%.cpp
+        $(MKDIR) -p $(dir $@)
+        #$(MKDIR) -p $(shell dirname $@)
+        $(CXX) -g -o $@ -c $<  $(INCS_DIR)
+
+clean:
+        $(RM) $(objs) out -rf
+
