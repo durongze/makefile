@@ -2,5 +2,5 @@
 
 int main()
 {
-    return add(1,2);
+    return add(1, 2);
 }
