@@ -1,12 +1,12 @@
-exec=execute
+exec=execute 
 platform=linux
-srcs=$(wildcard *.cpp)
-objs=$(patsubst %.cpp,out/$(platform)/%.o,$(srcs))
+srcs=$(wildcard *.cpp) 
+objs=$(patsubst %.cpp,out/$(platform)/%.o,$(srcs)) 
 
 
 CC=gcc
 CXX=g++ -static
-RM=rm
+RM=rm  
 MKDIR=mkdir
 
 INCS_DIR+=-I/opt/boost_1_69_0/include/
@@ -21,6 +21,9 @@ INCS_DIR+=-I/opt/vc/include/
 INCS_DIR+=-I/opt/includexml2-2_9_8/include/
 INCS_DIR+=-I/opt/cpprestsdk-master/include/
 INCS_DIR+=-I/opt/gdal-2_3_0/include
+INCS_DIR+=-I/opt/geos-3_7_1/include 
+INCS_DIR+=-I/opt/freexl-1_0_5/include 
+INCS_DIR+=-I/opt/expat-2_2_5/include 
 
 LIBS_DIR+=-L/opt/boost_1_69_0/lib/
 LIBS_DIR+=-L/opt/apr-util-1_5_4/lib/
@@ -34,6 +37,9 @@ LIBS_DIR+=-L/opt/vc/lib/
 LIBS_DIR+=-L/opt/libxml2-2_9_8/lib/
 LIBS_DIR+=-L/opt/cpprestsdk-master/lib
 LIBS_DIR+=-L/opt/gdal-2_3_0/lib/
+LIBS_DIR+=-L/opt/geos-3_7_1/lib
+LIBS_DIR+=-L/opt/freexl-1_0_5/lib
+LIBS_DIR+=-L/opt/expat-2_2_5/lib/
 
 LIBS+=-lcpprest
 LIBS+=-lboost_math_tr1l
@@ -78,6 +84,8 @@ LIBS+=-lboost_math_c99l
 LIBS+=-lboost_exception
 LIBS+=-laprutil-1
 LIBS+=-lgdal
+LIBS+=-lfreexl
+LIBS+=-lexpat
 LIBS+=-lz
 LIBS+=-llua
 LIBS+=-lapr-1
@@ -96,28 +104,32 @@ LIBS+=-ldebug_sym_static
 #LIBS+=-lEGL_static
 #LIBS+=-lvcfiled_check
 #LIBS+=-lkhrn_client
-#LIBS+=-lxml2
+LIBS+=-lgeos
+LIBS+=-lxml2
+LIBS+=-lz
+LIBS+=-lpng16
 LIBS+=-lpthread
 LIBS+=-lm
+LIBS+=-ldl
 CPPFLAGS=-std=c++11
 
 #SHARED=ON
 
 ifneq ($(SHARED),)
-        CPPFLAGS+=-fPIC
-        LDFLAGS+=-shared
+	CPPFLAGS+=-fPIC
+	LDFLAGS+=-shared
 else
-        #sudo yum install libstdc++-static.x86_64
-        LDFLAGS+=-static
+	#sudo yum install libstdc++-static.x86_64 
+	LDFLAGS+=-static
 endif
-all:$(objs)
-        $(CXX) -g -o $(exec) $(objs) $(LIBS) $(INCS_DIR) $(LIBS_DIR)
+all:$(objs) 
+	$(CXX) -g -o $(exec) $(objs) $(LIBS) $(INCS_DIR) $(LIBS_DIR)
 
 out/${platform}/%.o:%.cpp
-        $(MKDIR) -p $(dir $@)
-        #$(MKDIR) -p $(shell dirname $@)
-        $(CXX) -g -o $@ -c $<  $(INCS_DIR)
-
-clean:
-        $(RM) $(objs) out -rf
+	$(MKDIR) -p $(dir $@) 
+	#$(MKDIR) -p $(shell dirname $@) 
+	$(CXX) -g -o $@ -c $<  $(INCS_DIR)
+	
+clean: 
+	$(RM) $(objs) out -rf 
 
