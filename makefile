@@ -5,13 +5,15 @@ objs = $(patsubst %.c,out/$(platform)/%.o,$(srcs))
 
 CC = gcc
 RM = rm 
+MKDIR = mkdir -p 
 
-all:out $(objs)
+all:$(objs)
 	$(CC) -o $(exec) $(objs) 
+
 out/$(platform)/%.o:%.c
+	$(MKDIR) $(dir $@)
+	#$(MKDIR) $(shell dirname $@)
 	$(CC) -o $@ -c $<
-out:
-	mkdir -p out/$(platform)/src
 
 clean:
 	$(RM) $(objs) out -rf
