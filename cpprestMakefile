@@ -3,43 +3,18 @@ platform=linux
 srcs=$(wildcard *.cpp) 
 objs=$(patsubst %.cpp,out/$(platform)/%.o,$(srcs)) 
 
-
 CC=gcc
 CXX=g++ -static
 RM=rm  
 MKDIR=mkdir
 
-INCS_DIR+=-I/opt/boost_1_69_0/include/
-INCS_DIR+=-I/opt/apr-util-1_5_4/include/
-INCS_DIR+=-I/opt/zinclude-1_2_11/include/
-INCS_DIR+=-I/opt/lua51/include/
-INCS_DIR+=-I/opt/apr-1_5_2/include/
-INCS_DIR+=-I/opt/pcre-8_42/include/
-INCS_DIR+=-I/opt/readline-7_0/include/
-INCS_DIR+=-I/opt/openssl-1_1_1/include/
-INCS_DIR+=-I/opt/vc/include/
-INCS_DIR+=-I/opt/includexml2-2_9_8/include/
-INCS_DIR+=-I/opt/cpprestsdk-master/include/
-INCS_DIR+=-I/opt/gdal-2_3_0/include
-INCS_DIR+=-I/opt/geos-3_7_1/include 
-INCS_DIR+=-I/opt/freexl-1_0_5/include 
-INCS_DIR+=-I/opt/expat-2_2_5/include 
+LIB_DIR_PREFIX=/opt
+LIBS_NAME:= boost_1_69_0 apr-util-1_5_4 zinclude-1_2_11 lua51 apr-1_5_2 pcre-8_42 readline-7_0
+LIBS_NAME+= openssl-1_1_1 vc xml2-2_9_8 cpprestsdk-master gdal-2_3_0 geos-3_7_1 freexl-1_0_5 expat-2_2_5
 
-LIBS_DIR+=-L/opt/boost_1_69_0/lib/
-LIBS_DIR+=-L/opt/apr-util-1_5_4/lib/
-LIBS_DIR+=-L/opt/zlib-1_2_11/lib/
-LIBS_DIR+=-L/opt/lua51/lib/
-LIBS_DIR+=-L/opt/apr-1_5_2/lib/
-LIBS_DIR+=-L/opt/pcre-8_42/lib/
-LIBS_DIR+=-L/opt/readline-7_0/lib/
-LIBS_DIR+=-L/opt/openssl-1_1_1/lib/
-LIBS_DIR+=-L/opt/vc/lib/
-LIBS_DIR+=-L/opt/libxml2-2_9_8/lib/
-LIBS_DIR+=-L/opt/cpprestsdk-master/lib
-LIBS_DIR+=-L/opt/gdal-2_3_0/lib/
-LIBS_DIR+=-L/opt/geos-3_7_1/lib
-LIBS_DIR+=-L/opt/freexl-1_0_5/lib
-LIBS_DIR+=-L/opt/expat-2_2_5/lib/
+#$(foreach <var>;,<list>;,<text>;)
+INCS_DIR:=$(foreach LIB_N,$(LIBS_NAME),-I$(LIB_DIR_PREFIX)/$(LIB_N)/include)
+LIBS_DIR:=$(foreach LIB_N,$(LIBS_NAME),-L$(LIB_DIR_PREFIX)/$(LIB_N)/lib)
 
 LIBS+=-lcpprest
 LIBS+=-lboost_math_tr1l
@@ -111,6 +86,7 @@ LIBS+=-lpng16
 LIBS+=-lpthread
 LIBS+=-lm
 LIBS+=-ldl
+
 CPPFLAGS=-std=c++11
 
 #SHARED=ON
@@ -122,6 +98,7 @@ else
 	#sudo yum install libstdc++-static.x86_64 
 	LDFLAGS+=-static
 endif
+
 all:$(objs) 
 	$(CXX) -g -o $(exec) $(objs) $(LIBS) $(INCS_DIR) $(LIBS_DIR)
 
@@ -133,3 +110,7 @@ out/${platform}/%.o:%.cpp
 clean: 
 	$(RM) $(objs) out -rf 
 
+show:
+	@echo "INCS_DIR = $(INCS_DIR)"
+	@echo "LIBS_DIR = $(LIBS_DIR)"
+	@echo "LIBS = $(LIBS)"
