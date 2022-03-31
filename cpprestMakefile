@@ -102,6 +102,11 @@ endif
 all:$(objs) 
 	$(CXX) -g -o $(exec) $(objs) $(LIBS) $(INCS_DIR) $(LIBS_DIR)
 
+run:
+	export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$(shell pwd) && \
+	./$(exec)
+
+
 out/${platform}/%.o:%.cpp
 	$(MKDIR) -p $(dir $@) 
 	#$(MKDIR) -p $(shell dirname $@) 
