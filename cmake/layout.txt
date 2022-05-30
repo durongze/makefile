@@ -8,8 +8,9 @@ message("[INFO]: LAYOUT_PARSER_SOURCE_DIR = ${LAYOUT_PARSER_SOURCE_DIR}")
 
 INCLUDE_DIRECTORIES(${LAYOUT_PARSER_SOURCE_DIR}/src/tl/tl)
 INCLUDE_DIRECTORIES(${LAYOUT_PARSER_SOURCE_DIR}/src/db/db)
-INCLUDE_DIRECTORIES(${LAYOUT_PARSER_SOURCE_DIR}/src/plugins/streamers/oasis)
-INCLUDE_DIRECTORIES(${LAYOUT_PARSER_SOURCE_DIR}/src/plugins/streamers/gds2)
+INCLUDE_DIRECTORIES(${LAYOUT_PARSER_SOURCE_DIR}/src/plugins/common)
+INCLUDE_DIRECTORIES(${LAYOUT_PARSER_SOURCE_DIR}/src/plugins/streamers/oasis/db_plugin)
+INCLUDE_DIRECTORIES(${LAYOUT_PARSER_SOURCE_DIR}/src/plugins/streamers/gds2/db_plugin)
 
 
 Set(DbFileFilter 
@@ -113,7 +114,7 @@ Set(DbFileFilter
 	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbOriginalLayerRegion.cc
 	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbOriginalLayerTexts.cc
 	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbRecursiveInstanceIterator.cc
-	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbRegion.cc
+    ${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbRegion.cc
 	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbRegion.h
 	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbRegionCheckUtils.cc
 	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbRegionCheckUtils.h
@@ -213,6 +214,7 @@ message("[INFO] _DB_SOURCE_LIST ${_DB_SOURCE_LIST}")
 message("[INFO] TlFileFilter ${TlFileFilter}")
 message("[INFO] _TL_SOURCE_LIST ${_TL_SOURCE_LIST}")
 
-add_library(layout_parser SHARED ${_TL_SOURCE_LIST} ${_DB_SOURCE_LIST} ${_GDS2_SOURCE_LIST} ${_OASIS_SOURCE_LIST})
+#add_library(layout_parser SHARED ${_TL_SOURCE_LIST} ${_DB_SOURCE_LIST} ${_GDS2_SOURCE_LIST} ${_OASIS_SOURCE_LIST})
+add_executable(layout_parser ${_TL_SOURCE_LIST} ${_DB_SOURCE_LIST} ${_GDS2_SOURCE_LIST} ${_OASIS_SOURCE_LIST} main.cc)
 
 target_link_libraries(layout_parser PRIVATE z dl)
