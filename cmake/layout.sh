@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e 
 
-HdrKey=" gsi.h gsiObject.h "
+HdrKey=" gsi.h gsiObject.h gsiClass.h"
 
 function IsComment()
 {
