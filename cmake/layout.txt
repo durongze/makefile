@@ -1,0 +1,218 @@
+cmake_minimum_required(VERSION 3.14)
+
+project (layout_parser VERSION 0.1.0)
+
+set(LAYOUT_PARSER_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR})
+
+message("[INFO]: LAYOUT_PARSER_SOURCE_DIR = ${LAYOUT_PARSER_SOURCE_DIR}")
+
+INCLUDE_DIRECTORIES(${LAYOUT_PARSER_SOURCE_DIR}/src/tl/tl)
+INCLUDE_DIRECTORIES(${LAYOUT_PARSER_SOURCE_DIR}/src/db/db)
+INCLUDE_DIRECTORIES(${LAYOUT_PARSER_SOURCE_DIR}/src/plugins/streamers/oasis)
+INCLUDE_DIRECTORIES(${LAYOUT_PARSER_SOURCE_DIR}/src/plugins/streamers/gds2)
+
+
+Set(DbFileFilter 
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbAsIfFlatEdgePairs.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbAsIfFlatEdgePairs.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbAsIfFlatEdges.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbAsIfFlatEdges.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbAsIfFlatRegion.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbAsIfFlatRegion.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbAsIfFlatTexts.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbAsIfFlatTexts.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbCompoundOperation.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbD25TechnologyComponent.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbD25TechnologyComponent.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbDeepEdgePairs.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbDeepEdgePairs.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbDeepEdges.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbDeepEdges.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbDeepRegion.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbDeepRegion.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbDeepShapeStore.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbDeepShapeStore.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbDeepTexts.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbDeepTexts.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbEdgePair.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbEdgePair.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbEdgePairFilters.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbEdgePairFilters.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbEdgePairRelations.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbEdgePairRelations.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbEdgePairs.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbEdgePairs.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbEdgePairsDelegate.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbEdgePairsDelegate.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbEdges.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbEdges.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbEdgesDelegate.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbEdgesDelegate.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbEdgesUtils.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbEdgesUtils.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbEmptyEdgePairs.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbEmptyEdgePairs.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbEmptyEdges.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbEmptyEdges.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbEmptyRegion.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbEmptyRegion.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbEmptyTexts.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbEmptyTexts.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbFillTool.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbFillTool.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbFlatEdgePairs.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbFlatEdgePairs.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbFlatEdges.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbFlatEdges.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbFlatRegion.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbFlatRegion.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbFlatTexts.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbFlatTexts.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbLayoutToNetlist.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbLayoutToNetlist.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbLayoutToNetlistFormatDefs.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbLayoutToNetlistFormatDefs.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbLayoutToNetlistReader.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbLayoutToNetlistReader.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbLayoutToNetlistWriter.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbLayoutToNetlistWriter.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbLayoutVsSchematic.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbLayoutVsSchematic.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbLayoutVsSchematicFormatDefs.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbLayoutVsSchematicFormatDefs.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbLayoutVsSchematicReader.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbLayoutVsSchematicReader.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbLayoutVsSchematicWriter.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbLayoutVsSchematicWriter.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbMutableEdgePairs.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbMutableEdgePairs.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbMutableEdges.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbMutableEdges.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbMutableRegion.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbMutableRegion.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbMutableTexts.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbMutableTexts.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbNetlistCompare.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbNetlistCompare.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbNetlistCompareCore.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbNetlistCompareCore.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbNetlistCompareGraph.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbNetlistCompareGraph.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbNetlistCompareUtils.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbNetlistCompareUtils.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbNetlistCrossReference.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbNetlistCrossReference.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbNetlistDeviceExtractor.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbNetlistDeviceExtractor.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbNetlistDeviceExtractorClasses.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbNetlistDeviceExtractorClasses.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbNetlistExtractor.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbNetlistExtractor.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbOriginalLayerEdgePairs.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbOriginalLayerEdges.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbOriginalLayerRegion.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbOriginalLayerTexts.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbRecursiveInstanceIterator.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbRegion.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbRegion.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbRegionCheckUtils.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbRegionCheckUtils.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbRegionDelegate.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbRegionDelegate.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbRegionLocalOperations.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbRegionLocalOperations.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbRegionProcessors.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbRegionProcessors.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbRegionUtils.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbRegionUtils.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbShapeCollection.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbShapeCollectionUtils.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbTestSupport.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbTestSupport.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbTexts.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbTextsDelegate.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbTextsUtils.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbTilingProcessor.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/dbTilingProcessor.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbBox.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbCell.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbCellMapping.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbCommonStreamOptions.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbCompoundOperation.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbDeepShapeStore.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbEdge.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbEdgePair.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbEdgePairs.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbEdgeProcessor.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbEdges.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbGlyphs.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbHelpers.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbHierNetworkProcessor.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbInstElement.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbLayerMapping.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbLayout.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbLayoutDiff.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbLayoutQuery.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbLayoutToNetlist.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbLayoutUtils.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbLayoutVsSchematic.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbLibrary.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbManager.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbMatrix.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbNetlist.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbNetlistCompare.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbNetlistCrossReference.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbNetlistDeviceClasses.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbNetlistDeviceExtractor.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbPath.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbPoint.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbPolygon.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbReader.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbRecursiveInstanceIterator.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbRecursiveShapeIterator.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbRegion.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbShape.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbShapeCollection.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbShapeProcessor.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbShapes.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbTechnologies.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbText.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbTexts.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbTilingProcessor.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbTrans.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbUtils.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/db/db/gsiDeclDbVector.cc)
+
+Set(TlFileFilter 
+	${LAYOUT_PARSER_SOURCE_DIR}/src/tl/tl/tlDeferredExecutionQt.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/tl/tl/tlDeferredExecutionQt.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/tl/tl/tlFileSystemWatcher.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/tl/tl/tlFileSystemWatcher.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/tl/tl/tlHttpStream.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/tl/tl/tlHttpStream.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/tl/tl/tlHttpStreamCurl.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/tl/tl/tlHttpStreamCurl.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/tl/tl/tlHttpStreamNoQt.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/tl/tl/tlHttpStreamQt.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/tl/tl/tlHttpStreamQt.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/tl/tl/tlUnitTest.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/tl/tl/tlUnitTest.h
+	${LAYOUT_PARSER_SOURCE_DIR}/src/tl/tl/tlWebDAV.cc
+	${LAYOUT_PARSER_SOURCE_DIR}/src/tl/tl/tlWebDAV.h)
+
+aux_source_directory(${LAYOUT_PARSER_SOURCE_DIR}/src/tl/tl _TL_SOURCE_LIST)
+aux_source_directory(${LAYOUT_PARSER_SOURCE_DIR}/src/db/db _DB_SOURCE_LIST)
+aux_source_directory(${LAYOUT_PARSER_SOURCE_DIR}/src/plugins/streamers/gds2 _GDS2_SOURCE_LIST)
+aux_source_directory(${LAYOUT_PARSER_SOURCE_DIR}/src/plugins/streamers/oasis _OASIS_SOURCE_LIST)
+
+list(REMOVE_ITEM _DB_SOURCE_LIST ${DbFileFilter})
+list(REMOVE_ITEM _TL_SOURCE_LIST ${TlFileFilter})
+
+message("[INFO] DbFileFilter ${DbFileFilter}")
+message("[INFO] _DB_SOURCE_LIST ${_DB_SOURCE_LIST}")
+message("[INFO] TlFileFilter ${TlFileFilter}")
+message("[INFO] _TL_SOURCE_LIST ${_TL_SOURCE_LIST}")
+
+add_library(layout_parser SHARED ${_TL_SOURCE_LIST} ${_DB_SOURCE_LIST} ${_GDS2_SOURCE_LIST} ${_OASIS_SOURCE_LIST})
+
+target_link_libraries(layout_parser PRIVATE z dl)
