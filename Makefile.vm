@@ -1,0 +1,65 @@
+CC := gcc
+
+CFLAGS := -g -Wall -DNETWORK_SUPPORT -DVMRP
+OBJS := 
+CAPSTONE := 
+
+Platform=windows
+
+ifeq ($(DEBUG),1)
+	CFLAGS += -DDEBUG
+	OBJS := debug.o
+endif
+
+#Arch=x86_64-w64-mingw32
+Arch=i686-w64-mingw32
+
+ifneq ($(Platform),)
+	#CPPFLAGS+=-fPIC
+	#LDFLAGS+=-shared
+    LIBS +=-lpthread -lm -lws2_32 -lmingw32
+else
+	#LDFLAGS+=-static
+    LIBS +=-lpthread -lm
+endif
+
+ThirdpartyHome=$(shell pwd)
+
+CapstoneHome=$(ThirdpartyHome)/$(Platform)/capstone-4.0.1-win32
+UnicornHome=$(ThirdpartyHome)/$(Platform)/unicorn-1.0.2-win32
+SdlHome=$(ThirdpartyHome)/$(Platform)/SDL2-2.0.10/$(Arch)
+
+INC_DIR +=-I $(CapstoneHome)/include
+INC_DIR +=-I $(UnicornHome)/include
+INC_DIR +=-I $(SdlHome)/include -I $(SdlHome)/include/SDL2
+
+LIB_DIR +=-L $(CapstoneHome)/lib -L $(CapstoneHome)/
+LIB_DIR +=-L $(UnicornHome)/lib  -L $(UnicornHome)/
+LIB_DIR +=-L $(SdlHome)/lib
+
+LIBS +=-lSDL2main -lSDL2
+LIBS +=-lunicorn
+LIBS +=-lcapstone
+
+OBJS += network.o fileLib.o vmrp.o utils.o rbtree.o bridge.o memory.o
+
+# -Wl,-subsystem,windows gets rid of the console window
+# gcc  -o main.exe main.c -lmingw32 -Wl,-subsystem,windows -L./lib -lSDL2main -lSDL2
+main: $(OBJS) main.o
+	$(CC) $(CFLAGS) -m32 -o ./bin/$@ $^ $(LIB_DIR) $(LIBS)
+
+dll: $(OBJS)
+	$(CC) $(CFLAGS) -m32 -shared -o ./bin/vmrp.dll $^ $(INC_DIR) 
+
+%.o:%.c
+	$(CC) $(CFLAGS) -m32 -c $^ $(INC_DIR)
+
+test:
+	#export PATH=${SdlHome}:${UnicornHome}:${CapstoneHome}:${PATH} && ./bin/main
+	export PATH=$(SdlHome):$(UnicornHome):$(CapstoneHome):$(PATH) && ./bin/main
+.PHONY: clean
+clean:
+	-rm *.o
+
+
+
