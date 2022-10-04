@@ -1,0 +1,76 @@
+cmake_minimum_required(VERSION 3.10)
+
+project(VM)
+
+set(SKY_SDK_DIR E:/)
+set(OS_TOP_DIR ${CMAKE_CURRENT_LIST_DIR})
+
+set(COMMON_FLAG " -g -Wall -DNETWORK_SUPPORT -DVMRP")
+
+#set(CMAKE_BUILD_TYPE DEBUG)
+set(CMAKE_C_FLAGS "${COMMON_FLAG}")
+#set(CMAKE_C_FLAGS_DEBUG "${COMMON_FLAG}")
+#set(CMAKE_C_FLAGS_RELEASE "${COMMON_FLAG}")
+set(CMAKE_CXX_FLAGS "${COMMON_FLAG}")
+#set(CMAKE_CXX_FLAGS_DEBUG "${COMMON_FLAG}")
+#set(CMAKE_CXX_FLAGS_RELEASE "${COMMON_FLAG}")
+
+#set(CMAKE_STATIC_LINKER_FLAGS  "${COMMON_FLAG}")
+#set(CMAKE_SHARED_LINKR_FLAGS "${COMMON_FLAG}")
+#set(CMAKE_MODULE_LINKER_FLAGS "${COMMON_FLAG}")
+
+#set(CMAKE_FIND_ROOT_PATH /usr/i686-w64-mingw32)
+
+#set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+#set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+#set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+
+option(BUILD_SHARED_LIBS "build shared libs...." ON)
+
+add_definitions(-D MY_OS_IO)
+
+include_directories(${SKY_SDK_DIR}/include)
+include_directories(${OS_TOP_DIR}/include)
+
+link_directories(${SKY_SDK_DIR}/Simulator/lib)
+link_directories(${OS_TOP_DIR}/lib)
+
+file(GLOB main_SRCS RELATIVE ${OS_TOP_DIR}/ ./main.c)
+file(GLOB vmrp_SRCS RELATIVE ${OS_TOP_DIR}/ ./*.c)
+list(REMOVE_ITEM vmrp_SRCS ${main_SRCS})
+
+message("vmrp_SRCS ${vmrp_SRCS}")
+
+include(thirdparty/dep_capstone_master.cmake)
+include(thirdparty/dep_unicorn_master.cmake)
+include(thirdparty/dep_sdl_release.cmake)
+include(thirdparty/dep_zlib.cmake)
+
+if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
+	set(dep_libs ${dep_libs} pthread m)
+elseif(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
+	add_definitions(-D WIN_PLAT)
+    include(thirdparty/dep_pthread_win32.cmake)
+	set(dep_libs ${pthreadvc2_LIBRARY} ws2_32 Winmm imm32 version Setupapi)
+else()
+	message("[ERROR] current platform: unkonw ")
+endif()
+
+set(dep_libs  ${dep_libs} ${sdl_LIBRARY} ${unicorn_LIBRARY} ${capstone_LIBRARY})
+#unicorn_static  capstone-static SDL2main SDL2-static
+
+message("[INFO] dep_libs: ${dep_libs} ")
+
+add_executable(main ${main_SRCS} ${vmrp_SRCS})
+target_link_libraries(main  ${dep_libs})
+#target_compile_options(main PRIVATE "-m32")
+#target_link_options(main PRIVATE "-m32")
+
+SET(install_targets main )
+
+INSTALL(TARGETS ${install_targets}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION include
+       )
