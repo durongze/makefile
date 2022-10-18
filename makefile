@@ -7,6 +7,16 @@ CC = gcc
 RM = rm 
 MKDIR = mkdir -p 
 
+OS_STR=$(shell uname)
+
+ifeq ($(OS_STR),MINGW32_NT-10.0)
+    Platform=windows
+else ifeq ($(OS_STR),MINGW32_NT-*)
+    Platform=windows
+else
+    Platform=linux
+endif
+
 LIB_DIR_PREFIX=../linux/_/
 
 #$(foreach <var>;,<list>;,<text>;)
