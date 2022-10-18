@@ -7,13 +7,14 @@ CC = gcc
 RM = rm 
 MKDIR = mkdir -p 
 
-LIB_DIR_PREFIX=/opt
-LIBS_NAME:= boost_1_69_0
-LIBS_NAME+= gemo
+LIB_DIR_PREFIX=../linux/_/
 
 #$(foreach <var>;,<list>;,<text>;)
-INCS_DIR:=$(foreach LIB_N,$(LIBS_NAME),-I$(LIB_DIR_PREFIX)/$(LIB_N)/include)
-LIBS_DIR:=$(foreach LIB_N,$(LIBS_NAME),-L$(LIB_DIR_PREFIX)/$(LIB_N)/lib)
+LIBS_NAME=$(shell ls $(LIB_DIR_PREFIX))
+INCS_DIR:=$(foreach LIB_N,$(LIBS_NAME),-I$(LIB_DIR_PREFIX)/$(LIB_N)/include -I$(LIB_DIR_PREFIX)/$(LIB_N)/)
+LIBS_DIR:=$(foreach LIB_N,$(LIBS_NAME),-L$(LIB_DIR_PREFIX)/$(LIB_N)/lib -L$(LIB_DIR_PREFIX)/$(LIB_N)/)
+INCS_DIR+=-I./
+
 
 LIBS+=-lpthread
 
