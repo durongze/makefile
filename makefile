@@ -51,6 +51,7 @@ out/$(platform)/%.o:%.c*
 	$(CC) -o $@ -c $<
 
 clean:
+	${RM} $(foreach n_dir, $(dir $(foreach n, $(OBJS), $(n))), $(n_dir)/*.o)
 	$(RM) $(objs) out -rf
 
 show:
