@@ -1,0 +1,58 @@
+cmake_minimum_required(VERSION 3.14)
+project (unmrp VERSION 0.1.0)
+
+function(gen_dep_lib_dir dep_lib_dir)
+	if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
+		message("current platform: Linux ")
+		set(ALL_LIB_HOME_DIR "/home/du/opt/")
+		EXECUTE_PROCESS(COMMAND ls ${ALL_LIB_HOME_DIR}
+			TIMEOUT 5
+			OUTPUT_VARIABLE ALL_LIB_DIR_LIST
+			OUTPUT_STRIP_TRAILING_WHITESPACE
+			)
+	elseif(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
+		message("current platform: Windows ")
+		set(ALL_LIB_HOME_DIR "E:\\program")
+		EXECUTE_PROCESS(COMMAND cmd /c dir /ad /b ${ALL_LIB_HOME_DIR}
+			OUTPUT_VARIABLE ALL_LIB_DIR_LIST
+			OUTPUT_STRIP_TRAILING_WHITESPACE
+			)
+	else()
+		message("current platform: unkonw ") 
+	endif()
+	set(dep_lib_dir ${ALL_LIB_DIR_LIST})
+	add_dep_lib_dir(${dep_lib_dir})
+endfunction()
+
+function(add_dep_lib_dir dep_lib)
+	#message("dep_lib: ${dep_lib} ")
+	string(REPLACE "\n" ";" LIB_DIR_LIST ${ALL_LIB_DIR_LIST})
+	message("LIB_DIR_LIST: ${LIB_DIR_LIST} ") 
+	foreach(LIB_DIR ${LIB_DIR_LIST})
+		include_directories(${ALL_LIB_HOME_DIR}/${LIB_DIR}/include)
+		link_directories(${ALL_LIB_HOME_DIR}/${LIB_DIR}/lib)
+		message("[INFO] ${ALL_LIB_HOME_DIR}/${LIB_DIR}/lib")
+	endforeach()
+endfunction()
+
+gen_dep_lib_dir(dep_lib_dir)
+
+file(GLOB MRP_SRCS_LIST RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c*"  "${CMAKE_CURRENT_SOURCE_DIR}/inc/*.h*")
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/inc)
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib)
+add_executable(unmrp ${MRP_SRCS_LIST} main/main.cpp)
+
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+    target_link_libraries(unmrp PRIVATE ws2_32 zlib)
+elseif(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
+    target_link_libraries(unmrp PRIVATE z)
+endif()
+
+SET(install_targets unmrp)
+
+INSTALL(TARGETS ${install_targets}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION include
+       )
