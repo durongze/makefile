@@ -4,7 +4,7 @@ project (unmrp VERSION 0.1.0)
 function(gen_dep_lib_dir dep_lib_dir)
 	if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
 		message("current platform: Linux ")
-		set(ALL_LIB_HOME_DIR "/home/du/opt/")
+		set(ALL_LIB_HOME_DIR "$ENV{HOME}/opt/")
 		EXECUTE_PROCESS(COMMAND ls ${ALL_LIB_HOME_DIR}
 			TIMEOUT 5
 			OUTPUT_VARIABLE ALL_LIB_DIR_LIST
