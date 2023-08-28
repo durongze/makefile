@@ -1,5 +1,5 @@
-if(NOT TARGET zlib)
-  set(LIBNAME zlib)
+if(NOT TARGET freetype)
+  set(LIBNAME freetype)
   set(${LIBNAME}_DIR ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/${LIBNAME})
   message("${LIBNAME}_DIR:${${LIBNAME}_DIR}")
   if(CMAKE_SYSTEM_NAME MATCHES "Linux")
@@ -10,5 +10,5 @@ endif()
 
 include_directories(${${LIBNAME}_DIR}/include ${${LIBNAME}_DIR}/ ${CMAKE_BINARY_DIR}/thirdparty/${LIBNAME})
 
-set(ZLIB_LIBRARY $<TARGET_OBJECTS:zlib>)
-set(ZLIB_LIBRARIES $<TARGET_OBJECTS:zlib>)
+set(FREETYPE_LIBRARY freetype)
+set(FREETYPE_LIBRARIES $<TARGET_OBJECTS:freetype>)
