@@ -1,0 +1,52 @@
+cmake_minimum_required(VERSION 3.13)
+
+project(MagicPic)
+
+set(TARGET MagicPic)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(TOP_DIR ${PROJECT_SOURCE_DIR})
+
+# --------------------
+#  Set Target Info
+set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "Where to install output files")
+set(CMAKE_DEBUG_POSTFIX d)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+file(GLOB_RECURSE PROJ_SRCS_LIST RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/src/*.c*)
+list(REMOVE_ITEM PROJ_SRCS_LIST src/xxx.c )
+file(GLOB_RECURSE PROJ_HDRS_LIST RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h*)
+list(REMOVE_ITEM PROJ_HDRS_LIST src/xxx.h )
+file(GLOB_RECURSE PROJ_FRMS_LIST RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h*)
+list(REMOVE_ITEM PROJ_FRMS_LIST src/xxx.ui )
+
+set(SOURCES ${PROJ_SRCS_LIST})
+set(HEADERS ${PROJ_HDRS_LIST})
+set(FORMS  ${PROJ_FRMS_LIST})
+
+set(RESOURCES src/mainwindow.qrc)
+
+set(QT Core Gui Widgets Network WebEngineCore)
+
+include(cmake/dep_lua.cmake)
+
+find_package(Qt6 REQUIRED ${QT})
+
+add_executable(${TARGET} ${SOURCES} ${HEADERS} ${FORMS} ${RESOURCES})
+#target_include_directories(    )
+target_link_libraries(${TARGET}
+        Qt6::Core
+        Qt6::Gui
+        Qt6::Widgets
+        Qt6::Network
+        Qt6::WebEngineCore
+        ${LUA_LIBRARIES}
+    )
+
+source_group(TREE ${TOP_DIR} FILES ${SOURCES} ${HEADERS} ${FORMS} ${RESOURCES} )
