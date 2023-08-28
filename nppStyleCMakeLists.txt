@@ -1,0 +1,120 @@
+# ----------------------
+# Usage
+# 1. cd to current dir(where CmakeLists.txt exists);
+# 2. create directory build;
+# 3. cd to build;
+# 4. run command: $cmake ..
+# 5. run command: $make
+# enjoy!
+
+# ----------------------
+# Using cmake-gui
+# 1. open cmake-gui window;
+# 2. click "Browse Source" and select current dir(where CmakeLists.txt exists);
+# 3. click "Browse Build" and select anywhere you want to put the build files;
+# 4. click "Configure" and select the compiler to use;
+# 5. click "Generate" and make files or nmake files(MSVC) will be generated in the build folder you have selected;
+# 6. go to your build folder or just click "Open Project";
+# 7. run make or build with Microsoft Visual Studio;
+# enjoy!
+
+# ----------------------
+# Tested on:
+# 1. Windows 10 with Microsoft Visual Studio 2019;
+# 2. Ubuntu 20.04 with gcc 10.0;
+
+cmake_minimum_required(VERSION 3.17)
+
+# advanced -> character set -> Use Unicode Character Set
+add_definitions("-DUNICODE" "-D_UNICODE")
+
+# 必须在add_library ， add_executable 前设置，否则无效
+# 如果不是UTF-8编码格式的代码，一定不要加/source-charset:utf-8或/utf-8编译选项。
+# std::locale::global(std::locale(".utf8")); SetConsoleOutputCP(CP_UTF8);
+# add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/source-charset:utf-8>")
+# add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/execution-charset:utf-8>")
+
+# ----------------------
+# set cmake base info
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+# --------------------
+#  Set Target Info
+set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "Where to install output files")
+set(CMAKE_DEBUG_POSTFIX d)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+set(PROJECT_NAME AStyle)
+project(${PROJECT_NAME} VERSION 0.0.1  LANGUAGES CXX)
+
+set(AStyleLib_DIR ${CMAKE_CURRENT_SOURCE_DIR}/AStyleLib/)
+set(AStyleLib_SRC_H "")
+set(AStyleLib_SRC_CPP "")
+
+file(GLOB_RECURSE AStyleLib_src_h  LIST_DIRECTORIES false  RELATIVE ${AStyleLib_DIR}/  "${AStyleLib_DIR}/*.h")
+foreach(src ${AStyleLib_src_h})
+    set(src_path_absolute ${AStyleLib_DIR}/${src})
+    get_filename_component(src_path "${src}" PATH)
+    string(REPLACE "/" "\\" src_path_msvc "${src_path}")
+    list(APPEND AStyleLib_SRC_H ${src_path_absolute})
+    source_group("${src_path_msvc}" FILES "${src_path_absolute}")
+endforeach()
+
+file(GLOB_RECURSE AStyleLib_src_cpp  LIST_DIRECTORIES false  RELATIVE ${AStyleLib_DIR}/  "${AStyleLib_DIR}/*.cpp")
+foreach(src ${AStyleLib_src_cpp})
+    set(src_path_absolute ${AStyleLib_DIR}/${src})
+    get_filename_component(src_path "${src}" PATH)
+    string(REPLACE "/" "\\" src_path_msvc "${src_path}")
+    list(APPEND AStyleLib_SRC_CPP ${src_path_absolute})
+    source_group("${src_path_msvc}" FILES "${src_path_absolute}")
+endforeach()
+#list(REMOVE_ITEM AStyleLib_src_cpp "${AStyleLib_DIR}/VerilogFormatter.cpp" )
+
+add_library(AStyleLib_static STATIC ${AStyleLib_SRC_CPP})
+set_target_properties(AStyleLib_static PROPERTIES OUTPUT_NAME "AStyleLib")
+set_target_properties(AStyleLib_static PROPERTIES CLEAN_DIRECT_OUTPUT 1)
+target_include_directories(AStyleLib_static PRIVATE ${AStyleLib_DIR}/)
+target_compile_definitions(AStyleLib_static PRIVATE  NDEBUG; ASTYLE_LIB; ASTYLE_NO_EXPORT)
+
+#add_library(AStyleLib_shared SHARED ${AStyleLib_SRC_CPP})
+##set_target_properties(AStyleLib_shared PROPERTIES OUTPUT_NAME "AStyleLib")
+#set_target_properties(AStyleLib_shared PROPERTIES CLEAN_DIRECT_OUTPUT 1)
+#target_include_directories(AStyleLib_shared PRIVATE ${AStyleLib_DIR}/)
+#################################################################################################
+set(NppAStyle_DIR ${CMAKE_CURRENT_SOURCE_DIR}/NppAStyle/)
+set(NppAStyle_SRC_H "")
+set(NppAStyle_SRC_CPP "")
+
+file(GLOB_RECURSE NppAStyle_src_h  LIST_DIRECTORIES false  RELATIVE ${NppAStyle_DIR}/  "${NppAStyle_DIR}/*.h")
+foreach(src ${NppAStyle_src_h})
+    set(src_path_absolute ${NppAStyle_DIR}/${src})
+    get_filename_component(src_path "${src}" PATH)
+    string(REPLACE "/" "\\" src_path_msvc "${src_path}")
+    list(APPEND NppAStyle_SRC_H ${src_path_absolute})
+    source_group("${src_path_msvc}" FILES "${src_path_absolute}")
+endforeach()
+
+file(GLOB_RECURSE NppAStyle_src_cpp  LIST_DIRECTORIES false  RELATIVE ${NppAStyle_DIR}/  "${NppAStyle_DIR}/*.cpp")
+foreach(src ${NppAStyle_src_cpp})
+    set(src_path_absolute ${NppAStyle_DIR}/${src})
+    get_filename_component(src_path "${src}" PATH)
+    string(REPLACE "/" "\\" src_path_msvc "${src_path}")
+    list(APPEND NppAStyle_SRC_CPP ${src_path_absolute})
+    source_group("${src_path_msvc}" FILES "${src_path_absolute}")
+endforeach()
+#list(REMOVE_ITEM NppAStyle_src_cpp "${NppAStyle_DIR}/VerilogFormatter.cpp" )
+
+#add_library(NppAStyle_static STATIC ${NppAStyle_SRC_CPP})
+##set_target_properties(NppAStyle_static PROPERTIES OUTPUT_NAME "NppAStyle")
+#set_target_properties(NppAStyle_static PROPERTIES CLEAN_DIRECT_OUTPUT 1)
+#target_include_directories(NppAStyle_static PRIVATE ${NppAStyle_DIR}/ ${NppAStyle_DIR}/DockingFeature ${AStyleLib_DIR}/)
+
+add_library(NppAStyle_shared SHARED ${NppAStyle_SRC_CPP})
+#set_target_properties(NppAStyle_shared PROPERTIES OUTPUT_NAME "NppAStyle")
+set_target_properties(NppAStyle_shared PROPERTIES CLEAN_DIRECT_OUTPUT 1)
+target_include_directories(NppAStyle_shared PRIVATE ${NppAStyle_DIR}/ ${NppAStyle_DIR}/DockingFeature ${AStyleLib_DIR}/)
+target_compile_definitions(NppAStyle_shared PRIVATE  WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;ASTYLE_LIB;ASTYLE_NO_EXPORT)
