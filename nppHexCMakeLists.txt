@@ -1,0 +1,84 @@
+# ----------------------
+# Usage
+# 1. cd to current dir(where CmakeLists.txt exists);
+# 2. create directory build;
+# 3. cd to build;
+# 4. run command: $cmake ..
+# 5. run command: $make
+# enjoy!
+
+# ----------------------
+# Using cmake-gui
+# 1. open cmake-gui window;
+# 2. click "Browse Source" and select current dir(where CmakeLists.txt exists);
+# 3. click "Browse Build" and select anywhere you want to put the build files;
+# 4. click "Configure" and select the compiler to use;
+# 5. click "Generate" and make files or nmake files(MSVC) will be generated in the build folder you have selected;
+# 6. go to your build folder or just click "Open Project";
+# 7. run make or build with Microsoft Visual Studio;
+# enjoy!
+
+# ----------------------
+# Tested on:
+# 1. Windows 10 with Microsoft Visual Studio 2019;
+# 2. Ubuntu 20.04 with gcc 10.0;
+
+cmake_minimum_required(VERSION 3.17)
+
+# advanced -> character set -> Use Unicode Character Set
+add_definitions("-DUNICODE" "-D_UNICODE")
+
+# 必须在add_library ， add_executable 前设置，否则无效
+# 如果不是UTF-8编码格式的代码，一定不要加/source-charset:utf-8或/utf-8编译选项。
+# std::locale::global(std::locale(".utf8")); SetConsoleOutputCP(CP_UTF8);
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/source-charset:utf-8>")
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/execution-charset:utf-8>")
+
+# ----------------------
+# set cmake base info
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+# --------------------
+#  Set Target Info
+set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "Where to install output files")
+# set(CMAKE_DEBUG_POSTFIX d)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+set(PROJECT_NAME NppHexEdit)
+project(${PROJECT_NAME} VERSION 0.0.1  LANGUAGES CXX)
+
+set(NppHexEdit_DIR ${CMAKE_CURRENT_SOURCE_DIR}/)
+set(NppHexEdit_SRC_H "")
+set(NppHexEdit_SRC_CPP "")
+
+file(GLOB_RECURSE NppHexEdit_src_h  LIST_DIRECTORIES false  RELATIVE ${NppHexEdit_DIR}/  "${NppHexEdit_DIR}/Common/Ccpp/*.h" "${NppHexEdit_DIR}/HexEditor/src/*.h")
+foreach(src ${NppHexEdit_src_h})
+    set(src_path_absolute ${NppHexEdit_DIR}/${src})
+    get_filename_component(src_path "${src}" PATH)
+    string(REPLACE "/" "\\" src_path_msvc "${src_path}")
+    list(APPEND NppHexEdit_SRC_H ${src_path_absolute})
+    source_group("${src_path_msvc}" FILES "${src_path_absolute}")
+endforeach()
+
+file(GLOB_RECURSE NppHexEdit_src_cpp  LIST_DIRECTORIES false  RELATIVE ${NppHexEdit_DIR}/  "${NppHexEdit_DIR}/Common/Ccpp/*.cpp" "${NppHexEdit_DIR}/HexEditor/src/*.cpp" "${NppHexEdit_DIR}/HexEditor/src/HelpDlg/*.cpp" "${NppHexEdit_DIR}/HexEditor/src/OptionDlg/*.cpp" "${NppHexEdit_DIR}/HexEditor/src/UserDlg/*.cpp" "${NppHexEdit_DIR}/HexEditor/src/misc/*.cpp")
+foreach(src ${NppHexEdit_src_cpp})
+    set(src_path_absolute ${NppHexEdit_DIR}/${src})
+    get_filename_component(src_path "${src}" PATH)
+    string(REPLACE "/" "\\" src_path_msvc "${src_path}")
+    list(APPEND NppHexEdit_SRC_CPP ${src_path_absolute})
+    source_group("${src_path_msvc}" FILES "${src_path_absolute}")
+endforeach()
+list(REMOVE_ITEM NppHexEdit_SRC_CPP "${NppHexEdit_DIR}/Common/Ccpp/ToolBar.cpp"  "${NppHexEdit_DIR}/Common/Ccpp/ImageListSet.cpp" "${NppHexEdit_DIR}/Common/Ccpp/URLCtrl.cpp")
+
+message ("NppHexEdit_DIR=${NppHexEdit_DIR}")
+message ("NppHexEdit_SRC_CPP=${NppHexEdit_SRC_CPP}")
+add_library(NppHexEdit_shared SHARED ${NppHexEdit_SRC_CPP})
+set_target_properties(NppHexEdit_shared PROPERTIES OUTPUT_NAME "NppHexEdit")
+set_target_properties(NppHexEdit_shared PROPERTIES CLEAN_DIRECT_OUTPUT 1)
+target_include_directories(NppHexEdit_shared PRIVATE ${NppHexEdit_DIR}/ ${NppHexEdit_DIR}/Common/Ccpp ${NppHexEdit_DIR}/HexEditor/src ${NppHexEdit_DIR}/HexEditor/src/HelpDlg/ ${NppHexEdit_DIR}/HexEditor/src/OptionDlg/ ${NppHexEdit_DIR}/HexEditor/src/UserDlg/ ${NppHexEdit_DIR}/HexEditor/src/misc ${NppHexEdit_DIR}/NativeLang/src)
+target_link_libraries(NppHexEdit_shared shlwapi)
+target_compile_definitions(NppHexEdit_shared PRIVATE  WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;ASTYLE_LIB;ASTYLE_NO_EXPORT)
