@@ -1,0 +1,136 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.16)
+
+PROJECT(WinOpenSSH)
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "Where to install output files")
+#set(CMAKE_DEBUG_POSTFIX d)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+#configure_file(config.h.in config.h)
+
+set(PROJ_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
+set(OpenSSH-Src-Path ${PROJ_ROOT_DIR})
+
+#include(cmake/dep_openssl.cmake)
+
+macro(gen_file_list mod_dir file_type mod_files)
+	file(GLOB_RECURSE src_f
+		LIST_DIRECTORIES false
+		RELATIVE ${PROJ_ROOT_DIR}/
+		${PROJ_ROOT_DIR}/${mod_dir}/${file_type};
+	)
+
+	foreach(src ${src_f})
+		set(src_path_absolute ${PROJ_ROOT_DIR}/${src})
+		get_filename_component(src_path "${src}" PATH)
+		string(REPLACE "/" "\\" src_path_msvc "${src_path}")
+		list(APPEND ${mod_files} ${src_path_absolute})
+		source_group("${src_path_msvc}" FILES "${src_path_absolute}")
+	endforeach()
+endmacro()
+
+set(win_compat_hdr_dir ${PROJ_ROOT_DIR}/openbsd-compat ${PROJ_ROOT_DIR}/contrib/win32/openssh/ ${PROJ_ROOT_DIR}/contrib/win32/win32compat/ ${PROJ_ROOT_DIR}/contrib/win32/win32compat/includes)
+set(win_compat_libs bcrypt Userenv Crypt32 Ws2_32 Secur32 Shlwapi odbc32 odbccp32 Netapi32 Rpcrt4 ntdll )
+
+#gen_file_list(posix_compat *.h* posix_compat_hdrs)
+#gen_file_list(posix_compat *.c* posix_compat_srcs)
+include(proj/win32iocompat.vcxproj.cmake)
+set(win32iocompat_hdr_dir ${win32iocompat_hdr_dir} ${PROJ_ROOT_DIR}/ ${CMAKE_CURRENT_BINARY_DIR} ${win_compat_hdr_dir} )
+add_library(win32iocompat_static STATIC ${win32iocompat_srcs})
+set_target_properties(win32iocompat_static PROPERTIES OUTPUT_NAME "posix_compat_static")
+#set_target_properties(win32iocompat_static PROPERTIES CLEAN_DIRECT_OUTPUT 1)
+target_include_directories(win32iocompat_static PRIVATE ${win32iocompat_hdr_dir} )
+
+#gen_file_list(openbsd-compat *.h* openbsd_compat_hdrs)
+#gen_file_list(openbsd-compat *.c* openbsd_compat_srcs)
+include(proj/openbsd_compat.vcxproj.cmake)
+set(openbsd_compat_hdr_dir ${openbsd_compat_hdr_dir} ${PROJ_ROOT_DIR}/ ${CMAKE_CURRENT_BINARY_DIR} ${win_compat_hdr_dir} )
+add_library(openbsd_compat_static STATIC ${openbsd_compat_srcs})
+set_target_properties(openbsd_compat_static PROPERTIES OUTPUT_NAME "openbsd_compat_static")
+#set_target_properties(openbsd_compat_static PROPERTIES CLEAN_DIRECT_OUTPUT 1)
+target_include_directories(openbsd_compat_static PRIVATE ${openbsd_compat_hdr_dir} )
+
+#gen_file_list(libssh *.h* libssh_hdrs)
+#gen_file_list(libssh *.c* libssh_srcs)
+include(proj/libssh.vcxproj.cmake)
+#list(REMOVE_ITEM libssh_srcs "${PROJ_ROOT_DIR}/main.c" )
+set(libssh_hdr_dir ${libssh_hdr_dir} ${PROJ_ROOT_DIR}/ ${CMAKE_CURRENT_BINARY_DIR} ${win_compat_hdr_dir} ${PROJ_ROOT_DIR}/libssh )
+add_library(libssh_static STATIC ${libssh_srcs})
+set_target_properties(libssh_static PROPERTIES OUTPUT_NAME "libssh_static")
+#set_target_properties(libssh_static PROPERTIES CLEAN_DIRECT_OUTPUT 1)
+target_include_directories(libssh_static PRIVATE ${libssh_hdr_dir} )
+target_link_directories(libssh_static PRIVATE ${PROJ_ROOT_DIR}/lib ${CMAKE_CURRENT_BINARY_DIR}/Debug)
+target_link_libraries(libssh_static PRIVATE posix_compat_static openbsd_compat_static libssl libcrypto zlibd)
+
+#gen_file_list(ssh *.h* ssh_hdrs)
+#gen_file_list(ssh *.c* ssh_srcs)
+include(proj/ssh.vcxproj.cmake)
+set(ssh_hdr_dir ${ssh_hdr_dir} ${PROJ_ROOT_DIR}/ ${CMAKE_CURRENT_BINARY_DIR} ${win_compat_hdr_dir} ${PROJ_ROOT_DIR}/ssh)
+add_executable(ssh ${ssh_hdrs} ${ssh_srcs} )
+target_include_directories(ssh PRIVATE ${ssh_hdr_dir})
+target_link_directories(ssh PRIVATE ${PROJ_ROOT_DIR}/lib ${CMAKE_CURRENT_BINARY_DIR}/Debug)
+target_link_libraries(ssh PRIVATE  libssh_static posix_compat_static openbsd_compat_static  libcrypto libssl zlibd ${win_compat_libs})
+
+#gen_file_list(sshd *.h* sshd_hdrs)
+#gen_file_list(sshd *.c* sshd_srcs)
+include(proj/sshd.vcxproj.cmake)
+set(sshd_hdr_dir ${sshd_hdr_dir} ${PROJ_ROOT_DIR}/ ${CMAKE_CURRENT_BINARY_DIR} ${win_compat_hdr_dir} ${PROJ_ROOT_DIR}/sshd)
+add_executable(sshd ${sshd_hdrs} ${sshd_srcs})
+target_include_directories(sshd PRIVATE ${sshd_hdr_dir})
+target_link_directories(sshd PRIVATE ${PROJ_ROOT_DIR}/lib ${CMAKE_CURRENT_BINARY_DIR}/Debug)
+target_link_libraries(sshd PRIVATE posix_compat_static openbsd_compat_static libssh_static libssl libcrypto zlibd ${win_compat_libs})
+
+message( "libssh_srcs : ${libssh_srcs}")
+message( "ssh_srcs : ${ssh_srcs}")
+message( "sshd_srcs : ${sshd_srcs}")
+
+function(gen_dep_lib_dir dep_lib_dir)
+	if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
+		message("current platform: Linux ")
+		set(ALL_LIB_HOME_DIR "$ENV{HOME}/opt/")
+		EXECUTE_PROCESS(COMMAND ls ${ALL_LIB_HOME_DIR}
+			TIMEOUT 5
+			OUTPUT_VARIABLE ALL_LIB_DIR_LIST
+			OUTPUT_STRIP_TRAILING_WHITESPACE
+			)
+	elseif(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
+		message("current platform: Windows ")
+		set(ALL_LIB_HOME_DIR "F:\\program\\")
+		EXECUTE_PROCESS(COMMAND cmd /c dir /ad /b ${ALL_LIB_HOME_DIR}
+			OUTPUT_VARIABLE ALL_LIB_DIR_LIST
+			OUTPUT_STRIP_TRAILING_WHITESPACE
+			)
+	else()
+		message("current platform: unkonw ") 
+	endif()
+	set(dep_lib_dir ${ALL_LIB_DIR_LIST})
+	add_dep_lib_dir("${dep_lib_dir}")
+endfunction()
+
+function(add_dep_lib_dir dep_lib)
+	message("dep_lib: ${dep_lib} ")
+	string(REPLACE "\n" ";" LIB_DIR_LIST "${ALL_LIB_DIR_LIST}")
+	message("LIB_DIR_LIST: ${LIB_DIR_LIST} ") 
+	foreach(LIB_DIR ${LIB_DIR_LIST})
+		include_directories(${ALL_LIB_HOME_DIR}/${LIB_DIR}/)
+		include_directories(${ALL_LIB_HOME_DIR}/${LIB_DIR}/include)
+		link_directories(${ALL_LIB_HOME_DIR}/${LIB_DIR}/lib64)
+		message("[INFO] ${ALL_LIB_HOME_DIR}/${LIB_DIR}/lib64")
+	endforeach()
+endfunction()
+
+gen_dep_lib_dir(dep_lib_dir)
+
+#########################
+#includes.h 
+#config.h
+#clientloop.c
+#sys/socket.h
+#########################
