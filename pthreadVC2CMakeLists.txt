@@ -1,0 +1,62 @@
+cmake_minimum_required(VERSION 3.4.1)
+
+project(threadwin32)
+
+add_compile_options(-DDEBUG )
+
+set(PTHREAD_WIN32_ROOT_DIR ${PROJECT_SOURCE_DIR}/)
+set(PTHREAD_WIN32_INC_DIR ${PTHREAD_WIN32_ROOT_DIR}/inc)
+set(PTHREAD_WIN32_SRC_DIR ${PTHREAD_WIN32_ROOT_DIR}/src)
+#file(GLOB PTHREAD_WIN32_SRCS ${PTHREAD_WIN32_SRC_DIR}/*.c)
+file(GLOB PTHREAD_WIN32_SRCS ${PTHREAD_WIN32_SRC_DIR}/attr.c 
+ ${PTHREAD_WIN32_SRC_DIR}/barrier.c
+ ${PTHREAD_WIN32_SRC_DIR}/cancel.c 
+ ${PTHREAD_WIN32_SRC_DIR}/cleanup.c 
+ ${PTHREAD_WIN32_SRC_DIR}/condvar.c 
+ ${PTHREAD_WIN32_SRC_DIR}/create.c 
+ ${PTHREAD_WIN32_SRC_DIR}/dll.c 
+ ${PTHREAD_WIN32_SRC_DIR}/exit.c 
+ ${PTHREAD_WIN32_SRC_DIR}/fork.c 
+ ${PTHREAD_WIN32_SRC_DIR}/global.c 
+ ${PTHREAD_WIN32_SRC_DIR}/misc.c 
+ ${PTHREAD_WIN32_SRC_DIR}/mutex.c 
+ ${PTHREAD_WIN32_SRC_DIR}/private.c 
+ ${PTHREAD_WIN32_SRC_DIR}/rwlock.c 
+ ${PTHREAD_WIN32_SRC_DIR}/sched.c 
+ ${PTHREAD_WIN32_SRC_DIR}/semaphore.c 
+ ${PTHREAD_WIN32_SRC_DIR}/spin.c 
+ ${PTHREAD_WIN32_SRC_DIR}/sync.c 
+ ${PTHREAD_WIN32_SRC_DIR}/tsd.c 
+ ${PTHREAD_WIN32_SRC_DIR}/nonportable.c)
+file(GLOB_RECURSE THREAD_WIN32_HDRS ${PTHREAD_WIN32_INC_DIR}/*.h)
+
+set(PTHREAD_WIN32_STATIC pthreadvc2_static)
+
+include_directories(${PTHREAD_WIN32_STATIC} ${PTHREAD_WIN32_INC_DIR})
+link_directories(${PTHREAD_WIN32_STATIC} ${PTHREAD_WIN32_SRC_DIR}/)
+add_library(${PTHREAD_WIN32_STATIC}  STATIC ${PTHREAD_WIN32_SRCS})
+
+target_link_libraries(${PTHREAD_WIN32_STATIC}  ws2_32 iphlpapi kernel32 user32 gdi32 winspool shell32 ole32 oleaut32 uuid comdlg32 advapi32)
+
+set(PTHREAD_WIN32_SHARED pthreadvc2_shared)
+
+include_directories(${PTHREAD_WIN32_SHARED} ${PTHREAD_WIN32_INC_DIR})
+link_directories(${PTHREAD_WIN32_SHARED} ${PTHREAD_WIN32_SRC_DIR}/)
+add_library(${PTHREAD_WIN32_SHARED}  SHARED ${PTHREAD_WIN32_SRCS})
+
+target_link_libraries(${PTHREAD_WIN32_SHARED}  ws2_32 iphlpapi kernel32 user32 gdi32 winspool shell32 ole32 oleaut32 uuid comdlg32 advapi32)
+
+set_target_properties(${PTHREAD_WIN32_SHARED}  PROPERTIES PUBLIC_HEADER "${THREAD_WIN32_HDRS}")
+
+SET(install_targets ${PTHREAD_WIN32_STATIC} ${PTHREAD_WIN32_SHARED} )
+SET(install_hdr_dir include)
+
+INSTALL(TARGETS ${install_targets}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION include
+       )
+
+install(FILES ${THREAD_WIN32_HDRS} DESTINATION ${install_hdr_dir})
+install(DIRECTORY "inc_sub_dir" DESTINATION ${install_hdr_dir} FILES_MATCHING PATTERN "*.h")
