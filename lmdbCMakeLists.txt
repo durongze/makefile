@@ -16,11 +16,11 @@ ENDIF()
 
 #
 add_library(lmdb_static STATIC ${LMDB_SRC_LIST})
-set_target_properties(lmdb_static PROPERTIES PUBLIC_HEADER ${LMDB_HDR_LIST})
+set_target_properties(lmdb_static PROPERTIES PUBLIC_HEADER "${LMDB_HDR_LIST}")
 set_target_properties(lmdb_static PROPERTIES CLEAN_DIRECT_OUTPUT 1 OUTPUT_NAME "lmdb")
 
 add_library(lmdb_shared SHARED ${LMDB_SRC_LIST})
-set_target_properties(lmdb_shared PROPERTIES PUBLIC_HEADER ${LMDB_HDR_LIST})
+set_target_properties(lmdb_shared PROPERTIES PUBLIC_HEADER "${LMDB_HDR_LIST}")
 set_target_properties(lmdb_shared PROPERTIES CLEAN_DIRECT_OUTPUT 1 OUTPUT_NAME "lmdb")
 
 #
