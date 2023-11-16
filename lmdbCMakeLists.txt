@@ -1,0 +1,55 @@
+cmake_minimum_required(VERSION 3.14)
+project (lmdb)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -std=c++17 -fPIC ")
+
+#file(GLOB_RECURSE LMDB_SRC_LIST RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ./mdb.c ./midl.c)
+file(GLOB LMDB_SRC_LIST RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ./mdb.c ./midl.c)
+file(GLOB LMDB_HDR_LIST RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ./*.h)
+
+IF(CMAKE_SYSTEM_NAME MATCHES "Linux")
+    message("CMAKE_SYSTEM_NAME:${CMAKE_SYSTEM_NAME}")
+ELSEIF(CMAKE_SYSTEM_NAME MATCHES "Windows")
+    message("CMAKE_SYSTEM_NAME:${CMAKE_SYSTEM_NAME}")
+    add_compile_definitions(WIN32_FIXME)
+ENDIF()
+
+#
+add_library(lmdb_static STATIC ${LMDB_SRC_LIST})
+set_target_properties(lmdb_static PROPERTIES PUBLIC_HEADER ${LMDB_HDR_LIST})
+set_target_properties(lmdb_static PROPERTIES CLEAN_DIRECT_OUTPUT 1 OUTPUT_NAME "lmdb")
+
+add_library(lmdb_shared SHARED ${LMDB_SRC_LIST})
+set_target_properties(lmdb_shared PROPERTIES PUBLIC_HEADER ${LMDB_HDR_LIST})
+set_target_properties(lmdb_shared PROPERTIES CLEAN_DIRECT_OUTPUT 1 OUTPUT_NAME "lmdb")
+
+#
+file(GLOB MDB_COPY_SRC_LIST ${CMAKE_CURRENT_SOURCE_DIR}/mdb_copy.c ${CMAKE_CURRENT_SOURCE_DIR}/getopt*.c)
+add_executable(mdb_copy ${MDB_COPY_SRC_LIST})
+target_link_libraries(mdb_copy PUBLIC lmdb_static)
+#
+file(GLOB MDB_DUMP_SRC_LIST ${CMAKE_CURRENT_SOURCE_DIR}/mdb_dump.c ${CMAKE_CURRENT_SOURCE_DIR}/getopt*.c)
+add_executable(mdb_dump ${MDB_DUMP_SRC_LIST})
+target_link_libraries(mdb_dump PUBLIC lmdb_static)
+
+#
+file(GLOB MDB_LOAD_SRC_LIST ${CMAKE_CURRENT_SOURCE_DIR}/mdb_load.c ${CMAKE_CURRENT_SOURCE_DIR}/getopt*.c)
+add_executable(mdb_load ${MDB_COPY_SRC_LIST})
+target_link_libraries(mdb_load PUBLIC lmdb_static)
+#
+file(GLOB MDB_STAT_SRC_LIST ${CMAKE_CURRENT_SOURCE_DIR}/mdb_stat.c ${CMAKE_CURRENT_SOURCE_DIR}/getopt*.c)
+add_executable(mdb_stat ${MDB_STAT_SRC_LIST})
+target_link_libraries(mdb_stat PUBLIC lmdb_static)
+
+file(GLOB MTEST_SRC_LIST ${CMAKE_CURRENT_SOURCE_DIR}/mtest.c ${CMAKE_CURRENT_SOURCE_DIR}/getopt*.c)
+add_executable(mtest ${MDB_STAT_SRC_LIST})
+target_link_libraries(mtest PUBLIC lmdb_static)
+
+SET(install_targets mdb_copy mdb_dump mdb_load mdb_stat mtest lmdb_static lmdb_shared )
+
+INSTALL(TARGETS ${install_targets}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION include
+       )
