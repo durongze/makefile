@@ -1,0 +1,75 @@
+cmake_minimum_required(VERSION 3.15)
+project (VSMDigitalDisplay)
+
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+set(CMAKE_MFC_FLAG 1) 
+#add_definitions(-DUNICODE -D_UNICODE)
+add_definitions(-D_AFXDLL)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+#set(TOP_DIR ${CMAKE_CURRENT_LIST_DIR})
+#set(TOP_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(TOP_DIR ${PROJECT_SOURCE_DIR})
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wall  ")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall ")
+set(GENERIC_LIB_VERSION "8.0.0")
+set(GENERIC_LIB_SOVERSION "8")
+
+#add_definitions(-D DEBUG)
+include_directories(${TOP_DIR}/)
+include_directories(${TOP_DIR}/sdk)
+include_directories(${TOP_DIR}/VSMDigitalDisplay/src)
+
+link_directories(${TOP_DIR}/thirdparty/ReplicaNet/ReplicaNetPublic/Includes)
+link_directories(${TOP_DIR}/thirdparty/C64Public)
+
+file(GLOB C64Public_SRCS           RELATIVE ${TOP_DIR} ./thirdparty/C64Public/Common/*.c* ./thirdparty/C64Public/Common/*.h*)
+file(GLOB VSMDigitalDisplay_SRCS   RELATIVE ${TOP_DIR} ./VSMDigitalDisplay/src/*.c*    ./VSMDigitalDisplay/src/*.h*)
+file(GLOB VSMDigitalDisplay_Res    RELATIVE ${TOP_DIR} ./VSMDigitalDisplay/res/*.res )
+
+source_group("VSMDigitalDisplay_Res" FILES ${VSMDigitalDisplay_Res} )
+source_group(TREE ${TOP_DIR}      FILES ${VSMDigitalDisplay_SRCS} ${C64Public_SRCS})
+
+#list(REMOVE_ITEM ALL_SRCS ./src/main.c* )
+
+message("[INFO] dep_3rdlibs: ${dep_3rdlibs}")
+
+#add_executable(VSMDigitalDisplay_MAIN ${VSMDigitalDisplay_SRCS} )
+#set_target_properties(VSMDigitalDisplay_MAIN PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS /SAFESEH:MO")
+
+add_library(VSMDigitalDisplay ${VSMDigitalDisplay_SRCS} ${C64Public_SRCS})
+target_compile_definitions(VSMDigitalDisplay PRIVATE  -D_USRDLL)
+target_link_libraries(VSMDigitalDisplay ${dep_3rdlibs} )
+set_target_properties(VSMDigitalDisplay PROPERTIES   COMPILE_DEFINITIONS "VSMDIGITALDISPLAY_EXPORTS"   VERSION "${GENERIC_LIB_VERSION}"   SOVERSION "${GENERIC_LIB_SOVERSION}")
+
+add_definitions(
+	-DWIN32
+	-DNDEBUG
+	-D_WINDOWS
+)
+
+set (dep_libs  $<TARGET_OBJECTS:VSMDigitalDisplay>)
+
+file(GLOB VSMDigitalDisplayTest_SRCS   RELATIVE ${TOP_DIR} ./VSMDigitalDisplayTest/src/*.c*    ./VSMDigitalDisplayTest/src/*.h*)
+file(GLOB VSMDigitalDisplayTest_Res    RELATIVE ${TOP_DIR} ./VSMDigitalDisplayTest/res/*.txt   ./VSMDigitalDisplayTest/res/*.bin)
+add_executable(VSMDigitalDisplayTest ${VSMDigitalDisplayTest_SRCS} ${VSMDigitalDisplayTest_Res} )
+target_include_directories(VSMDigitalDisplayTest PRIVATE ${TOP_DIR}/include/)
+target_link_directories(VSMDigitalDisplayTest    PUBLIC  ${TOP_DIR}/lib)
+target_link_libraries(VSMDigitalDisplayTest ${dep_libs}  ${dep_3rdlibs})
+
+#file(GLOB LogicAnalyser_SRCS   RELATIVE ${TOP_DIR} ./LogicAnalyser/src/*.c*    ./LogicAnalyser/src/*.h*    ./LogicAnalyser/src/*.rc*)
+#file(GLOB LogicAnalyser_Res    RELATIVE ${TOP_DIR} ./LogicAnalyser/res/*.ico   ./LogicAnalyser/res/*.bmp   ./LogicAnalyser/res/*.rc*)
+#add_executable(LogicAnalyser ${LogicAnalyser_SRCS} ${LogicAnalyser_Res})
+#target_compile_definitions(LogicAnalyser PUBLIC  -DUNICODE -D_UNICODE)
+#target_include_directories(LogicAnalyser PRIVATE ${TOP_DIR}/LogicAnalyser/)
+#target_link_libraries(LogicAnalyser ${dep_libs} ${dep_3rdlibs})
+#set_target_properties(LogicAnalyser PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS") # /SAFESEH:MO)
+
