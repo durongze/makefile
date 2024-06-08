@@ -1,0 +1,75 @@
+cmake_minimum_required(VERSION 3.15)
+project (VSMDigitalData)
+
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+set(CMAKE_MFC_FLAG 1) 
+#add_definitions(-DUNICODE -D_UNICODE)
+add_definitions(-D_AFXDLL)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+#set(TOP_DIR ${CMAKE_CURRENT_LIST_DIR})
+#set(TOP_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(TOP_DIR ${PROJECT_SOURCE_DIR})
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wall  ")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall ")
+set(GENERIC_LIB_VERSION "8.0.0")
+set(GENERIC_LIB_SOVERSION "8")
+
+#add_definitions(-D DEBUG)
+include_directories(${TOP_DIR}/)
+include_directories(${TOP_DIR}/sdk)
+include_directories(${TOP_DIR}/VSMDigitalData/src)
+
+link_directories(${TOP_DIR}/thirdparty/ReplicaNet/ReplicaNetPublic/Includes)
+link_directories(${TOP_DIR}/thirdparty/C64Public)
+
+file(GLOB C64Public_SRCS        RELATIVE ${TOP_DIR} ./thirdparty/C64Public/Common/*.c* ./thirdparty/C64Public/Common/*.h*)
+file(GLOB VSMDigitalData_SRCS   RELATIVE ${TOP_DIR} ./VSMDigitalData/src/*.c*    ./VSMDigitalData/src/*.h*)
+file(GLOB VSMDigitalData_Res    RELATIVE ${TOP_DIR} ./VSMDigitalData/res/*.res )
+
+source_group("VSMDigitalData_Res" FILES ${VSMDigitalData_Res} )
+source_group(TREE ${TOP_DIR}      FILES ${VSMDigitalData_SRCS} ${C64Public_SRCS})
+
+#list(REMOVE_ITEM ALL_SRCS ./src/main.c* )
+
+message("[INFO] dep_3rdlibs: ${dep_3rdlibs}")
+
+#add_executable(VSMDigitalData_MAIN ${VSMDigitalData_SRCS} )
+#set_target_properties(VSMDigitalData_MAIN PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS /SAFESEH:MO")
+
+add_library(VSMDigitalData ${VSMDigitalData_SRCS} ${C64Public_SRCS})
+target_compile_definitions(VSMDigitalData PRIVATE  -D_USRDLL)
+target_link_libraries(VSMDigitalData ${dep_3rdlibs} )
+set_target_properties(VSMDigitalData PROPERTIES   COMPILE_DEFINITIONS "VSMDIGITALDISPLAY_EXPORTS"   VERSION "${GENERIC_LIB_VERSION}"   SOVERSION "${GENERIC_LIB_SOVERSION}")
+
+add_definitions(
+	-DWIN32
+	-DNDEBUG
+	-D_WINDOWS
+)
+
+set (dep_libs  $<TARGET_OBJECTS:VSMDigitalData>)
+
+file(GLOB VSMDigitalDataTest_SRCS   RELATIVE ${TOP_DIR} ./VSMDigitalDataTest/src/*.c*    ./VSMDigitalDataTest/src/*.h*)
+file(GLOB VSMDigitalDataTest_Res    RELATIVE ${TOP_DIR} ./VSMDigitalDataTest/res/*.txt   ./VSMDigitalDataTest/res/*.bin)
+add_executable(VSMDigitalDataTest ${VSMDigitalDataTest_SRCS} ${VSMDigitalDataTest_Res} )
+target_include_directories(VSMDigitalDataTest PRIVATE ${TOP_DIR}/include/)
+target_link_directories(VSMDigitalDataTest    PUBLIC  ${TOP_DIR}/lib)
+target_link_libraries(VSMDigitalDataTest ${dep_libs}  ${dep_3rdlibs})
+
+file(GLOB LogicAnalyser_SRCS   RELATIVE ${TOP_DIR} ./LogicAnalyser/src/*.c*    ./LogicAnalyser/src/*.h*    ./LogicAnalyser/src/*.rc*)
+file(GLOB LogicAnalyser_Res    RELATIVE ${TOP_DIR} ./LogicAnalyser/res/*.ico   ./LogicAnalyser/res/*.bmp   ./LogicAnalyser/res/*.rc*)
+add_executable(LogicAnalyser ${LogicAnalyser_SRCS} ${LogicAnalyser_Res})
+target_compile_definitions(LogicAnalyser PUBLIC  -DUNICODE -D_UNICODE)
+target_include_directories(LogicAnalyser PRIVATE ${TOP_DIR}/LogicAnalyser/)
+target_link_libraries(LogicAnalyser ${dep_libs} ${dep_3rdlibs})
+set_target_properties(LogicAnalyser PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS") # /SAFESEH:MO)
+
