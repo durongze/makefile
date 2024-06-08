@@ -1,0 +1,118 @@
+cmake_minimum_required(VERSION 3.14)
+project (gSim51)
+
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+set(TOP_DIR ${CMAKE_CURRENT_LIST_DIR})
+#set(TOP_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+#set(TOP_DIR ${PROJECT_SOURCE_DIR})
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+add_compile_options(-fPIC)
+#add_definitions(-D WIN32)
+#add_definitions(-D _WINDOWS)
+add_definitions(-D _DEBUG)
+
+#set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} /SAFESEH:NO /NODEFAULTLIB:LIBCD.lib /NODEFAULTLIB:LIBC.lib /NODEFAULTLIB:LIBCMT.lib /NODEFAULTLIB:LIBCMTD.lib /INCLUDE:_sim_dummy")
+#set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS}  /NODEFAULTLIB:mfcs80d.lib /NODEFAULTLIB:mfc80d.lib /NODEFAULTLIB:atlsd.lib")
+
+#set(CMAKE_SHARED_LINKR_FLAGS "${CMAKE_SHARED_LINKR_FLAGS} /SAFESEH:NO /NODEFAULTLIB:libc.lib")
+#set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKR_FLAGS} /SAFESEH:NO /NODEFAULTLIB:libc.lib")
+#set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} /SAFESEH:NO /NODEFAULTLIB:libc.lib")
+
+include(cmake/dep_pdcurses.cmake)
+
+set(dep_3rdlibs  ${PDCurses_LIBRARY})
+
+INCLUDE_DIRECTORIES(${TOP_DIR}/src/)
+
+link_directories(${TOP_DIR}/lib/)
+
+if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
+	set(dep_os_libs pthread m dl)
+	add_definitions(-D DYZ)
+elseif(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
+	set(dep_os_libs pthreadvc2_static)
+else()
+	message("current platform: unkonw ")
+endif()
+
+function(gen_dep_lib_dir all_dep_lib_dir)
+	message("[INFO] platform: ${CMAKE_HOST_SYSTEM_NAME} HOME : $ENV{HomeDir} ")
+	if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
+		set(ALL_LIB_HOME_DIR "$ENV{HomeDir}/")
+		EXECUTE_PROCESS(COMMAND ls ${ALL_LIB_HOME_DIR}
+			TIMEOUT 5
+			OUTPUT_VARIABLE ALL_LIB_DIR_LIST
+			OUTPUT_STRIP_TRAILING_WHITESPACE
+			)
+	elseif(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
+		set(ALL_LIB_HOME_DIR "$ENV{HomeDir}")
+		EXECUTE_PROCESS(COMMAND cmd /c dir /ad /b ${ALL_LIB_HOME_DIR}
+			OUTPUT_VARIABLE ALL_LIB_DIR_LIST
+			OUTPUT_STRIP_TRAILING_WHITESPACE
+			)
+	else()
+		message("current platform: unkonw ") 
+	endif()
+	set(dep_lib_dir ${ALL_LIB_DIR_LIST})
+	add_dep_lib_dir("${dep_lib_dir}")
+	set(DepLibs ${DepLibs} PARENT_SCOPE)
+endfunction()
+
+function(add_dep_lib_dir dep_lib_dir )
+	string(REPLACE "\n" ";" LIB_DIR_LIST "${ALL_LIB_DIR_LIST}")
+	foreach(LIB_DIR ${LIB_DIR_LIST})
+		include_directories(${ALL_LIB_HOME_DIR}/${LIB_DIR}/)
+		include_directories(${ALL_LIB_HOME_DIR}/${LIB_DIR}/include)
+		link_directories(${ALL_LIB_HOME_DIR}/${LIB_DIR}/lib)
+		message("[INFO] ${ALL_LIB_HOME_DIR}/${LIB_DIR}/lib")
+		if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
+			file(GLOB cur_lib_name "${ALL_LIB_HOME_DIR}/${LIB_DIR}/lib/*.a")
+			EXECUTE_PROCESS(COMMAND ls ${cur_lib_name}
+				TIMEOUT 5
+				OUTPUT_VARIABLE CUR_LIB_NAMES
+				OUTPUT_STRIP_TRAILING_WHITESPACE
+				)
+	        elseif(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
+			EXECUTE_PROCESS(COMMAND cmd /c dir ${ALL_LIB_HOME_DIR}\\${LIB_DIR}\\lib\\*.lib /b 
+				OUTPUT_VARIABLE CUR_LIB_NAMES
+				OUTPUT_STRIP_TRAILING_WHITESPACE
+				)
+		endif()
+		message("[INFO] CUR_LIB_NAMES: ${CUR_LIB_NAMES}")
+		list(APPEND dep_libs  ${CUR_LIB_NAMES})
+	endforeach()
+
+	message("[INFO] dep_libs: ${dep_libs}")
+	string(REPLACE ".lib" "" DepLibs "${dep_libs}")
+	string(REPLACE ";" "\n" DepLibs "${DepLibs}")
+	string(REPLACE "\n" ";" DepLibs "${DepLibs}")
+	string(REGEX REPLACE " $" "" DepLibs "${DepLibs}")
+	set(DepLibs ${DepLibs} PARENT_SCOPE)
+endfunction()
+
+gen_dep_lib_dir(dep_lib_dir)
+
+file(GLOB SimLib_SRCS RELATIVE ${TOP_DIR} ./src/*.c ./src/*.h)
+list(REMOVE_ITEM SimLib_SRCS src/funcs3.c)
+file(GLOB SimApp_SRCS RELATIVE ${TOP_DIR} ./app/*.c)
+list(REMOVE_ITEM SimApp_SRCS app/main_win.c)
+
+message("SimLib_SRCS ${SimLib_SRCS}")
+message("SimApp_SRCS ${SimApp_SRCS}")
+
+source_group(TREE ${TOP_DIR} FILES ${SimLib_SRCS} ${SimApp_SRCS})
+
+add_executable(My51Simulator ${SimLib_SRCS} ${SimApp_SRCS})
+target_link_libraries(My51Simulator ${dep_libs} ${dep_3rdlibs})
+
+
+
