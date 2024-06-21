@@ -15,76 +15,28 @@ set(SKY_SDK_DIR $ENV{SkySdkDir})
 #set(TOP_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(TOP_DIR ${PROJECT_SOURCE_DIR})
 
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wall -DNETWORK_SUPPORT -DVMRP")
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wall -DNETWORK_SUPPORT -DVMRP")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -DNETWORK_SUPPORT -DVMRP")
+
+if(DYZ_DBG)
+    set(CMAKE_C_FLAGS    "${CMAKE_C_FLAGS}    -DDYZ_DBG")
+    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -DDYZ_DBG")
+endif()
 
 #add_definitions(-D DEBUG)
 
-include_directories(${TOP_DIR}/)
-include_directories(${TOP_DIR}/header)
+add_definitions(-D SCREEN_SIZE_240320)
 
-function(gen_dep_lib_dir all_dep_lib_dir)
-	message("[INFO] platform: ${CMAKE_HOST_SYSTEM_NAME} HOME : $ENV{HomeDir} ")
-	if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
-		set(ALL_LIB_HOME_DIR "$ENV{HomeDir}/")
-		EXECUTE_PROCESS(COMMAND ls ${ALL_LIB_HOME_DIR}
-			TIMEOUT 5
-			OUTPUT_VARIABLE ALL_LIB_DIR_LIST
-			OUTPUT_STRIP_TRAILING_WHITESPACE
-			)
-	elseif(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
-		set(ALL_LIB_HOME_DIR "$ENV{HomeDir}")
-		EXECUTE_PROCESS(COMMAND cmd /c dir /ad /b ${ALL_LIB_HOME_DIR}
-			OUTPUT_VARIABLE ALL_LIB_DIR_LIST
-			OUTPUT_STRIP_TRAILING_WHITESPACE
-			)
-	else()
-		message("current platform: unkonw ") 
-	endif()
-	set(dep_lib_dir ${ALL_LIB_DIR_LIST})
-	add_dep_lib_dir("${dep_lib_dir}")
-	set(DepLibs ${DepLibs} PARENT_SCOPE)
-endfunction()
+#add_definitions(-D _VS2005_)
 
-function(add_dep_lib_dir dep_lib_dir )
-	string(REPLACE "\n" ";" LIB_DIR_LIST "${ALL_LIB_DIR_LIST}")
-	foreach(LIB_DIR ${LIB_DIR_LIST})
-		include_directories(${ALL_LIB_HOME_DIR}/${LIB_DIR}/)
-		include_directories(${ALL_LIB_HOME_DIR}/${LIB_DIR}/include)
-		link_directories(${ALL_LIB_HOME_DIR}/${LIB_DIR}/lib)
-		message("[INFO] ${ALL_LIB_HOME_DIR}/${LIB_DIR}/lib")
-		if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
-			file(GLOB cur_lib_name "${ALL_LIB_HOME_DIR}/${LIB_DIR}/lib/*.a")
-			EXECUTE_PROCESS(COMMAND ls ${cur_lib_name}
-				TIMEOUT 5
-				OUTPUT_VARIABLE CUR_LIB_NAMES
-				OUTPUT_STRIP_TRAILING_WHITESPACE
-				)
-	        elseif(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
-			EXECUTE_PROCESS(COMMAND cmd /c dir ${ALL_LIB_HOME_DIR}\\${LIB_DIR}\\lib\\*.lib /b 
-				OUTPUT_VARIABLE CUR_LIB_NAMES
-				OUTPUT_STRIP_TRAILING_WHITESPACE
-				)
-		endif()
-		message("[INFO] CUR_LIB_NAMES: ${CUR_LIB_NAMES}")
-		list(APPEND dep_libs  ${CUR_LIB_NAMES})
-	endforeach()
+#capstone.lib     pthreadvc2_static.lib       SDL2-staticd.lib
+#SDL2maind.lib    unicorn.lib                 zlibstaticd.lib
 
-	message("[INFO] dep_libs: ${dep_libs}")
-	string(REPLACE ".lib" "" DepLibs "${dep_libs}")
-	string(REPLACE ";" "\n" DepLibs "${DepLibs}")
-	string(REPLACE "\n" ";" DepLibs "${DepLibs}")
-	string(REGEX REPLACE " $" "" DepLibs "${DepLibs}")
-	set(DepLibs ${DepLibs} PARENT_SCOPE)
-endfunction()
+include(cmake/dep_3rdlib_files.cmake)
 
 gen_dep_lib_dir(all_dep_lib_dir )
 
 set(dep_libs ${DepLibs})
-
-#capstone.lib     pthreadvc2_static.lib       SDL2-staticd.lib
-#SDL2maind.lib    unicorn.lib                 zlibstaticd.lib
 
 if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99") 
@@ -98,12 +50,12 @@ if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
 elseif(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99") 
 
-    #include(thirdparty/dep_pthread_win32.cmake)
+    #include(cmake/dep_pthread_win32.cmake)
     #set(dep_libs  capstone unicorn_static  SDL2main SDL2-static zlibstatic pthreadvc2_shared)
     set(dep_libs ${dep_libs}  ws2_32.lib Winmm.lib imm32.lib version.lib Setupapi.lib)
     #list(REMOVE_ITEM dep_libs unicorn_static SDL2-static zlibstatic )
 else()
-    message("current platform: unkonw ")
+    message("[ERROR] current platform: unkonw ")
 endif()
 
 file(GLOB MrpMain_SRCS RELATIVE ${TOP_DIR} ./main.c)
@@ -117,9 +69,32 @@ file(GLOB MrpLib_SRCS RELATIVE ${TOP_DIR} ./src/*.c ./header/*.h)
 message("[INFO] DepLibs: ${dep_libs}")
 
 add_executable(vmrp_main ${MrpMain_SRCS} ${MrpLib_SRCS} )
+target_compile_definitions(vmrp_main PRIVATE  -DNETWORK_SUPPORT -DVMRP)
+target_include_directories(vmrp_main PRIVATE ${TOP_DIR}/)
+target_include_directories(vmrp_main PRIVATE ${TOP_DIR}/header)
 target_link_libraries(vmrp_main ${dep_libs} )
 
 source_group(TREE ${TOP_DIR} FILES ${MrpMain_SRCS} ${MrpLib_SRCS} )
+
+set(MYTH_TOP_DIR ${CMAKE_CURRENT_LIST_DIR})
+
+file(GLOB cfunc_main_SRCS RELATIVE ${MYTH_TOP_DIR}/ ./mythroad/build/*.c*)
+file(GLOB cfunc_lua_SRCS RELATIVE  ${MYTH_TOP_DIR}/ ./mythroad/luadec/*.c*)
+file(GLOB cfunc_oslib_SRCS RELATIVE  ${MYTH_TOP_DIR}/ ./mythroad/oslib/*.c*)
+file(GLOB cfunc_myth_SRCS RELATIVE  ${MYTH_TOP_DIR}/ ./mythroad/src/*.c* ./mythroad/*.c*)
+
+set(cfunc_SRCS ${cfunc_main_SRCS} ${cfunc_lua_SRCS}  ${cfunc_oslib_SRCS} ${cfunc_myth_SRCS} )
+
+list(REMOVE_ITEM cfunc_SRCS mythroad/mythroad_mini.c mythroad/build/main.c)
+
+message ("cfunc_SRCS : ${cfunc_SRCS} ")
+
+source_group(TREE ${MYTH_TOP_DIR} FILES ${cfunc_SRCS})
+
+add_library(MYTH SHARED ${cfunc_SRCS} )
+target_compile_definitions(MYTH PRIVATE  -DNETWORK_SUPPORT)
+target_include_directories(MYTH PRIVATE ${MYTH_TOP_DIR}/mythroad/)
+target_include_directories(MYTH PRIVATE ${MYTH_TOP_DIR}/mythroad/include)
 
 function(generate_fcopy src_f dest_dir)
     add_custom_command(OUTPUT ${dest_dir}
