@@ -24,10 +24,10 @@ if(DYZ_DBG)
 endif()
 
 #add_definitions(-D DEBUG)
-
 add_definitions(-D SCREEN_SIZE_240320)
-
 #add_definitions(-D _VS2005_)
+
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/source-charset:utf-8>")
 
 #capstone.lib     pthreadvc2_static.lib       SDL2-staticd.lib
 #SDL2maind.lib    unicorn.lib                 zlibstaticd.lib
@@ -59,7 +59,6 @@ else()
 endif()
 
 file(GLOB MrpMain_SRCS RELATIVE ${TOP_DIR} ./main.c)
-
 file(GLOB MrpLib_SRCS RELATIVE ${TOP_DIR} ./src/*.c ./header/*.h)
 #list(REMOVE_ITEM MrpLib_SRCS ${MrpMain_SRCS} )
 
@@ -78,15 +77,12 @@ source_group(TREE ${TOP_DIR} FILES ${MrpMain_SRCS} ${MrpLib_SRCS} )
 
 set(MYTH_TOP_DIR ${CMAKE_CURRENT_LIST_DIR})
 
-file(GLOB cfunc_main_SRCS RELATIVE ${MYTH_TOP_DIR}/ ./mythroad/build/*.c*)
-file(GLOB cfunc_lua_SRCS RELATIVE  ${MYTH_TOP_DIR}/ ./mythroad/luadec/*.c*)
-file(GLOB cfunc_oslib_SRCS RELATIVE  ${MYTH_TOP_DIR}/ ./mythroad/oslib/*.c*)
-file(GLOB cfunc_myth_SRCS RELATIVE  ${MYTH_TOP_DIR}/ ./mythroad/src/*.c* ./mythroad/*.c*)
-
+file(GLOB cfunc_main_SRCS RELATIVE ${MYTH_TOP_DIR}/ ./mythroad/build/*.c* ./mythroad/build/*.h*)
+file(GLOB cfunc_lua_SRCS RELATIVE  ${MYTH_TOP_DIR}/ ./mythroad/luadec/*.c* ./mythroad/luadec/*.h*)
+file(GLOB cfunc_oslib_SRCS RELATIVE  ${MYTH_TOP_DIR}/ ./mythroad/oslib/*.c* ./mythroad/oslib/*.h*)
+file(GLOB cfunc_myth_SRCS RELATIVE  ${MYTH_TOP_DIR}/ ./mythroad/src/*.c* ./mythroad/src/*.h* ./mythroad/*.c* ./mythroad/*.h*  ./mythroad/include/*.h*)
 set(cfunc_SRCS ${cfunc_main_SRCS} ${cfunc_lua_SRCS}  ${cfunc_oslib_SRCS} ${cfunc_myth_SRCS} )
-
 list(REMOVE_ITEM cfunc_SRCS mythroad/mythroad_mini.c mythroad/build/main.c)
-
 message ("cfunc_SRCS : ${cfunc_SRCS} ")
 
 source_group(TREE ${MYTH_TOP_DIR} FILES ${cfunc_SRCS})
