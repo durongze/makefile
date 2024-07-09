@@ -1,0 +1,50 @@
+
+project(libintl)
+
+#OBJECTS = bindtextdom.obj dcgettext.obj dgettext.obj gettext.obj finddomain.obj loadmsgcat.obj localealias.obj textdomain.obj l10nflist.obj explodename.obj dcigettext.obj dcngettext.obj dngettext.obj ngettext.obj plural.obj plural-exp.obj localcharset.obj relocatable.obj langprefs.obj localename.obj log.obj printf.obj osdep.obj intl-compat.obj
+
+set (TOP_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}) #CMAKE_SOURCE_DIR
+set (ALL_SRC_DIR ${TOP_SRC_DIR}/src/libintl/0.14.4/libintl-0.14.4-src)
+
+file(GLOB_RECURSE LIBINTL_SRCS_LIST RELATIVE ${TOP_SRC_DIR} "${ALL_SRC_DIR}/*.c" "${ALL_SRC_DIR}/*.h")
+list(REMOVE_ITEM  LIBINTL_SRCS_LIST ${ALL_SRC_DIR}/os2compat.c)
+list(REMOVE_ITEM  LIBINTL_SRCS_LIST src/libintl/0.14.4/libintl-0.14.4-src/os2compat.c)
+
+file(GLOB_RECURSE LIBINTL_HDRS ${CMAKE_SOURCE_DIR}/*.h)
+
+#RESOURCES = intl.res
+
+message("[INFO] LIBINTL_SRCS_LIST:${LIBINTL_SRCS_LIST}")
+
+include_directories(${ALL_SRC_DIR})
+
+#configure_file(${ALL_SRC_DIR}/libgnuintl.h.msvc-static ${ALL_SRC_DIR}/libgnuintl.h)
+configure_file(${ALL_SRC_DIR}/libgnuintl.h.msvc-shared ${ALL_SRC_DIR}/libgnuintl.h)
+configure_file(${ALL_SRC_DIR}/libgnuintl.h             ${ALL_SRC_DIR}/libintl.h)
+
+#CFLAGS = /arch:IA32 $(MFLAGS) $(WARN_CFLAGS) $(OPTIMFLAGS)  -D LOCALEDIR=\"$(IIlocaledir)\" -DLOCALE_ALIAS_PATH=\"$(IIaliaspath)\" -DIN_LIBINTL -DENABLE_RELOCATABLE=1 -D IN_LIBRARY -D INSTALLDIR=\"$(IIbindir)\" -DNO_XMALLOC -Dset_relocation_prefix=libintl_set_relocation_prefix -Drelocate=libintl_relocate -DDEPENDS_ON_LIBICONV=1
+add_library(libintl_static STATIC ${LIBINTL_SRCS_LIST})
+target_compile_definitions(libintl_static PRIVATE LOCALEDIR="" LOCALE_ALIAS_PATH="" HAVE_CONFIG_H IN_LIBINTL ENABLE_RELOCATABLE=1 IN_LIBRARY INSTALLDIR="" NO_XMALLOC set_relocation_prefix=libintl_set_relocation_prefix relocate=libintl_relocate DEPENDS_ON_LIBICONV=1)
+#target_link_libraries(libintl_static m)
+
+add_library(libintl_shared SHARED ${LIBINTL_SRCS_LIST})
+target_compile_definitions(libintl_shared PRIVATE LOCALEDIR="" LOCALE_ALIAS_PATH="" HAVE_CONFIG_H IN_LIBINTL ENABLE_RELOCATABLE=1 IN_LIBRARY INSTALLDIR="" NO_XMALLOC set_relocation_prefix=libintl_set_relocation_prefix relocate=libintl_relocate DEPENDS_ON_LIBICONV=1)
+#target_link_libraries(libintl_shared m)
+
+set_target_properties(libintl_shared PROPERTIES PUBLIC_HEADER "${LIBINTL_HDRS}")
+
+SET_TARGET_PROPERTIES(libintl_static PROPERTIES  CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME "libintl"   )
+SET_TARGET_PROPERTIES(libintl_shared PROPERTIES  CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME "libintl"   )
+
+SET(install_targets libintl_static libintl_shared)
+SET(install_hdr_dir include)
+
+INSTALL(TARGETS ${install_targets}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION ${install_hdr_dir}
+       )
+
+#install(FILES ${LIBINTL_HDRS} DESTINATION ${install_hdr_dir})
+install(DIRECTORY "inc_sub_dir" DESTINATION ${install_hdr_dir} FILES_MATCHING PATTERN "*.h")
