@@ -1,0 +1,18 @@
+#FindZLIB.cmake:FIND_PACKAGE_HANDLE_STANDARD_ARGS(libintl_static REQUIRED_VARS ZLIB_LIBRARY LIBINTL_INCLUDE_DIR VERSION_VAR LIBINTL_VERSION HANDLE_COMPONENTS) 
+if(NOT TARGET libintl)
+  set(LIBNAME libintl-0.14.4-src)
+  set(${LIBNAME}_DIR ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/${LIBNAME})
+  message("${LIBNAME}_DIR:${${LIBNAME}_DIR}")
+  if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+    add_compile_definitions(DYZ)
+  endif()
+  add_subdirectory(${${LIBNAME}_DIR}/)
+  if (NOT LIBINTL_INCLUDE_DIR)
+	set (LIBINTL_INCLUDE_DIR ${${LIBNAME}_DIR}/include ${${LIBNAME}_DIR}/ ${CMAKE_BINARY_DIR}/thirdparty/${LIBNAME})
+  endif()
+endif()
+
+include_directories(${${LIBNAME}_DIR}/include ${${LIBNAME}_DIR}/ ${CMAKE_BINARY_DIR}/thirdparty/${LIBNAME})
+
+set(LIBINTL_LIBRARY $<TARGET_OBJECTS:libintl_static>)
+set(LIBINTL_LIBRARIES $<TARGET_OBJECTS:libintl_static>)

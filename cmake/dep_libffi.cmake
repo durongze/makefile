@@ -1,0 +1,18 @@
+#FindLIBFFI.cmake:FIND_PACKAGE_HANDLE_STANDARD_ARGS(libffi_static REQUIRED_VARS LIBFFI_LIBRARY LIBFFI_INCLUDE_DIR VERSION_VAR LIBFFI_VERSION HANDLE_COMPONENTS) 
+if(NOT TARGET libffi)
+  set(LIBNAME libffi-master)
+  set(${LIBNAME}_DIR ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/${LIBNAME})
+  message("${LIBNAME}_DIR:${${LIBNAME}_DIR}")
+  if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+    add_compile_definitions(DYZ)
+  endif()
+  add_subdirectory(${${LIBNAME}_DIR}/)
+  if (NOT LIBFFI_INCLUDE_DIR)
+	set (LIBFFI_INCLUDE_DIR ${${LIBNAME}_DIR}/include ${${LIBNAME}_DIR}/ ${CMAKE_BINARY_DIR}/thirdparty/${LIBNAME} ${${LIBNAME}_DIR}/src/libintl/0.14.4/libintl-0.14.4-src )
+  endif()
+endif()
+
+include_directories(${LIBFFI_INCLUDE_DIR})
+
+set(LIBFFI_LIBRARY $<TARGET_OBJECTS:libffi_static>)
+set(LIBFFI_LIBRARIES $<TARGET_OBJECTS:libffi_static>)

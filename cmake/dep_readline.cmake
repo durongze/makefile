@@ -1,0 +1,18 @@
+#FindREADLINE.cmake:FIND_PACKAGE_HANDLE_STANDARD_ARGS(readline REQUIRED_VARS READLINE_LIBRARY READLINE_INCLUDE_DIR VERSION_VAR READLINE_VERSION HANDLE_COMPONENTS) 
+if(NOT TARGET readline)
+  set(LIBNAME readline-win32-master)
+  set(${LIBNAME}_DIR ${CMAKE_CURRENT_LIST_DIR}/../thirdparty/${LIBNAME})
+  message("${LIBNAME}_DIR:${${LIBNAME}_DIR}")
+  if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+    add_compile_definitions(DYZ)
+  endif()
+  add_subdirectory(${${LIBNAME}_DIR}/)
+  if (NOT READLINE_INCLUDE_DIR)
+	set (READLINE_INCLUDE_DIR ${${LIBNAME}_DIR}/include ${${LIBNAME}_DIR}/ ${CMAKE_BINARY_DIR}/thirdparty/${LIBNAME})
+  endif()
+endif()
+
+include_directories(${${LIBNAME}_DIR}/include ${${LIBNAME}_DIR}/ ${CMAKE_BINARY_DIR}/thirdparty/${LIBNAME})
+
+set(READLINE_LIBRARY $<TARGET_OBJECTS:readline>)
+set(READLINE_LIBRARIES $<TARGET_OBJECTS:readline>)
