@@ -1,0 +1,56 @@
+cmake_minimum_required(VERSION 2.8)
+
+
+#ADD_SUBDIRECTORY(source)
+
+set(ICONV_TOP_DIR     ${CMAKE_CURRENT_SOURCE_DIR}/source)
+
+set(ICONV_SRCS        ${ICONV_TOP_DIR}/lib/iconv.c;    ${ICONV_TOP_DIR}/libcharset/lib/localcharset.c;    ${ICONV_TOP_DIR}/lib/relocatable.c;
+    ${ICONV_TOP_DIR}/include/iconv.h;    ${ICONV_TOP_DIR}/lib/localcharset.h;
+    ${ICONV_TOP_DIR}/config.h        )
+
+set(ICONV_RES_32       ${CMAKE_CURRENT_SOURCE_DIR}/MSVC17/libiconv-64.rc)
+set(ICONV_RES_64       ${CMAKE_CURRENT_SOURCE_DIR}/MSVC17/libiconv.rc)
+
+file(GLOB LIBICONV_HDRS ${ICONV_TOP_DIR}/include/iconv.h;${ICONV_TOP_DIR}/config.h)
+
+message ("[INFO] ICONV_TOP_DIR : ${ICONV_TOP_DIR}")
+
+set(STATIC_MACRO  INSTALLPREFIX="F:\\\\program\\iconv"      LIBDIR="F:\\\\program\\iconv"             INSTALLDIR="F:\\\\program\\iconv"                )
+set(STATIC_MACRO ${STATIC_MACRO}      HAVE_CONFIG_H         ENABLE_RELOCATABLE=1                      IN_LIBRARY                             NO_XMALLOC)
+set(STATIC_MACRO ${STATIC_MACRO}      set_relocation_prefix=libiconv_set_relocation_prefix            relocate=libiconv_relocate             _CRT_SECURE_NO_WARNINGS )
+
+set(SHARED_MACRO INSTALLPREFIX="F:\\\\program\\iconv"      LIBDIR="F:\\\\program\\iconv"             INSTALLDIR="F:\\\\program\\iconv"                 )
+set(SHARED_MACRO ${SHARED_MACRO}      BUILDING_DLL         ENABLE_RELOCATABLE=1                      IN_LIBRARY                           NO_XMALLOC   )
+set(SHARED_MACRO ${SHARED_MACRO}      set_relocation_prefix=libiconv_set_relocation_prefix           relocate=libiconv_relocate                        )
+set(SHARED_MACRO ${SHARED_MACRO}      BUILDING_LIBICONV    PIC                                       HAVE_CONFIG_H                        _CRT_SECURE_NO_WARNINGS)
+
+add_library               (libiconv_static STATIC  ${ICONV_SRCS}  ${ICONV_RES_64})
+target_compile_definitions(libiconv_static PRIVATE ${STATIC_MACRO})
+target_include_directories(libiconv_static PUBLIC  ${ICONV_TOP_DIR}/include ${ICONV_TOP_DIR}/lib ${ICONV_TOP_DIR}/ )
+target_link_directories   (libiconv_static PUBLIC  ./lib/ )
+#target_link_libraries    (libiconv_static m)
+
+add_library               (libiconv_shared SHARED  ${ICONV_SRCS}  ${ICONV_RES_64})
+target_compile_definitions(libiconv_shared PRIVATE ${SHARED_MACRO})
+target_include_directories(libiconv_shared PUBLIC  ${ICONV_TOP_DIR}/include ${ICONV_TOP_DIR}/lib ${ICONV_TOP_DIR}/ )
+target_link_directories   (libiconv_shared PUBLIC  ./lib/ )
+#target_link_libraries    (libiconv_shared m)
+
+set_target_properties(libiconv_shared PROPERTIES PUBLIC_HEADER "${LIBICONV_HDRS}")
+
+SET_TARGET_PROPERTIES(libiconv_static PROPERTIES  CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME "libiconv"   )
+SET_TARGET_PROPERTIES(libiconv_shared PROPERTIES  CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME "libiconv"   )
+
+SET(install_targets libiconv_static libiconv_shared)
+SET(install_hdr_dir include)
+
+INSTALL(TARGETS ${install_targets}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION ${install_hdr_dir}
+       )
+
+install(FILES ${LIBINTL_HDRS} DESTINATION ${install_hdr_dir})
+#install(DIRECTORY "inc_sub_dir" DESTINATION ${install_hdr_dir} FILES_MATCHING PATTERN "*.h")
