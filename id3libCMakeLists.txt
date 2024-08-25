@@ -1,0 +1,105 @@
+cmake_minimum_required(VERSION 3.15)
+project (id3lib)
+
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+set (LIB3RD_HOME ${CMAKE_CURRENT_LIST_DIR}/../)
+
+include_directories(${CMAKE_CURRENT_LIST_DIR}/)
+include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
+include_directories(${CMAKE_CURRENT_LIST_DIR}/include/id3)
+
+#ZLIB_INCLUDE_DIRS ZLIB_LIBRARY_DIRS ZLIB_LIBRARIES
+include(cmake/find_zlib.cmake)
+
+file(GLOB Header_Files  RELATIVE ${CMAKE_CURRENT_LIST_DIR} ./*.h* ./include/*.h)
+
+source_group("Header_Files" FILES ${Header_Files})
+
+set (ID3LIB_HDRS ${Header_Files})
+
+file(GLOB Source_Files  RELATIVE ${CMAKE_CURRENT_LIST_DIR} ./src/*.c* ./src/*.h ./*.h ./include/*.h ./include/id3/*.h )
+
+source_group("Source Files" FILES ${Source_Files})
+
+set(ALL_FILES
+
+    ${Source_Files}
+)
+
+################################################################################
+# Target
+################################################################################
+#ID3LIB_LINKOPTION=3
+
+set(ID3LIB_STATIC id3lib_static)
+add_library               (${ID3LIB_STATIC} STATIC  ${ALL_FILES}       )
+target_include_directories(${ID3LIB_STATIC} PRIVATE ${ID3LIB_INC_DIR}   ${ZLIB_INCLUDE_DIRS})
+target_link_directories   (${ID3LIB_STATIC} PRIVATE ${ID3LIB_SRC_DIR}/  ${ZLIB_LIBRARY_DIRS})
+target_compile_definitions(${ID3LIB_STATIC} PRIVATE
+	HAVE_CONFIG_H
+	_LIB
+	ID3LIB_LINKOPTION=2
+	ID3_CPP_EXPORT
+	WIN32
+	_WINDOWS
+	_USING_V110_SDK71_
+	_DEBUG
+	SUPPORT_LARGE_FILES
+	_SUPPORT_MEMPOOL
+	_ENABLE_LAN_TRANSFER
+	_PLAY_WHILE_DOWNLOADING
+	_ENABLE_NATTRAVERSE
+	HAVE_WIN7_SDK_H
+    _ENABLE_NOUSE
+    _USRDLL
+    UNICODE 
+    _UNICODE
+)
+
+set(ID3LIB_SHARED id3lib_shared)
+add_library               (${ID3LIB_SHARED} SHARED  ${ALL_FILES})
+target_include_directories(${ID3LIB_SHARED} PRIVATE ${ID3LIB_INC_DIR}   ${ZLIB_INCLUDE_DIRS} )
+target_link_directories   (${ID3LIB_SHARED} PRIVATE ${ID3LIB_SRC_DIR}/  ${ZLIB_LIBRARY_DIRS} )
+target_link_libraries     (${ID3LIB_SHARED} PRIVATE ws2_32 wsock32      ${ZLIB_LIBRARIES}    )
+target_compile_definitions(${ID3LIB_SHARED} PRIVATE
+	HAVE_CONFIG_H
+	_LIB
+	ID3LIB_LINKOPTION=2
+	ID3_CPP_EXPORT
+	WIN32
+	_WINDOWS
+	_USING_V110_SDK71_
+	_DEBUG
+	SUPPORT_LARGE_FILES
+	_SUPPORT_MEMPOOL
+	_ENABLE_LAN_TRANSFER
+	_PLAY_WHILE_DOWNLOADING
+	_ENABLE_NATTRAVERSE
+	HAVE_WIN7_SDK_H
+    _ENABLE_NOUSE
+    _USRDLL
+    UNICODE 
+    _UNICODE
+)
+
+
+SET(install_targets ${ID3LIB_STATIC}    )
+SET(install_hdr_dir include)
+
+set_target_properties(${ID3LIB_STATIC} PROPERTIES PUBLIC_HEADER "${ID3LIB_HDRS}")
+
+INSTALL(TARGETS ${install_targets}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION ${install_hdr_dir}
+       )
+
+install(FILES ${ID3LIB_HDRS} DESTINATION ${install_hdr_dir})
+install(DIRECTORY "include/id3" DESTINATION ${install_hdr_dir} FILES_MATCHING PATTERN "*.h")

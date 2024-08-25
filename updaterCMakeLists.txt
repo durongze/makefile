@@ -1,0 +1,63 @@
+cmake_minimum_required(VERSION 3.14)
+project (updater VERSION 0.1.0)
+
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/source-charset:utf-8>")
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu99 -O2 -Wall ")
+
+file(GLOB updater_SRCS_LIST RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+file(GLOB updater_HDRS      RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/*.h)
+#list(REMOVE_ITEM updater_SRCS_LIST )
+
+set(ALL_FILES ${updater_SRCS_LIST})
+
+#set(UPDATER_STATIC updater_static)
+#add_library               (${UPDATER_STATIC} STATIC  ${ALL_FILES})
+#target_include_directories(${UPDATER_STATIC} PRIVATE ${UPDATER_INC_DIR}  ${ZLIB_INCLUDE_DIRS})
+#target_link_directories   (${UPDATER_STATIC} PRIVATE ${UPDATER_SRC_DIR}  ${ZLIB_LIBRARY_DIRS})
+#target_compile_definitions(${UPDATER_STATIC} PRIVATE
+#	WIN32
+#	_WINDOWS
+#	_DEBUG
+#)
+#
+#set(UPDATER_SHARED updater_shared)
+#add_library               (${UPDATER_SHARED} SHARED  ${ALL_FILES})
+#target_include_directories(${UPDATER_SHARED} PRIVATE ${UPDATER_INC_DIR}  ${ZLIB_INCLUDE_DIRS})
+#target_link_directories   (${UPDATER_SHARED} PRIVATE ${UPDATER_SRC_DIR}  ${ZLIB_LIBRARY_DIRS})
+#target_link_libraries     (${UPDATER_SHARED} PRIVATE                    ${ZLIB_LIBRARIES}  )
+#target_compile_definitions(${UPDATER_SHARED} PRIVATE
+#	WIN32
+#	_WINDOWS
+#	_DEBUG
+#)
+
+set(UPDATER_APP updater)
+add_executable            (${UPDATER_APP} WIN32   ${ALL_FILES})
+target_include_directories(${UPDATER_APP} PRIVATE ${UPDATER_INC_DIR}  ${ZLIB_INCLUDE_DIRS})
+target_link_directories   (${UPDATER_APP} PRIVATE ${UPDATER_SRC_DIR}  ${ZLIB_LIBRARY_DIRS})
+target_link_libraries     (${UPDATER_APP} PRIVATE  Version.lib            ${ZLIB_LIBRARIES}  )
+target_link_options       (${UPDATER_APP} PRIVATE "/SUBSYSTEM:WINDOWS" "/ENTRY:wWinMainCRTStartup")
+target_compile_definitions(${UPDATER_APP} PRIVATE
+	WIN32
+	_WINDOWS
+	_DEBUG
+    _AFXDLL
+    _UNICODE 
+    UNICODE
+    _AFXEXT
+)
+
+
+SET(install_targets ${UPDATER_APP})
+SET(install_hdr_dir include)
+
+INSTALL(TARGETS ${install_targets}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION ${install_hdr_dir}
+       )
+
+#install(FILES ${LUA_HDRS} DESTINATION ${install_hdr_dir})
+install(DIRECTORY "inc_sub_dir" DESTINATION ${install_hdr_dir} FILES_MATCHING PATTERN "*.h")

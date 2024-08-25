@@ -1,0 +1,51 @@
+project(cryptlib CXX)
+
+################################################################################
+# Source groups
+################################################################################
+set(CRYPTLIB_ROOT_DIR ${PROJECT_SOURCE_DIR}/)
+set(CRYPTLIB_INC_DIR ${CRYPTLIB_ROOT_DIR}/inc)
+set(CRYPTLIB_SRC_DIR ${CRYPTLIB_ROOT_DIR}/src)
+
+file(GLOB Header_Files  RELATIVE ${CMAKE_CURRENT_LIST_DIR} ./*.h* )
+source_group("Header_Files" FILES ${Header_Files})
+
+file(GLOB_RECURSE CRYPTLIB_HDRS   ${CMAKE_CURRENT_LIST_DIR}/*.h)
+
+file(GLOB Source_Files  RELATIVE ${CMAKE_CURRENT_LIST_DIR} ./*.c*)
+source_group("Source Files" FILES ${Source_Files})
+
+set(ALL_FILES
+    ${Header_Files}
+
+    ${Source_Files}
+)
+
+################################################################################
+# Target
+################################################################################
+set(CRYPTLIB_STATIC cryptlib_static)
+add_library               (${CRYPTLIB_STATIC} STATIC  ${ALL_FILES})
+target_include_directories(${CRYPTLIB_STATIC} PRIVATE ${CRYPTLIB_INC_DIR})
+target_link_directories   (${CRYPTLIB_STATIC} PRIVATE ${CRYPTLIB_SRC_DIR}/)
+
+set(CRYPTLIB_SHARED cryptlib_shared)
+add_library               (${CRYPTLIB_SHARED} SHARED  ${ALL_FILES})
+target_include_directories(${CRYPTLIB_SHARED} PRIVATE ${CRYPTLIB_INC_DIR})
+target_link_directories   (${CRYPTLIB_SHARED} PRIVATE ${CRYPTLIB_SRC_DIR}/)
+target_link_libraries     (${CRYPTLIB_SHARED} PRIVATE ws2_32 wsock32)
+
+SET(install_targets ${CRYPTLIB_STATIC}  ${CRYPTLIB_SHARED}  )
+SET(install_hdr_dir include)
+
+set_target_properties(${CRYPTLIB_SHARED} PROPERTIES PUBLIC_HEADER "${CRYPTLIB_HDRS}")
+
+INSTALL(TARGETS ${install_targets}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION ${install_hdr_dir}
+       )
+
+#install(FILES ${CRYPTLIB_HDRS} DESTINATION ${install_hdr_dir})
+install(DIRECTORY "inc_sub_dir" DESTINATION ${install_hdr_dir} FILES_MATCHING PATTERN "*.h")

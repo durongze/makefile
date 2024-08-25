@@ -1,0 +1,64 @@
+cmake_minimum_required(VERSION 3.14)
+project (CrashReporter VERSION 0.1.0)
+
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/source-charset:utf-8>")
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu99 -O2 -Wall ")
+set(CrashReporter_INC_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/CrashReporter/)
+
+file(GLOB CrashReporter_SRCS_LIST RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/CrashReporter/*.cpp)
+file(GLOB CRASH_REPORTER_HDRS      RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/CrashReporter/*.h)
+#list(REMOVE_ITEM CrashReporter_SRCS_LIST )
+
+set(ALL_FILES ${CrashReporter_SRCS_LIST})
+
+#set(CRASH_REPORTER_STATIC CrashReporter_static)
+#add_library               (${CRASH_REPORTER_STATIC} STATIC  ${ALL_FILES})
+#target_include_directories(${CRASH_REPORTER_STATIC} PRIVATE ${CRASH_REPORTER_INC_DIR}  ${ZLIB_INCLUDE_DIRS})
+#target_link_directories   (${CRASH_REPORTER_STATIC} PRIVATE ${CRASH_REPORTER_SRC_DIR}  ${ZLIB_LIBRARY_DIRS})
+#target_compile_definitions(${CRASH_REPORTER_STATIC} PRIVATE
+#	WIN32
+#	_WINDOWS
+#	_DEBUG
+#)
+#
+#set(CRASH_REPORTER_SHARED CrashReporter_shared)
+#add_library               (${CRASH_REPORTER_SHARED} SHARED  ${ALL_FILES})
+#target_include_directories(${CRASH_REPORTER_SHARED} PRIVATE ${CRASH_REPORTER_INC_DIR}  ${ZLIB_INCLUDE_DIRS})
+#target_link_directories   (${CRASH_REPORTER_SHARED} PRIVATE ${CRASH_REPORTER_SRC_DIR}  ${ZLIB_LIBRARY_DIRS})
+#target_link_libraries     (${CRASH_REPORTER_SHARED} PRIVATE                         ${ZLIB_LIBRARIES}  )
+#target_compile_definitions(${CRASH_REPORTER_SHARED} PRIVATE
+#	WIN32
+#	_WINDOWS
+#	_DEBUG
+#   _UNICODE 
+#   UNICODE
+#)
+
+set(CRASH_REPORTER_APP CrashReporter)
+add_executable            (${CRASH_REPORTER_APP} WIN32   ${ALL_FILES})
+target_include_directories(${CRASH_REPORTER_APP} PRIVATE ${CrashReporter_INC_DIR}  ${ZLIB_INCLUDE_DIRS})
+target_link_directories   (${CRASH_REPORTER_APP} PRIVATE ${CrashReporter_SRC_DIR}  ${ZLIB_LIBRARY_DIRS})
+target_link_libraries     (${CRASH_REPORTER_APP} PRIVATE  Version.lib            ${ZLIB_LIBRARIES}  )
+target_link_options       (${CRASH_REPORTER_APP} PRIVATE "/SUBSYSTEM:WINDOWS" "/ENTRY:WinMainCRTStartup")
+target_compile_definitions(${CRASH_REPORTER_APP} PRIVATE
+	WIN32
+	_WINDOWS
+	_DEBUG
+    _AFXDLL
+    _AFXEXT
+)
+
+
+SET(install_targets ${CRASH_REPORTER_APP})
+SET(install_hdr_dir include)
+
+INSTALL(TARGETS ${install_targets}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION ${install_hdr_dir}
+       )
+
+install(FILES ${CRASH_REPORTER_HDRS} DESTINATION ${install_hdr_dir})
+install(DIRECTORY "inc_sub_dir" DESTINATION ${install_hdr_dir} FILES_MATCHING PATTERN "*.h")

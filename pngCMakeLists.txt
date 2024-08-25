@@ -1,0 +1,87 @@
+project(png)
+
+################################################################################
+# Source groups
+################################################################################
+
+set (LIB3RD_HOME ${CMAKE_CURRENT_LIST_DIR}/../)
+
+#ZLIB_INCLUDE_DIRS  ZLIB_LIBRARIES
+include(cmake/find_zlib.cmake)
+
+include_directories(${CMAKE_CURRENT_LIST_DIR}/)
+include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
+
+
+file(GLOB Header_Files  RELATIVE ${CMAKE_CURRENT_LIST_DIR} ./*.h* )
+source_group("Header_Files" FILES ${Header_Files})
+
+set (LIBPNG_HDRS ${Header_Files})
+
+file(GLOB Source_Files  RELATIVE ${CMAKE_CURRENT_LIST_DIR} ./*.c* ./*.rc ./*.def)
+source_group("Source Files" FILES ${Source_Files})
+
+set(ALL_FILES  ${Header_Files}    ${Source_Files} )
+message ("ALL_FILES  ${Header_Files}    ${Source_Files} ")
+################################################################################
+# Target
+################################################################################
+
+set(LIBPNG_STATIC LIBPNG_static)
+add_library               (${LIBPNG_STATIC} STATIC  ${ALL_FILES})
+target_include_directories(${LIBPNG_STATIC} PRIVATE ${LIBPNG_INC_DIR}  ${ZLIB_INCLUDE_DIRS})
+target_link_directories   (${LIBPNG_STATIC} PRIVATE ${LIBPNG_SRC_DIR}  ${ZLIB_LIBRARY_DIRS})
+target_compile_definitions(${LIBPNG_STATIC} PRIVATE
+	WIN32
+	_WINDOWS
+	_USING_V110_SDK71_
+	_DEBUG
+	SUPPORT_LARGE_FILES
+	_SUPPORT_MEMPOOL
+	_ENABLE_LAN_TRANSFER
+	_PLAY_WHILE_DOWNLOADING
+	_ENABLE_NATTRAVERSE
+	HAVE_WIN7_SDK_H
+    _ENABLE_NOUSE
+    _USRDLL
+    UNICODE 
+    _UNICODE
+)
+
+set(LIBPNG_SHARED LIBPNG_shared)
+add_library               (${LIBPNG_SHARED} SHARED  ${ALL_FILES})
+target_include_directories(${LIBPNG_SHARED} PRIVATE ${LIBPNG_INC_DIR}  ${ZLIB_INCLUDE_DIRS})
+target_link_directories   (${LIBPNG_SHARED} PRIVATE ${LIBPNG_SRC_DIR}  ${ZLIB_LIBRARY_DIRS})
+target_link_libraries     (${LIBPNG_SHARED} PRIVATE                    ${ZLIB_LIBRARIES}  )
+target_compile_definitions(${LIBPNG_SHARED} PRIVATE
+	WIN32
+	_WINDOWS
+	_USING_V110_SDK71_
+	_DEBUG
+	SUPPORT_LARGE_FILES
+	_SUPPORT_MEMPOOL
+	_ENABLE_LAN_TRANSFER
+	_PLAY_WHILE_DOWNLOADING
+	_ENABLE_NATTRAVERSE
+	HAVE_WIN7_SDK_H
+    _ENABLE_NOUSE
+    _USRDLL
+    UNICODE 
+    _UNICODE
+)
+
+SET(install_targets ${LIBPNG_STATIC}  )
+SET(install_hdr_dir include)
+
+set_target_properties(${LIBPNG_SHARED} PROPERTIES PUBLIC_HEADER "${LIBPNG_HDRS}")
+
+INSTALL(TARGETS ${install_targets}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION ${install_hdr_dir}
+       )
+
+install(FILES ${LIBPNG_HDRS} DESTINATION ${install_hdr_dir})
+install(DIRECTORY "inc_sub_dir" DESTINATION ${install_hdr_dir} FILES_MATCHING PATTERN "*.h")
+

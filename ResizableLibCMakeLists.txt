@@ -1,0 +1,68 @@
+project(ResizableLib CXX)
+
+################################################################################
+# Source groups
+################################################################################
+
+set (LIB3RD_HOME ${CMAKE_CURRENT_LIST_DIR}/../)
+include_directories(${LIB3RD_HOME}/zlib)
+include_directories(${LIB3RD_HOME}/zlib/include)
+include_directories(${LIB3RD_HOME}/LibJpeg)
+include_directories(${LIB3RD_HOME}/LibJpeg/include)
+
+include_directories(${CMAKE_CURRENT_LIST_DIR}/)
+include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
+
+
+file(GLOB Header_Files  RELATIVE ${CMAKE_CURRENT_LIST_DIR} ./*.h* )
+
+source_group("Header_Files" FILES ${Header_Files})
+
+set(RESIZABLE_LIB_HDRS ${Header_Files})
+
+file(GLOB Source_Files  RELATIVE ${CMAKE_CURRENT_LIST_DIR} ./*.c* ./*.rc ./*.def)
+
+source_group("Source Files" FILES ${Source_Files})
+
+set(ALL_FILES
+    ${Header_Files}
+    ${Source_Files}
+)
+
+SET(CMAKE_MFC_FLAG 2) # 1.static lib, 2 dynamic lib 
+################################################################################
+# Target
+################################################################################
+
+set(RESIZABLE_LIB_STATIC ResizableLib_static)
+add_library               (${RESIZABLE_LIB_STATIC} STATIC  ${ALL_FILES}       )
+target_include_directories(${RESIZABLE_LIB_STATIC} PRIVATE ${RESIZABLE_LIB_INC_DIR}   ${ZLIB_INCLUDE_DIRS})
+target_link_directories   (${RESIZABLE_LIB_STATIC} PRIVATE ${RESIZABLE_LIB_SRC_DIR}/  ${ZLIB_LIBRARY_DIRS})
+target_compile_definitions(${RESIZABLE_LIB_STATIC} PRIVATE
+	WIN32  _WINDOWS
+)
+
+set(RESIZABLE_LIB_SHARED ResizableLib_shared)
+add_library               (${RESIZABLE_LIB_SHARED} SHARED  ${ALL_FILES})
+target_include_directories(${RESIZABLE_LIB_SHARED} PRIVATE ${RESIZABLE_LIB_INC_DIR}   ${ZLIB_INCLUDE_DIRS} )
+target_link_directories   (${RESIZABLE_LIB_SHARED} PRIVATE ${RESIZABLE_LIB_SRC_DIR}/  ${ZLIB_LIBRARY_DIRS} )
+target_link_libraries     (${RESIZABLE_LIB_SHARED} PRIVATE ws2_32 wsock32    ${ZLIB_LIBRARIES}    )
+target_compile_definitions(${RESIZABLE_LIB_SHARED} PRIVATE
+	WIN32  _WINDOWS
+)
+
+
+SET(install_targets ${RESIZABLE_LIB_STATIC}    )
+SET(install_hdr_dir include)
+
+set_target_properties(${RESIZABLE_LIB_STATIC} PROPERTIES PUBLIC_HEADER "${RESIZABLE_LIB_HDRS}")
+
+INSTALL(TARGETS ${install_targets}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION ${install_hdr_dir}
+       )
+
+install(FILES ${RESIZABLE_LIB_HDRS} DESTINATION ${install_hdr_dir})
+install(DIRECTORY "inc_sub_dir" DESTINATION ${install_hdr_dir} FILES_MATCHING PATTERN "*.h")

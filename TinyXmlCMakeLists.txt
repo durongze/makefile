@@ -1,0 +1,56 @@
+cmake_minimum_required(VERSION 3.15)
+project (tinyxml)
+
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+include_directories(${CMAKE_CURRENT_LIST_DIR}/)
+
+file(GLOB tinyxmlSRCS   RELATIVE ${CMAKE_CURRENT_LIST_DIR}  ./*.c* ./*.h*)
+file(GLOB tinyxmlHDRS   RELATIVE ${CMAKE_CURRENT_LIST_DIR}  ./*.h*)
+
+set (TINY_XML_HDRS  ${tinyxmlHDRS})
+
+set(ALL_FILES
+    ${tinyxmlSRCS}
+)
+
+#list(REMOVE_ITEM tinyxmlSRCS   xxx.c)
+set(TINY_XML_STATIC TINY_XML_static)
+add_library               (${TINY_XML_STATIC} STATIC  ${ALL_FILES}       )
+target_include_directories(${TINY_XML_STATIC} PRIVATE ${TINY_XML_INC_DIR}   ${ZLIB_INCLUDE_DIRS})
+target_link_directories   (${TINY_XML_STATIC} PRIVATE ${TINY_XML_SRC_DIR}/  ${ZLIB_LIBRARY_DIRS})
+target_compile_definitions(${TINY_XML_STATIC} PRIVATE
+	HAVE_CONFIG_H
+)
+
+set(TINY_XML_SHARED TINY_XML_shared)
+add_library               (${TINY_XML_SHARED} SHARED  ${ALL_FILES})
+target_include_directories(${TINY_XML_SHARED} PRIVATE ${TINY_XML_INC_DIR}   ${ZLIB_INCLUDE_DIRS} )
+target_link_directories   (${TINY_XML_SHARED} PRIVATE ${TINY_XML_SRC_DIR}/  ${ZLIB_LIBRARY_DIRS} )
+target_link_libraries     (${TINY_XML_SHARED} PRIVATE ws2_32 wsock32    ${ZLIB_LIBRARIES}    )
+target_compile_definitions(${TINY_XML_SHARED} PRIVATE
+	HAVE_CONFIG_H
+)
+
+
+SET(install_targets ${TINY_XML_STATIC}    )
+SET(install_hdr_dir include)
+
+set_target_properties(${TINY_XML_STATIC} PROPERTIES PUBLIC_HEADER "${TINY_XML_HDRS}")
+
+INSTALL(TARGETS ${install_targets}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION ${install_hdr_dir}
+       )
+
+install(FILES ${TINY_XML_HDRS} DESTINATION ${install_hdr_dir})
+install(DIRECTORY "inc_sub_dir" DESTINATION ${install_hdr_dir} FILES_MATCHING PATTERN "*.h")

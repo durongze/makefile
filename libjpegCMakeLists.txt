@@ -1,0 +1,63 @@
+project(LibJpeg CXX)
+
+################################################################################
+# Source groups
+################################################################################
+
+set (LIB3RD_HOME ${CMAKE_CURRENT_LIST_DIR}/../)
+include_directories(${LIB3RD_HOME}/zlib)
+include_directories(${LIB3RD_HOME}/zlib/include)
+include_directories(${LIB3RD_HOME}/LibJpeg)
+include_directories(${LIB3RD_HOME}/LibJpeg/include)
+
+include_directories(${CMAKE_CURRENT_LIST_DIR}/)
+include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
+
+
+file(GLOB Header_Files  RELATIVE ${CMAKE_CURRENT_LIST_DIR} ./*.h* )
+
+source_group("Header_Files" FILES ${Header_Files})
+
+set (LIBJPEG_HDRS ${Header_Files})
+
+file(GLOB Source_Files  RELATIVE ${CMAKE_CURRENT_LIST_DIR} ./*.c* ./*.rc ./*.def)
+list(REMOVE_ITEM Source_Files   JPEGTRAN.C)
+
+source_group("Source Files" FILES ${Source_Files})
+
+set(ALL_FILES
+    ${Header_Files}
+
+    ${Source_Files}
+)
+
+message("[INFO] Source_Files:${Source_Files}")
+
+################################################################################
+# Target
+################################################################################
+set(LIBJPEG_STATIC LibJpeg_static)
+add_library               (${LIBJPEG_STATIC} STATIC  ${ALL_FILES})
+target_include_directories(${LIBJPEG_STATIC} PRIVATE ${LIBJPEG_INC_DIR})
+target_link_directories   (${LIBJPEG_STATIC} PRIVATE ${LIBJPEG_SRC_DIR}/)
+
+set(LIBJPEG_SHARED LibJpeg_shared)
+add_library               (${LIBJPEG_SHARED} SHARED  ${ALL_FILES})
+target_include_directories(${LIBJPEG_SHARED} PRIVATE ${LIBJPEG_INC_DIR})
+target_link_directories   (${LIBJPEG_SHARED} PRIVATE ${LIBJPEG_SRC_DIR}/)
+target_link_libraries     (${LIBJPEG_SHARED} PRIVATE ws2_32 wsock32)
+
+SET(install_targets ${LIBJPEG_STATIC}    )
+SET(install_hdr_dir include)
+
+set_target_properties(${LIBJPEG_STATIC} PROPERTIES PUBLIC_HEADER "${LIBJPEG_HDRS}")
+
+INSTALL(TARGETS ${install_targets}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION ${install_hdr_dir}
+       )
+
+#install(FILES ${LIBJPEG_HDRS} DESTINATION ${install_hdr_dir})
+install(DIRECTORY "inc_sub_dir" DESTINATION ${install_hdr_dir} FILES_MATCHING PATTERN "*.h")

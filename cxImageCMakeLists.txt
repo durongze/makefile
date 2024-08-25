@@ -1,0 +1,64 @@
+project(CxImage CXX)
+
+################################################################################
+# Source groups
+################################################################################
+
+set (LIB3RD_HOME ${CMAKE_CURRENT_LIST_DIR}/../)
+
+
+include_directories(${CMAKE_CURRENT_LIST_DIR}/)
+include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
+
+#ZLIB_INCLUDE_DIRS ZLIB_LIBRARY_DIRS ZLIB_LIBRARIES
+include(cmake/find_zlib.cmake)
+#LIBJPEG_INCLUDE_DIRS LIBJPEG_LIBRARY_DIRS LIBJPEG_LIBRARIES
+include(cmake/find_libjpeg.cmake)
+#PNG_INCLUDE_DIRS PNG_LIBRARY_DIRS PNG_LIBRARIES
+include(cmake/find_png.cmake)
+
+file(GLOB Header_Files  RELATIVE ${CMAKE_CURRENT_LIST_DIR} ./*.h* )
+
+source_group("Header_Files" FILES ${Header_Files})
+
+set (CXIMAGE_HDRS ${Header_Files})
+
+file(GLOB Source_Files  RELATIVE ${CMAKE_CURRENT_LIST_DIR} ./*.c*)
+
+source_group("Source Files" FILES ${Source_Files})
+
+set(ALL_FILES
+    ${Header_Files}
+
+    ${Source_Files}
+)
+
+################################################################################
+# Target
+################################################################################
+set(CXIMAGE_STATIC CxImage_static)
+add_library               (${CXIMAGE_STATIC} STATIC  ${ALL_FILES})
+target_include_directories(${CXIMAGE_STATIC} PRIVATE ${CXIMAGE_INC_DIR}    ${ZLIB_INCLUDE_DIRS} ${LIBJPEG_INCLUDE_DIRS}  ${PNG_INCLUDE_DIRS})
+target_link_directories   (${CXIMAGE_STATIC} PRIVATE ${CXIMAGE_SRC_DIR}/   ${ZLIB_LIBRARY_DIRS} ${LIBJPEG_LIBRARY_DIRS}  ${PNG_LIBRARY_DIRS})
+target_link_libraries     (${CXIMAGE_STATIC} PRIVATE ws2_32 wsock32        ${ZLIB_LIBRARIES}    ${LIBJPEG_LIBRARIES}     ${PNG_LIBRARIES}    )
+
+#set(CXIMAGE_SHARED CxImage_shared)
+#add_library               (${CXIMAGE_SHARED} SHARED  ${ALL_FILES})
+#target_include_directories(${CXIMAGE_SHARED} PRIVATE ${CXIMAGE_INC_DIR}   ${ZLIB_INCLUDE_DIRS} ${LIBJPEG_INCLUDE_DIRS}  ${PNG_INCLUDE_DIRS})
+#target_link_directories   (${CXIMAGE_SHARED} PRIVATE ${CXIMAGE_SRC_DIR}/  ${ZLIB_LIBRARY_DIRS} ${LIBJPEG_LIBRARY_DIRS}  ${PNG_LIBRARY_DIRS})
+#target_link_libraries     (${CXIMAGE_SHARED} PRIVATE ws2_32 wsock32       ${ZLIB_LIBRARIES}    ${LIBJPEG_LIBRARIES}     ${PNG_LIBRARIES}   )
+
+SET(install_targets ${CXIMAGE_STATIC}   )
+SET(install_hdr_dir include)
+
+set_target_properties(${CXIMAGE_STATIC} PROPERTIES PUBLIC_HEADER "${CXIMAGE_HDRS}")
+
+INSTALL(TARGETS ${install_targets}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION ${install_hdr_dir}
+       )
+
+install(FILES ${CXIMAGE_HDRS} DESTINATION ${install_hdr_dir})
+install(DIRECTORY "inc_sub_dir" DESTINATION ${install_hdr_dir} FILES_MATCHING PATTERN "*.h")

@@ -1,0 +1,97 @@
+cmake_minimum_required(VERSION 3.15)
+project (atl_server)
+
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+#add_definitions(-DUNICODE -D_UNICODE)
+
+include_directories(${CMAKE_CURRENT_LIST_DIR}/../../include)
+include_directories(${CMAKE_CURRENT_LIST_DIR}/)
+include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
+
+file(GLOB CLStencilHDRS RELATIVE ${CMAKE_CURRENT_LIST_DIR} source/CLStencil/*.h*)
+file(GLOB SProxyHDRS    RELATIVE ${CMAKE_CURRENT_LIST_DIR} source/SProxy/*.h*   )
+file(GLOB VCDeployHDRS  RELATIVE ${CMAKE_CURRENT_LIST_DIR} source/VCDeploy/*.h* )
+
+file(GLOB CLStencilSRCS RELATIVE ${CMAKE_CURRENT_LIST_DIR} source/CLStencil/*.c* source/CLStencil/*.h*)
+file(GLOB SProxySRCS    RELATIVE ${CMAKE_CURRENT_LIST_DIR} source/SProxy/*.c*    source/SProxy/*.h*   )
+file(GLOB VCDeploySRCS  RELATIVE ${CMAKE_CURRENT_LIST_DIR} source/VCDeploy/*.c*  source/VCDeploy/*.h* )
+list(REMOVE_ITEM VCDeploySRCS source/VCDeploy/iisext_i.c )
+
+#list(REMOVE_ITEM clstencil_srcs   xxx.c)
+#list(REMOVE_ITEM clstencilui_srcs xxx.c)
+
+
+set(CLSTENCIL_STATIC clstencil_static)
+add_library               (${CLSTENCIL_STATIC} STATIC  ${CLStencilSRCS})
+target_include_directories(${CLSTENCIL_STATIC} PRIVATE ${CLSTENCIL_INC_DIR}   ${ZLIB_INCLUDE_DIRS})
+target_link_directories   (${CLSTENCIL_STATIC} PRIVATE ${CLSTENCIL_SRC_DIR}/  ${ZLIB_LIBRARY_DIRS})
+target_compile_definitions(${CLSTENCIL_STATIC} PRIVATE
+	HAVE_CONFIG_H
+)
+
+set(CLSTENCIL_SHARED clstencil_shared)
+add_library               (${CLSTENCIL_SHARED} SHARED  ${CLStencilSRCS})
+target_include_directories(${CLSTENCIL_SHARED} PRIVATE ${CLSTENCIL_INC_DIR}   ${ZLIB_INCLUDE_DIRS} )
+target_link_directories   (${CLSTENCIL_SHARED} PRIVATE ${CLSTENCIL_SRC_DIR}/  ${ZLIB_LIBRARY_DIRS} )
+target_link_libraries     (${CLSTENCIL_SHARED} PRIVATE ws2_32 wsock32    ${ZLIB_LIBRARIES}    )
+target_compile_definitions(${CLSTENCIL_SHARED} PRIVATE
+	HAVE_CONFIG_H
+)
+set_target_properties(${CLSTENCIL_SHARED} PROPERTIES PUBLIC_HEADER "${CLSTENCIL_HDRS}")
+
+set(SPROXY_STATIC sproxy_static)
+add_library               (${SPROXY_STATIC} STATIC  ${SProxySRCS})
+target_include_directories(${SPROXY_STATIC} PRIVATE ${SPROXY_INC_DIR}   ${ZLIB_INCLUDE_DIRS})
+target_link_directories   (${SPROXY_STATIC} PRIVATE ${SPROXY_SRC_DIR}/  ${ZLIB_LIBRARY_DIRS})
+target_compile_definitions(${SPROXY_STATIC} PRIVATE
+	HAVE_CONFIG_H
+)
+
+set(SPROXY_SHARED sproxy_shared)
+add_library               (${SPROXY_SHARED} SHARED  ${SProxySRCS})
+target_include_directories(${SPROXY_SHARED} PRIVATE ${SPROXY_INC_DIR}   ${ZLIB_INCLUDE_DIRS} )
+target_link_directories   (${SPROXY_SHARED} PRIVATE ${SPROXY_SRC_DIR}/  ${ZLIB_LIBRARY_DIRS} )
+target_link_libraries     (${SPROXY_SHARED} PRIVATE ws2_32 wsock32    ${ZLIB_LIBRARIES}    )
+target_compile_definitions(${SPROXY_SHARED} PRIVATE
+	HAVE_CONFIG_H
+)
+set_target_properties(${SPROXY_SHARED} PROPERTIES PUBLIC_HEADER "${SProxyHDRS}")
+
+set(VCDEPLOY_STATIC vcdeploy_static)
+add_library               (${VCDEPLOY_STATIC} STATIC  ${VCDeploySRCS})
+target_include_directories(${VCDEPLOY_STATIC} PRIVATE ${VCDEPLOY_INC_DIR}   ${ZLIB_INCLUDE_DIRS})
+target_link_directories   (${VCDEPLOY_STATIC} PRIVATE ${VCDEPLOY_SRC_DIR}/  ${ZLIB_LIBRARY_DIRS})
+target_compile_definitions(${VCDEPLOY_STATIC} PRIVATE
+	HAVE_CONFIG_H
+)
+
+set(VCDEPLOY_SHARED vcdeploy_shared)
+add_library               (${VCDEPLOY_SHARED} SHARED  ${VCDeploySRCS})
+target_include_directories(${VCDEPLOY_SHARED} PRIVATE ${VCDEPLOY_INC_DIR}   ${ZLIB_INCLUDE_DIRS} )
+target_link_directories   (${VCDEPLOY_SHARED} PRIVATE ${VCDEPLOY_SRC_DIR}/  ${ZLIB_LIBRARY_DIRS} )
+target_link_libraries     (${VCDEPLOY_SHARED} PRIVATE ws2_32 Activeds       ${ZLIB_LIBRARIES}    )
+target_compile_definitions(${VCDEPLOY_SHARED} PRIVATE
+	HAVE_CONFIG_H
+)
+set_target_properties(${VCDEPLOY_SHARED} PROPERTIES PUBLIC_HEADER "${VCDeployHDRS}")
+
+SET(install_targets ${CLSTENCIL_STATIC}  ${SPROXY_STATIC}  ${VCDEPLOY_STATIC})
+SET(install_hdr_dir include)
+
+INSTALL(TARGETS ${install_targets}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION ${install_hdr_dir}
+       )
+
+install(FILES ${CLSTENCIL_HDRS} ${SProxyHDRS} ${VCDeployHDRS} DESTINATION ${install_hdr_dir})
+install(DIRECTORY "inc_sub_dir" DESTINATION ${install_hdr_dir} FILES_MATCHING PATTERN "*.h")

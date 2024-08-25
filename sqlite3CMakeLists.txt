@@ -1,0 +1,50 @@
+cmake_minimum_required(VERSION 3.14)
+project (sqlite VERSION 0.1.0)
+
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/source-charset:utf-8>")
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu99 -O2 -Wall -Wextra ")
+
+add_compile_definitions (WIN32;_DEBUG;_LIB;SQLITE_OMIT_AUTHORIZATION;SQLITE_OMIT_DATETIME_FUNCS;SQLITE_OMIT_EXPLAIN;
+SQLITE_OMIT_MEMORYDB;SQLITE_OMIT_PROGRESS_CALLBACK;SQLITE_OMIT_SCHEMA_PRAGMAS;SQLITE_OMIT_TCL_VARIABLE;
+SQLITE_OMIT_TRIGGER;SQLITE_OMIT_UTF16;SQLITE_OMIT_VIEW;SQLITE_OMIT_FLOATING_POINT)
+
+file(GLOB_RECURSE SQLITE_SRCS_LIST RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/sqlite3.*)
+file(GLOB_RECURSE SQLITE_HDRS ${CMAKE_SOURCE_DIR}/*.h)
+list(REMOVE_ITEM SQLITE_SRCS_LIST shell.c)
+
+include_directories(include)
+
+add_library(SQLITE_static STATIC ${SQLITE_SRCS_LIST})
+
+add_library(SQLITE_shared SHARED ${SQLITE_SRCS_LIST})
+
+set_target_properties(SQLITE_shared PROPERTIES PUBLIC_HEADER "${SQLITE_HDRS}")
+
+SET_TARGET_PROPERTIES(SQLITE_static PROPERTIES
+    CLEAN_DIRECT_OUTPUT 1
+    OUTPUT_NAME "libsqlite_static"
+    )
+SET_TARGET_PROPERTIES(SQLITE_shared PROPERTIES
+    CLEAN_DIRECT_OUTPUT 1
+    OUTPUT_NAME "libsqlite_shared"
+    )
+
+#add_executable(sqlite3 ${SQLITE_SRCS_LIST} "shell.c")
+
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+    #target_link_libraries(sqlite3 PRIVATE m dl pthread)
+endif()
+
+SET(install_targets SQLITE_static SQLITE_shared)
+SET(install_hdr_dir include)
+
+INSTALL(TARGETS ${install_targets}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION ${install_hdr_dir}
+       )
+
+#install(FILES ${LUA_HDRS} DESTINATION ${install_hdr_dir})
+install(DIRECTORY "inc_sub_dir" DESTINATION ${install_hdr_dir} FILES_MATCHING PATTERN "*.h")
