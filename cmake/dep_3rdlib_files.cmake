@@ -1,12 +1,14 @@
-if("$ENV{HomeDir}" MATCHES "")
+if("$ENV{HomeDir}" STREQUAL "")
     if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
-        set(ALL_LIB_HOME_DIR ${CMAKE_CURRENT_LIST_DIR}/../out/windows)
+        set(ALL_LIB_HOME_DIR ${CMAKE_CURRENT_LIST_DIR}/../out/linux)
     elseif(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
         set(ALL_LIB_HOME_DIR ${CMAKE_CURRENT_LIST_DIR}/../out/windows)
         string(REPLACE "/" "\\" ALL_LIB_HOME_DIR "${ALL_LIB_HOME_DIR}")
     else()
         message("current platform: unkonw ") 
     endif()
+else()
+    set(ALL_LIB_HOME_DIR "$ENV{HomeDir}")
 endif()
 
 #set(ALL_LIB_HOME_DIR "$ENV{HomeDir}")
@@ -43,12 +45,13 @@ function(add_dep_lib_dir dep_lib_dir )
         link_directories(${ALL_LIB_HOME_DIR}/${LIB_DIR}/lib)
         if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
             file(GLOB cur_lib_name "${ALL_LIB_HOME_DIR}/${LIB_DIR}/lib/*.a")
-            EXECUTE_PROCESS(COMMAND ls ${cur_lib_name}
+            EXECUTE_PROCESS(COMMAND ls ${cur_lib_name} 
                 TIMEOUT 5
                 OUTPUT_VARIABLE CUR_LIB_NAMES
                 OUTPUT_STRIP_TRAILING_WHITESPACE
                 )
-            elseif(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
+            
+        elseif(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
             EXECUTE_PROCESS(COMMAND cmd /c dir ${ALL_LIB_HOME_DIR}\\${LIB_DIR}\\lib\\*.lib /b 
                 OUTPUT_VARIABLE CUR_LIB_NAMES
                 OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -57,13 +60,45 @@ function(add_dep_lib_dir dep_lib_dir )
         message("[INFO] CUR_LIB_NAMES: ${CUR_LIB_NAMES}")
         list(APPEND dep_libs  ${CUR_LIB_NAMES})
     endforeach()
+    
+    string(REPLACE ";" "\n" dep_libs "${dep_libs}")
+    message("[INFO] 1. dep_libs: ${dep_libs}")
 
-    message("[INFO] dep_libs: ${dep_libs}")
-    string(REPLACE ".lib" "" DepLibs "${dep_libs}")
-    string(REPLACE ";" "\n" DepLibs "${DepLibs}")
-    string(REPLACE "\n" ";" DepLibs "${DepLibs}")
-    string(REGEX REPLACE " $" "" DepLibs "${DepLibs}")
+    string(REPLACE "\n" ";" dep_libs "${dep_libs}")
+    foreach(cur_lib ${dep_libs})
+        message("[INFO] cur_lib: ${cur_lib}")
+        if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
+        	string(REPLACE ".a" "" DepLib "${cur_lib}")
+        	string(REPLACE ";" "\n" DepLib "${DepLib}")
+        	string(REGEX REPLACE "^.*/" "" DepLib "${DepLib}")
+        	string(REPLACE "lib" "-l" DepLib "${DepLib}")
+        elseif(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
+        	string(REPLACE ".lib" "" DepLib "${cur_lib}")
+        	string(REPLACE ";" "\n" DepLib "${DepLib}")
+        	string(REPLACE "\n" ";" DepLib "${DepLib}")
+        	string(REGEX REPLACE " $" "" DepLib "${DepLib}")
+        endif()
+        message("[INFO] DepLib: ${DepLib}")
+        list(APPEND DepLibs  ${DepLib})
+    endforeach()
     set(DepLibs ${DepLibs} PARENT_SCOPE)
+    message("[INFO] 2. DepLibs: ${DepLibs}")
+endfunction()
+
+function(generate_fcopy src_f dest_dir)
+    add_custom_command(OUTPUT ${dest_dir}
+                       COMMAND "${CMAKE_COMMAND}" -E remove "${dest_dir}"
+                       COMMAND "${CMAKE_COMMAND}" -E copy "${src_f}" "${dest_dir}"
+                       DEPENDS "${src_f}"
+                       COMMENT "${CMAKE_COMMAND} -E copy ${src_f} ${dest_dir}" VERBATIM)
+endfunction()
+
+function(generate_dcopy src_d dest_dir)
+    add_custom_command(OUTPUT ${dest_dir}
+                       COMMAND "${CMAKE_COMMAND}" -E remove_directory "${dest_dir}"
+                       COMMAND "${CMAKE_COMMAND}" -E copy_directory "${src_d}" "${dest_dir}"
+                       DEPENDS "${src_d}"
+                       COMMENT "${CMAKE_COMMAND} -E copy_directory ${src_d} ${dest_dir}" VERBATIM)
 endfunction()
 
 #gen_dep_lib_dir(all_dep_lib_dir )
