@@ -1,0 +1,23 @@
+
+set (SDASRAB_TOP_DIR        ${CMAKE_CURRENT_LIST_DIR}   )
+set (SDASRAB_APP            sdasrab                        )
+set (SDASRAB_APP_DEFS       _CRT_SECURE_NO_WARNINGS  _CRT_NONSTDC_NO_WARNINGS    WIN32    _CONSOLE )
+set (SDASRAB_APP_DEFS       ${SDASRAB_APP_DEFS}    INDEXLIB              MLH_MAP   SDK)
+set (SDASRAB_APP_INC_DIRS   .         ../asxxsrc    ../../support/util           )
+set (SDASRAB_APP_LIB_DIRS   .         ../asxxsrc    ../../support/util           )
+set (SDASRAB_APP_DEP_LIBS       odbc32.lib             odbccp32.lib              )
+
+file(GLOB UTIL_LIB_SRCS     RELATIVE ${SDASRAB_TOP_DIR}     ../../support/util/*.c*    ../../support/util/*.h* )
+file(GLOB ASXX_LIB_SRCS     RELATIVE ${SDASRAB_TOP_DIR}     ../asxxsrc/*.c*            ../asxxsrc/*.h*         )
+file(GLOB SDASRAB_APP_HDRS  RELATIVE ${SDASRAB_TOP_DIR}     ./*.h*)
+file(GLOB SDASRAB_APP_SRCS  RELATIVE ${SDASRAB_TOP_DIR}     ./*.c*)
+set (     SDASRAB_ALL_SRCS    ${UTIL_LIB_SRCS}    ${ASXX_LIB_SRCS}   ${SDASRAB_APP_HDRS}    ${SDASRAB_APP_SRCS})
+
+list(REMOVE_ITEM           SDASRAB_ALL_SRCS       ../../support/util/findme.c)
+
+add_executable            (${SDASRAB_APP}                ${SDASRAB_APP_HDRS}   ${SDASRAB_ALL_SRCS} )
+target_compile_definitions(${SDASRAB_APP}    PRIVATE     ${SDASRAB_APP_DEFS}                    )
+target_include_directories(${SDASRAB_APP}    PRIVATE     ${SDASRAB_APP_INC_DIRS}/               )
+target_link_directories   (${SDASRAB_APP}    PRIVATE     ${SDASRAB_APP_LIB_DIRS}/               )
+target_link_libraries     (${SDASRAB_APP}                ${SDASRAB_APP_DEP_LIBS}                )
+#target_link_options       (${SDASRAB_APP}    PRIVATE "/SUBSYSTEM:WINDOWS"        "/ENTRY:wWinMainCRTStartup"        "/SAFESEH:NO" )

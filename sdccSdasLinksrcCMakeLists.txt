@@ -1,0 +1,24 @@
+
+set (SDLD_TOP_DIR        ${CMAKE_CURRENT_LIST_DIR}   )
+set (SDLD_APP            sdld                        )
+set (SDLD_APP_DEFS       _CRT_SECURE_NO_WARNINGS  _CRT_NONSTDC_NO_WARNINGS    WIN32   _CONSOLE )
+set (SDLD_APP_DEFS       ${SDLD_APP_DEFS}    INDEXLIB            )
+set (SDLD_APP_INC_DIRS   .         ../asxxsrc    ../../support/util           )
+set (SDLD_APP_LIB_DIRS   .         ../asxxsrc    ../../support/util           )
+set (SDLD_APP_DEP_LIBS       odbc32.lib             odbccp32.lib              )
+
+file(GLOB UTIL_LIB_SRCS    RELATIVE ${SDLD_TOP_DIR}     ../../support/util/*.c*    ../../support/util/*.h* )
+file(GLOB ASXX_LIB_SRCS    RELATIVE ${SDLD_TOP_DIR}     ../asxxsrc/strcmp*.c*            ../asxxsrc/*.h*         )
+file(GLOB SDLD_APP_HDRS    RELATIVE ${SDLD_TOP_DIR}     ./*.h*)
+file(GLOB SDLD_APP_SRCS    RELATIVE ${SDLD_TOP_DIR}     ./*.c*)
+set (     SDLD_ALL_SRCS             ${ASXX_LIB_SRCS}    ${SDLD_APP_HDRS}    ${SDLD_APP_SRCS})
+list(REMOVE_ITEM           SDLD_ALL_SRCS      lkihx.c       ../../support/util/findme.c       ../asxxsrc/asdata.c)
+
+message("[INFO] SDLD_ALL_SRCS ${SDLD_ALL_SRCS}")
+
+add_executable            (${SDLD_APP}                ${SDLD_APP_HDRS}   ${SDLD_ALL_SRCS} )
+target_compile_definitions(${SDLD_APP}    PRIVATE     ${SDLD_APP_DEFS}                    )
+target_include_directories(${SDLD_APP}    PRIVATE     ${SDLD_APP_INC_DIRS}/               )
+target_link_directories   (${SDLD_APP}    PRIVATE     ${SDLD_APP_LIB_DIRS}/               )
+target_link_libraries     (${SDLD_APP}                ${SDLD_APP_DEP_LIBS}                )
+#target_link_options       (${SDLD_APP}    PRIVATE "/SUBSYSTEM:WINDOWS"        "/ENTRY:wWinMainCRTStartup"        "/SAFESEH:NO" )

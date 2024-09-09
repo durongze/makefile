@@ -1,0 +1,42 @@
+cmake_minimum_required(VERSION 3.16)
+
+project(avr)
+
+set(AVR_TOP_DIR ${CMAKE_CURRENT_LIST_DIR})
+
+file(GLOB AVR_LIB_FILE_HDRS    RELATIVE   ${AVR_TOP_DIR}/    ./*.h* )
+file(GLOB AVR_LIB_FILE_SRCS    RELATIVE   ${AVR_TOP_DIR}/    ./*.c* )
+file(GLOB AVR_LIB_FILE_DEFS    RELATIVE   ${AVR_TOP_DIR}/    ./*.def )
+
+source_group("Z80Headers" FILES ${AVR_LIB_FILE_HDRS})
+source_group("Z80Sources" FILES ${AVR_LIB_FILE_SRCS})
+source_group("Z80Defines" FILES ${AVR_LIB_FILE_DEFS})
+
+set (AVR_LIB_ALL_FILES  ${AVR_LIB_FILE_HDRS}     ${AVR_LIB_FILE_SRCS}     ${AVR_LIB_FILE_DEFS} )
+list(REMOVE_ITEM        AVR_LIB_ALL_FILES   XXX.c)
+
+message("AVR_LIB_ALL_FILES : ${AVR_LIB_ALL_FILES} ")
+
+#source_group(TREE ${AVR_TOP_DIR} FILES ${AVR_LIB_ALL_FILES})
+
+set (  AVR_LIB_NAME    avr                     )
+set (  AVR_LIB_DEFS    _CRT_SECURE_NO_WARNINGS    _CRT_NONSTDC_NO_WARNINGS    WIN32    _LIB    )#_DEBUG
+set (  AVR_DEP_INCS    ${AVR_TOP_DIR}  ..    .    ../..    ../../support/util )
+
+add_library               (${AVR_LIB_NAME}    STATIC     ${AVR_LIB_ALL_FILES}       )
+target_compile_definitions(${AVR_LIB_NAME}    PRIVATE    ${AVR_LIB_DEFS}            )
+target_include_directories(${AVR_LIB_NAME}    PRIVATE    ${AVR_DEP_INCS}            )
+target_link_directories   (${AVR_LIB_NAME}    PRIVATE    ${AVR_TOP_DIR}             )
+#target_link_libraries     (${AVR_LIB_NAME}    ${dep_libs} )
+#target_link_options       (${AVR_LIB_NAME}    PRIVATE "/SUBSYSTEM:WINDOWS"        "/ENTRY:wWinMainCRTStartup"        "/SAFESEH:NO" )
+set_target_properties     (${AVR_LIB_NAME}    PROPERTIES PREFIX "lib"  )
+
+foreach(FileNameDef ${AVR_LIB_FILE_DEFS})
+    string(REPLACE ".def" "" FileNameDef "${FileNameDef}")
+	add_custom_command(
+		TARGET     ${AVR_LIB_NAME}
+		PRE_BUILD
+		COMMAND    gawk -f ${AVR_TOP_DIR}/../SDCCpeeph.awk ${AVR_TOP_DIR}/${FileNameDef}.def  > ${AVR_TOP_DIR}/${FileNameDef}.rul
+		COMMENT    "Generate ${AVR_TOP_DIR}/${FileNameDef}.rul "
+	)
+endforeach()

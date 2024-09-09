@@ -1,0 +1,4 @@
+add_subdirectory(cpp)
+add_subdirectory(librarian)
+add_subdirectory(makebin)
+add_subdirectory(packihx)

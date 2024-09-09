@@ -1,0 +1,22 @@
+
+set (SDCDB_TOP_DIR        ${CMAKE_CURRENT_LIST_DIR}   )
+set (SDCDB_APP            sdcdb                        )
+set (SDCDB_APP_DEFS       _CRT_SECURE_NO_WARNINGS  _CRT_NONSTDC_NO_WARNINGS    WIN32   _CONSOLE )
+set (SDCDB_APP_DEFS       ${SDCDB_APP_DEFS}    INDEXLIB            )
+set (SDCDB_APP_INC_DIRS   ../../    ../../support/util/     ../../src      )
+set (SDCDB_APP_LIB_DIRS   .         ../asxxsrc    ../../support/util           )
+set (SDCDB_APP_DEP_LIBS       ws2_32.lib              )
+
+file(GLOB UTIL_LIB_SRCS     RELATIVE ${SDCDB_TOP_DIR}     ../../support/util/*.c*    ../../support/util/*.h* )
+file(GLOB SDCC_LIB_SRCS     RELATIVE ${SDCDB_TOP_DIR}     ../../src/SDCCerr*.c*      ../../src/SDCChash*.c*  ../../src/SDCCset*.c*  ../../src/SDCC*.h*         )
+file(GLOB SDCDB_APP_HDRS    RELATIVE ${SDCDB_TOP_DIR}     ./*.h*)
+file(GLOB SDCDB_APP_SRCS    RELATIVE ${SDCDB_TOP_DIR}     ./*.c*)
+set (     SDCDB_ALL_SRCS    ${UTIL_LIB_SRCS}    ${SDCC_LIB_SRCS}   ${SDCDB_APP_HDRS}    ${SDCDB_APP_SRCS})
+list(REMOVE_ITEM           SDCDB_ALL_SRCS         ../../support/util/findme.c       ../asxxsrc/asdata.c)
+
+add_executable            (${SDCDB_APP}                ${SDCDB_APP_HDRS}   ${SDCDB_ALL_SRCS} )
+target_compile_definitions(${SDCDB_APP}    PRIVATE     ${SDCDB_APP_DEFS}                    )
+target_include_directories(${SDCDB_APP}    PRIVATE     ${SDCDB_APP_INC_DIRS}/               )
+target_link_directories   (${SDCDB_APP}    PRIVATE     ${SDCDB_APP_LIB_DIRS}/               )
+target_link_libraries     (${SDCDB_APP}                ${SDCDB_APP_DEP_LIBS}                )
+#target_link_options       (${SDCDB_APP}    PRIVATE "/SUBSYSTEM:WINDOWS"        "/ENTRY:wWinMainCRTStartup"        "/SAFESEH:NO" )

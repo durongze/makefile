@@ -1,0 +1,30 @@
+#cmake_minimum_required(VERSION 3.16)
+#
+#set(RARIAN_TOP_DIR ${CMAKE_CURRENT_LIST_DIR})
+#
+#file(GLOB RARIAN_LIB_FILE_HDRS    RELATIVE   ${RARIAN_TOP_DIR}/    ./*.h* )
+#file(GLOB RARIAN_LIB_FILE_SRCS    RELATIVE   ${RARIAN_TOP_DIR}/    ./*.c* )
+#file(GLOB RARIAN_LIB_FILE_DEFS    RELATIVE   ${RARIAN_TOP_DIR}/    ./*.def )
+#
+#source_group("Z80Headers" FILES ${RARIAN_LIB_FILE_HDRS})
+#source_group("Z80Sources" FILES ${RARIAN_LIB_FILE_SRCS})
+#source_group("Z80Defines" FILES ${RARIAN_LIB_FILE_DEFS})
+#
+#set (RARIAN_LIB_ALL_FILES  ${RARIAN_LIB_FILE_HDRS}     ${RARIAN_LIB_FILE_SRCS}     ${RARIAN_LIB_FILE_DEFS} )
+#list(REMOVE_ITEM        RARIAN_LIB_ALL_FILES   XXX.c)
+#
+#message("RARIAN_LIB_ALL_FILES : ${RARIAN_LIB_ALL_FILES} ")
+#
+##source_group(TREE ${RARIAN_TOP_DIR} FILES ${RARIAN_LIB_ALL_FILES})
+#
+#set (  RARIAN_LIB_NAME    rarian                     )
+#set (  RARIAN_LIB_DEFS    _CRT_SECURE_NO_WARNINGS    _CRT_NONSTDC_NO_WARNINGS    WIN32    _LIB    )#_DEBUG
+#set (  RARIAN_DEP_INCS    ..    .    ../..    ../../support/util )
+#
+#add_library               (${RARIAN_LIB_NAME}    STATIC     ${RARIAN_LIB_ALL_FILES}       )
+#target_compile_definitions(${RARIAN_LIB_NAME}    PRIVATE    ${RARIAN_LIB_DEFS}            )
+#target_include_directories(${RARIAN_LIB_NAME}    PRIVATE    ${RARIAN_DEP_INCS}            )
+#target_link_directories   (${RARIAN_LIB_NAME}    PRIVATE    ${RARIAN_TOP_DIR}             )
+##target_link_libraries     (${RARIAN_LIB_NAME}    ${dep_libs} )
+##target_link_options       (${RARIAN_LIB_NAME}    PRIVATE "/SUBSYSTEM:WINDOWS"        "/ENTRY:wWinMainCRTStartup"        "/SAFESEH:NO" )
+#set_target_properties     (${RARIAN_LIB_NAME}    PROPERTIES PREFIX "lib"  )

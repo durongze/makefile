@@ -1,0 +1,23 @@
+
+set (SDASZ80_TOP_DIR        ${CMAKE_CURRENT_LIST_DIR}   )
+set (SDASZ80_APP            sdasz80                        )
+set (SDASZ80_APP_DEFS       _CRT_SECURE_NO_WARNINGS  _CRT_NONSTDC_NO_WARNINGS    WIN32   _CONSOLE )
+set (SDASZ80_APP_DEFS       ${SDASZ80_APP_DEFS}    INDEXLIB    MLH_MAP    SDK    )
+set (SDASZ80_APP_INC_DIRS   .         ../asxxsrc    ../../support/util           )
+set (SDASZ80_APP_LIB_DIRS   .         ../asxxsrc    ../../support/util           )
+set (SDASZ80_APP_DEP_LIBS       odbc32.lib             odbccp32.lib              )
+
+file(GLOB UTIL_LIB_SRCS       RELATIVE ${SDASZ80_TOP_DIR}     ../../support/util/*.c*    ../../support/util/*.h* )
+file(GLOB ASXX_LIB_SRCS       RELATIVE ${SDASZ80_TOP_DIR}     ../asxxsrc/*.c*            ../asxxsrc/*.h*         )
+file(GLOB SDASZ80_APP_HDRS    RELATIVE ${SDASZ80_TOP_DIR}     ./*.h*)
+file(GLOB SDASZ80_APP_SRCS    RELATIVE ${SDASZ80_TOP_DIR}     ./*.c*)
+set (     SDASZ80_ALL_SRCS    ${UTIL_LIB_SRCS}    ${ASXX_LIB_SRCS}   ${SDASZ80_APP_HDRS}    ${SDASZ80_APP_SRCS})
+
+list(REMOVE_ITEM           SDASZ80_ALL_SRCS       ../../support/util/findme.c)
+
+add_executable            (${SDASZ80_APP}                ${SDASZ80_APP_HDRS}   ${SDASZ80_ALL_SRCS} )
+target_compile_definitions(${SDASZ80_APP}    PRIVATE     ${SDASZ80_APP_DEFS}                    )
+target_include_directories(${SDASZ80_APP}    PRIVATE     ${SDASZ80_APP_INC_DIRS}/               )
+target_link_directories   (${SDASZ80_APP}    PRIVATE     ${SDASZ80_APP_LIB_DIRS}/               )
+target_link_libraries     (${SDASZ80_APP}                ${SDASZ80_APP_DEP_LIBS}                )
+#target_link_options       (${SDASZ80_APP}    PRIVATE "/SUBSYSTEM:WINDOWS"        "/ENTRY:wWinMainCRTStartup"        "/SAFESEH:NO" )

@@ -1,0 +1,42 @@
+cmake_minimum_required(VERSION 3.16)
+
+project(pic14)
+
+set(PIC14_TOP_DIR ${CMAKE_CURRENT_LIST_DIR})
+
+file(GLOB PIC14_LIB_FILE_HDRS    RELATIVE   ${PIC14_TOP_DIR}/    ./*.h* )
+file(GLOB PIC14_LIB_FILE_SRCS    RELATIVE   ${PIC14_TOP_DIR}/    ./*.c* )
+file(GLOB PIC14_LIB_FILE_DEFS    RELATIVE   ${PIC14_TOP_DIR}/    ./*.def )
+
+source_group("DS390Headers" FILES ${PIC14_LIB_FILE_HDRS})
+source_group("DS390Sources" FILES ${PIC14_LIB_FILE_SRCS})
+source_group("DS390Defines" FILES ${PIC14_LIB_FILE_DEFS})
+
+set (PIC14_LIB_ALL_FILES  ${PIC14_LIB_FILE_HDRS}     ${PIC14_LIB_FILE_SRCS}     ${PIC14_LIB_FILE_DEFS} )
+list(REMOVE_ITEM        PIC14_LIB_ALL_FILES   XXX.c)
+
+message("PIC14_LIB_ALL_FILES : ${PIC14_LIB_ALL_FILES} ")
+
+#source_group(TREE ${PIC14_TOP_DIR} FILES ${PIC14_LIB_ALL_FILES})
+
+set (  PIC14_LIB_NAME    pic14                     )
+set (  PIC14_LIB_DEFS    _CRT_SECURE_NO_WARNINGS    _CRT_NONSTDC_NO_WARNINGS    WIN32    _LIB    )#_DEBUG
+set (  PIC14_DEP_INCS    ..    .    ../..    ../../support/util )
+
+add_library               (${PIC14_LIB_NAME}    STATIC     ${PIC14_LIB_ALL_FILES}       )
+target_compile_definitions(${PIC14_LIB_NAME}    PRIVATE    ${PIC14_LIB_DEFS}            )
+target_include_directories(${PIC14_LIB_NAME}    PRIVATE    ${PIC14_DEP_INCS}            )
+target_link_directories   (${PIC14_LIB_NAME}    PRIVATE    ${PIC14_TOP_DIR}             )
+#target_link_libraries     (${PIC14_LIB_NAME}    ${dep_libs} )
+#target_link_options       (${PIC14_LIB_NAME}    PRIVATE "/SUBSYSTEM:WINDOWS"        "/ENTRY:wWinMainCRTStartup"        "/SAFESEH:NO" )
+set_target_properties     (${PIC14_LIB_NAME}    PROPERTIES PREFIX "lib"  )
+
+foreach(FileNameDef ${PIC14_LIB_FILE_DEFS})
+    string(REPLACE ".def" "" FileNameDef "${FileNameDef}")
+	add_custom_command(
+		TARGET     ${PIC14_LIB_NAME}
+		PRE_BUILD
+		COMMAND    gawk -f ${PIC14_TOP_DIR}/../SDCCpeeph.awk ${PIC14_TOP_DIR}/${FileNameDef}.def  > ${PIC14_TOP_DIR}/${FileNameDef}.rul
+		COMMENT    "Generate ${FileNameDef}.rul "
+	)
+endforeach()

@@ -1,0 +1,23 @@
+
+set (SDASSTM8_TOP_DIR        ${CMAKE_CURRENT_LIST_DIR}   )
+set (SDASSTM8_APP            sdasstm8                        )
+set (SDASSTM8_APP_DEFS       _CRT_SECURE_NO_WARNINGS  _CRT_NONSTDC_NO_WARNINGS    WIN32     )
+set (SDASSTM8_APP_DEFS       ${SDASSTM8_APP_DEFS}    LIB)
+set (SDASSTM8_APP_INC_DIRS   .         ../asxxsrc    ../../support/util           )
+set (SDASSTM8_APP_LIB_DIRS   .         ../asxxsrc    ../../support/util           )
+set (SDASSTM8_APP_DEP_LIBS       odbc32.lib             odbccp32.lib              )
+
+file(GLOB UTIL_LIB_SRCS        RELATIVE ${SDASSTM8_TOP_DIR}     ../../support/util/*.c*    ../../support/util/*.h* )
+file(GLOB ASXX_LIB_SRCS        RELATIVE ${SDASSTM8_TOP_DIR}     ../asxxsrc/*.c*            ../asxxsrc/*.h*         )
+file(GLOB SDASSTM8_APP_HDRS    RELATIVE ${SDASSTM8_TOP_DIR}     ./*.h*)
+file(GLOB SDASSTM8_APP_SRCS    RELATIVE ${SDASSTM8_TOP_DIR}     ./*.c*)
+set (     SDASSTM8_ALL_SRCS    ${UTIL_LIB_SRCS}    ${ASXX_LIB_SRCS}   ${SDASSTM8_APP_HDRS}    ${SDASSTM8_APP_SRCS})
+
+list(REMOVE_ITEM           SDASSTM8_ALL_SRCS       ../../support/util/findme.c)
+
+add_executable            (${SDASSTM8_APP}                ${SDASSTM8_APP_HDRS}   ${SDASSTM8_ALL_SRCS} )
+target_compile_definitions(${SDASSTM8_APP}    PRIVATE     ${SDASSTM8_APP_DEFS}                    )
+target_include_directories(${SDASSTM8_APP}    PRIVATE     ${SDASSTM8_APP_INC_DIRS}/               )
+target_link_directories   (${SDASSTM8_APP}    PRIVATE     ${SDASSTM8_APP_LIB_DIRS}/               )
+target_link_libraries     (${SDASSTM8_APP}                ${SDASSTM8_APP_DEP_LIBS}                )
+#target_link_options       (${SDASSTM8_APP}    PRIVATE "/SUBSYSTEM:WINDOWS"        "/ENTRY:wWinMainCRTStartup"        "/SAFESEH:NO" )

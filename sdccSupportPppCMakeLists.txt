@@ -1,0 +1,84 @@
+
+set (SDCPP_TOP_DIR        ${CMAKE_CURRENT_LIST_DIR}   )
+set (SDCPP_APP            sdcpp                        )
+set (SDCPP_APP_DEFS       _CRT_SECURE_NO_WARNINGS  _CRT_NONSTDC_NO_WARNINGS    WIN32   _CONSOLE )
+set (SDCPP_APP_DEFS       ${SDCPP_APP_DEFS}    HAVE_CONFIG_H            )
+set (SDCPP_APP_INC_DIRS   .         ../sdbinutils/include       ./win32        ./libcpp       ./libcpp/include        ./gcc;)
+set (SDCPP_APP_LIB_DIRS   .         ../asxxsrc    ../../support/util           )
+set (SDCPP_APP_DEP_LIBS       odbc32.lib           odbccp32.lib           )
+
+set(IBERTY_LIB_SRCS_FILTER ../sdbinutils/libiberty/gettimeofday.c ../sdbinutils/libiberty/physmem.c  ../sdbinutils/libiberty/timeval-utils.c   )
+set(IBERTY_LIB_SRCS_FILTER ${IBERTY_LIB_SRCS_FILTER} ../sdbinutils/libiberty/vfprintf.c    ../sdbinutils/libiberty/waitpid.c   ../sdbinutils/libiberty/simple-object-xcoff.c  ../sdbinutils/libiberty/simple-object.c)
+set(IBERTY_LIB_SRCS_FILTER ${IBERTY_LIB_SRCS_FILTER} ../sdbinutils/libiberty/simple-object-coff.c   ../sdbinutils/libiberty/vprintf.c  ../sdbinutils/libiberty/vsnprintf.c)
+set(IBERTY_LIB_SRCS_FILTER ${IBERTY_LIB_SRCS_FILTER} ../sdbinutils/libiberty/strncmp.c       ../sdbinutils/libiberty/clock.c  ../sdbinutils/libiberty/calloc.c)
+set(IBERTY_LIB_SRCS_FILTER ${IBERTY_LIB_SRCS_FILTER} ../sdbinutils/libiberty/strerror.c       ../sdbinutils/libiberty/strtoul.c  ../sdbinutils/libiberty/strnlen.c ../sdbinutils/libiberty/bsearch.c)
+set(IBERTY_LIB_SRCS_FILTER ${IBERTY_LIB_SRCS_FILTER} ../sdbinutils/libiberty/getcwd.c       ../sdbinutils/libiberty/rename.c  ../sdbinutils/libiberty/simple-object-elf.c ../sdbinutils/libiberty/simple-object-mach-o.c)
+set(IBERTY_LIB_SRCS_FILTER ${IBERTY_LIB_SRCS_FILTER} ../sdbinutils/libiberty/snprintf.c       ../sdbinutils/libiberty/unlink-if-ordinary.c  ../sdbinutils/libiberty/vfork.c)
+#set(CPP_LIB_SRCS_FILTER   )
+
+file(GLOB IBERTY_LIB_SRCS_PEX   RELATIVE ${SDCPP_TOP_DIR}     ../sdbinutils/libiberty/pex*.c*    ../sdbinutils/libiberty/pex*.h*)
+file(GLOB IBERTY_LIB_SRCS   RELATIVE ${SDCPP_TOP_DIR}     ../sdbinutils/libiberty/*.c*    ../sdbinutils/libiberty/*.h*)
+file(GLOB CPP_LIB_SRCS      RELATIVE ${SDCPP_TOP_DIR}     ./libcpp/*.c*                   ./libcpp/*.h*               )
+file(GLOB WIN32_LIB_SRCS    RELATIVE ${SDCPP_TOP_DIR}     ./win32/*.c*                    ./win32/*.h*               )
+
+#file(GLOB UTIL_LIB_SRCS     RELATIVE ${SDCPP_TOP_DIR}     ../../support/util/*.c*         ../../support/util/*.h*     )
+#file(GLOB SDCC_LIB_SRCS     RELATIVE ${SDCPP_TOP_DIR}     ../../src/SDCC*.c*              ../../src/SDCC*.h*          )
+file(GLOB SDCPP_APP_HDRS    RELATIVE ${SDCPP_TOP_DIR}     ./*.h*)
+file(GLOB SDCPP_APP_SRCS    RELATIVE ${SDCPP_TOP_DIR}     ./*.c*)
+set (     SDCPP_ALL_SRCS    ${IBERTY_LIB_SRCS}    ${CPP_LIB_SRCS}  ${WIN32_LIB_SRCS}  ${SDCPP_APP_HDRS}    ${SDCPP_APP_SRCS})
+list(REMOVE_ITEM           SDCPP_ALL_SRCS       ${IBERTY_LIB_SRCS_FILTER} ${IBERTY_LIB_SRCS_PEX} ${CPP_LIB_SRCS_FILTER} )
+
+#source_group(TREE ./ FILES ${SDCPP_ALL_SRCS})
+
+add_executable            (${SDCPP_APP}                ${SDCPP_APP_HDRS}   ${SDCPP_ALL_SRCS} )
+target_compile_definitions(${SDCPP_APP}    PRIVATE     ${SDCPP_APP_DEFS}                    )
+target_include_directories(${SDCPP_APP}    PRIVATE     ${SDCPP_APP_INC_DIRS}/               )
+target_link_directories   (${SDCPP_APP}    PRIVATE     ${SDCPP_APP_LIB_DIRS}/               )
+target_link_libraries     (${SDCPP_APP}                ${SDCPP_APP_DEP_LIBS}                )
+#target_link_options       (${SDCPP_APP}    PRIVATE "/SUBSYSTEM:WINDOWS"        "/ENTRY:wWinMainCRTStartup"        "/SAFESEH:NO" )
+
+foreach(FileNameDef sdcpp.opt)
+   set(FileNameDef sdcpp.opt)
+
+   string(REPLACE ".opt" "" FileNameDef "${FileNameDef}")
+   set(GEN_OPTS_FILE ${CMAKE_BINARY_DIR}/${FileNameDef}.genopts)
+	list(APPEND SDCPP_ALL_SRCS  ${GEN_OPTS_FILE})
+	message("INFO:SDCPP_ALL_SRCS  ${SDCPP_ALL_SRCS}" )
+	add_custom_command(
+	    OUTPUT     ${GEN_OPTS_FILE}
+		COMMAND    gawk -f ${SDCPP_TOP_DIR}/opt-gather.awk ${SDCPP_TOP_DIR}/${FileNameDef}.opt > ${GEN_OPTS_FILE}
+		COMMENT    "[1] Generate ${GEN_OPTS_FILE} "
+	)
+
+	add_custom_command(
+		TARGET     ${SDCPP_APP}
+		PRE_BUILD
+		COMMAND    gawk -f ${SDCPP_TOP_DIR}/opt-gather.awk ${SDCPP_TOP_DIR}/${FileNameDef}.opt > ${GEN_OPTS_FILE}
+		COMMAND    gawk -f ${SDCPP_TOP_DIR}/opt-functions.awk -f ${SDCPP_TOP_DIR}/optc-gen.awk -v header_name="config.h system.h options.h" ${GEN_OPTS_FILE} > ${SDCPP_TOP_DIR}/options.c
+		COMMAND    gawk -f ${SDCPP_TOP_DIR}/opt-functions.awk -f ${SDCPP_TOP_DIR}/opth-gen.awk ${GEN_OPTS_FILE} > ${SDCPP_TOP_DIR}/options.h
+		COMMENT    "[2] Generate options.c options.h by ${GEN_OPTS_FILE}"
+		#DEPENDS    ${GEN_OPTS_FILE}
+	)
+endforeach()
+    
+    set(MY_APP  myapp)
+
+    add_custom_target(${MY_APP} )
+
+	set(STEP_FILE_1 1.txt)
+	add_custom_command(
+	    OUTPUT    ${STEP_FILE_1}
+		COMMAND   echo "xxx" > ${STEP_FILE_1}
+		COMMENT    "[1] Generate ${STEP_FILE_1} "
+	)
+
+	add_custom_command(
+		TARGET     ${MY_APP}
+		PRE_BUILD
+		COMMAND    echo "xxx" > ${STEP_FILE_1}
+		COMMAND    type ${STEP_FILE_1} > ${SDCPP_TOP_DIR}/options.c
+		COMMAND    type ${STEP_FILE_1} > ${SDCPP_TOP_DIR}/options.h
+		COMMAND    del  ${STEP_FILE_1}
+		COMMENT    "[2] Generate options.c options.h by ${STEP_FILE_1}"
+		DEPENDS    ${STEP_FILE_1}
+	)

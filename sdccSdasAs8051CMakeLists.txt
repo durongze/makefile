@@ -1,0 +1,23 @@
+
+set (SDAS8051_TOP_DIR        ${CMAKE_CURRENT_LIST_DIR}   )
+set (SDAS8051_APP            sdas8051                        )
+set (SDAS8051_APP_DEFS       _CRT_SECURE_NO_WARNINGS  _CRT_NONSTDC_NO_WARNINGS    WIN32    _CONSOLE )
+set (SDAS8051_APP_DEFS       ${SDAS8051_APP_DEFS}    INDEXLIB              MLH_MAP)
+set (SDAS8051_APP_INC_DIRS   .         ../asxxsrc    ../../support/util           )
+set (SDAS8051_APP_LIB_DIRS   .         ../asxxsrc    ../../support/util           )
+set (SDAS8051_APP_DEP_LIBS       odbc32.lib             odbccp32.lib              )
+
+file(GLOB UTIL_LIB_SRCS      RELATIVE ${SDAS8051_TOP_DIR}     ../../support/util/*.c*    ../../support/util/*.h* )
+file(GLOB ASXX_LIB_SRCS      RELATIVE ${SDAS8051_TOP_DIR}     ../asxxsrc/*.c*            ../asxxsrc/*.h*         )
+file(GLOB SDAS8051_APP_HDRS  RELATIVE ${SDAS8051_TOP_DIR}     ./*.h*)
+file(GLOB SDAS8051_APP_SRCS  RELATIVE ${SDAS8051_TOP_DIR}     ./*.c*)
+set (     SDAS8051_ALL_SRCS    ${UTIL_LIB_SRCS}    ${ASXX_LIB_SRCS}   ${SDAS8051_APP_HDRS}    ${SDAS8051_APP_SRCS})
+
+list(REMOVE_ITEM           SDAS8051_ALL_SRCS       ../../support/util/findme.c)
+
+add_executable            (${SDAS8051_APP}                ${SDAS8051_APP_HDRS}   ${SDAS8051_ALL_SRCS} )
+target_compile_definitions(${SDAS8051_APP}    PRIVATE     ${SDAS8051_APP_DEFS}                    )
+target_include_directories(${SDAS8051_APP}    PRIVATE     ${SDAS8051_APP_INC_DIRS}/               )
+target_link_directories   (${SDAS8051_APP}    PRIVATE     ${SDAS8051_APP_LIB_DIRS}/               )
+target_link_libraries     (${SDAS8051_APP}                ${SDAS8051_APP_DEP_LIBS}                )
+#target_link_options       (${SDAS8051_APP}    PRIVATE "/SUBSYSTEM:WINDOWS"        "/ENTRY:wWinMainCRTStartup"        "/SAFESEH:NO" )

@@ -1,0 +1,42 @@
+cmake_minimum_required(VERSION 3.16)
+
+project(pdk)
+
+set(PDK_TOP_DIR ${CMAKE_CURRENT_LIST_DIR})
+
+file(GLOB PDK_LIB_FILE_HDRS    RELATIVE   ${PDK_TOP_DIR}/    ./*.h* )
+file(GLOB PDK_LIB_FILE_SRCS    RELATIVE   ${PDK_TOP_DIR}/    ./*.c* )
+file(GLOB PDK_LIB_FILE_DEFS    RELATIVE   ${PDK_TOP_DIR}/    ./*.def )
+
+source_group("DS390Headers" FILES ${PDK_LIB_FILE_HDRS})
+source_group("DS390Sources" FILES ${PDK_LIB_FILE_SRCS})
+source_group("DS390Defines" FILES ${PDK_LIB_FILE_DEFS})
+
+set (PDK_LIB_ALL_FILES  ${PDK_LIB_FILE_HDRS}     ${PDK_LIB_FILE_SRCS}     ${PDK_LIB_FILE_DEFS} )
+list(REMOVE_ITEM        PDK_LIB_ALL_FILES   XXX.c)
+
+message("PDK_LIB_ALL_FILES : ${PDK_LIB_ALL_FILES} ")
+
+#source_group(TREE ${PDK_TOP_DIR} FILES ${PDK_LIB_ALL_FILES})
+
+set (  PDK_LIB_NAME    pdk                     )
+set (  PDK_LIB_DEFS    _CRT_SECURE_NO_WARNINGS    _CRT_NONSTDC_NO_WARNINGS    WIN32    _LIB    )#_DEBUG
+set (  PDK_DEP_INCS    ..    .    ../..    ../../support/util )
+
+add_library               (${PDK_LIB_NAME}    STATIC     ${PDK_LIB_ALL_FILES}       )
+target_compile_definitions(${PDK_LIB_NAME}    PRIVATE    ${PDK_LIB_DEFS}            )
+target_include_directories(${PDK_LIB_NAME}    PRIVATE    ${PDK_DEP_INCS}            )
+target_link_directories   (${PDK_LIB_NAME}    PRIVATE    ${PDK_TOP_DIR}             )
+#target_link_libraries     (${PDK_LIB_NAME}    ${dep_libs} )
+#target_link_options       (${PDK_LIB_NAME}    PRIVATE "/SUBSYSTEM:WINDOWS"        "/ENTRY:wWinMainCRTStartup"        "/SAFESEH:NO" )
+set_target_properties     (${PDK_LIB_NAME}    PROPERTIES PREFIX "lib"  )
+
+foreach(FileNameDef ${PDK_LIB_FILE_DEFS})
+    string(REPLACE ".def" "" FileNameDef "${FileNameDef}")
+	add_custom_command(
+		TARGET     ${PDK_LIB_NAME}
+		PRE_BUILD
+		COMMAND    gawk -f ${PDK_TOP_DIR}/../SDCCpeeph.awk ${PDK_TOP_DIR}/${FileNameDef}.def  > ${PDK_TOP_DIR}/${FileNameDef}.rul
+		COMMENT    "Generate ${FileNameDef}.rul "
+	)
+endforeach()

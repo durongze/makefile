@@ -1,0 +1,42 @@
+cmake_minimum_required(VERSION 3.16)
+
+project(mos6502)
+
+set(MOS6502_TOP_DIR ${CMAKE_CURRENT_LIST_DIR})
+
+file(GLOB MOS6502_LIB_FILE_HDRS    RELATIVE   ${MOS6502_TOP_DIR}/    ./*.h* )
+file(GLOB MOS6502_LIB_FILE_SRCS    RELATIVE   ${MOS6502_TOP_DIR}/    ./*.c* )
+file(GLOB MOS6502_LIB_FILE_DEFS    RELATIVE   ${MOS6502_TOP_DIR}/    ./*.def )
+
+source_group("DS390Headers" FILES ${MOS6502_LIB_FILE_HDRS})
+source_group("DS390Sources" FILES ${MOS6502_LIB_FILE_SRCS})
+source_group("DS390Defines" FILES ${MOS6502_LIB_FILE_DEFS})
+
+set (MOS6502_LIB_ALL_FILES  ${MOS6502_LIB_FILE_HDRS}     ${MOS6502_LIB_FILE_SRCS}     ${MOS6502_LIB_FILE_DEFS} )
+list(REMOVE_ITEM        MOS6502_LIB_ALL_FILES   XXX.c)
+
+message("MOS6502_LIB_ALL_FILES : ${MOS6502_LIB_ALL_FILES} ")
+
+#source_group(TREE ${MOS6502_TOP_DIR} FILES ${MOS6502_LIB_ALL_FILES})
+
+set (  MOS6502_LIB_NAME    mos6502                     )
+set (  MOS6502_LIB_DEFS    _CRT_SECURE_NO_WARNINGS    _CRT_NONSTDC_NO_WARNINGS    WIN32    _LIB    )#_DEBUG
+set (  MOS6502_DEP_INCS    ..    .    ../..    ../../support/util )
+
+add_library               (${MOS6502_LIB_NAME}    STATIC     ${MOS6502_LIB_ALL_FILES}       )
+target_compile_definitions(${MOS6502_LIB_NAME}    PRIVATE    ${MOS6502_LIB_DEFS}            )
+target_include_directories(${MOS6502_LIB_NAME}    PRIVATE    ${MOS6502_DEP_INCS}            )
+target_link_directories   (${MOS6502_LIB_NAME}    PRIVATE    ${MOS6502_TOP_DIR}             )
+#target_link_libraries     (${MOS6502_LIB_NAME}    ${dep_libs} )
+#target_link_options       (${MOS6502_LIB_NAME}    PRIVATE "/SUBSYSTEM:WINDOWS"        "/ENTRY:wWinMainCRTStartup"        "/SAFESEH:NO" )
+set_target_properties     (${MOS6502_LIB_NAME}    PROPERTIES PREFIX "lib"  )
+
+foreach(FileNameDef ${MOS6502_LIB_FILE_DEFS})
+    string(REPLACE ".def" "" FileNameDef "${FileNameDef}")
+	add_custom_command(
+		TARGET     ${MOS6502_LIB_NAME}
+		PRE_BUILD
+		COMMAND    gawk -f ${MOS6502_TOP_DIR}/../SDCCpeeph.awk ${MOS6502_TOP_DIR}/${FileNameDef}.def  > ${MOS6502_TOP_DIR}/${FileNameDef}.rul
+		COMMENT    "Generate ${FileNameDef}.rul "
+	)
+endforeach()

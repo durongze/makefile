@@ -1,0 +1,14 @@
+#sdas390
+add_subdirectory(as8xcxxx)
+#hc08
+add_subdirectory(as6808)
+#asx8051
+add_subdirectory(as8051)
+add_subdirectory(asgb)
+add_subdirectory(asrab)
+#sdasstm8
+add_subdirectory(asstm8)
+#as_z80
+add_subdirectory(asz80)
+#aslink
+add_subdirectory(linksrc)

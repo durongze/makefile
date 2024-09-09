@@ -1,0 +1,50 @@
+cmake_minimum_required(VERSION 2.16)
+
+project(sdcc)
+
+set (SDCC_PROJ_TOP_DIR ${CMAKE_CURRENT_LIST_DIR})
+
+include(cmake/dep_3rdlib_files.cmake)
+include(cmake/find_boost.cmake)
+
+add_subdirectory(sdas)
+add_subdirectory(debugger/mcs51)
+add_subdirectory(support)
+add_subdirectory(src)
+
+add_custom_target(config
+    COMMAND echo "Gen config file!"
+	COMMENT    "Generate config project !"
+)
+
+set (VERSION_FILE ./src/version.h)
+add_custom_command(
+	OUTPUT     ${VERSION_FILE}
+	COMMAND    gawk -f ${SDCC_PROJ_TOP_DIR}/src/version.awk ${SDCC_PROJ_TOP_DIR}/ChangeLog    >    ${VERSION_FILE}
+	COMMENT    "Generate ${VERSION_FILE} "
+)
+
+set (LexerFile src/SDCClex.c)
+add_custom_command(
+	OUTPUT     ${LexerFile}
+	COMMAND    flex -8 -f -o ${LexerFile} ${SDCC_PROJ_TOP_DIR}/src/SDCC.lex
+	COMMENT    "Generate ${LexerFile} "
+)
+
+set (ParserFile src/SDCCy.c)
+add_custom_command(
+	OUTPUT     ${ParserFile}
+	COMMAND    bison -d -v -o ${ParserFile} ${SDCC_PROJ_TOP_DIR}/src/SDCC.y
+	COMMENT    "Generate ${ParserFile} "
+)
+
+foreach(FileNameDef sdas/linksrc/asxxxx_config.h.in   sdcc_vc.h.in)
+    string(REPLACE ".in" "" FileNameDef "${FileNameDef}")
+	add_custom_command(
+		TARGET     config
+		PRE_BUILD
+		COMMAND    gawk -f ${SDCC_PROJ_TOP_DIR}/configure_vc.awk    ${SDCC_PROJ_TOP_DIR}/${FileNameDef}.in    >    ${FileNameDef}
+		COMMENT    "Generate ${FileNameDef} "
+		DEPENDS    ${VERSION_FILE}
+	)
+endforeach()

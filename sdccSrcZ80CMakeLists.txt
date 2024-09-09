@@ -1,0 +1,42 @@
+cmake_minimum_required(VERSION 3.16)
+
+project(Z80)
+
+set(Z80_TOP_DIR ${CMAKE_CURRENT_LIST_DIR})
+
+file(GLOB Z80_LIB_FILE_HDRS    RELATIVE   ${Z80_TOP_DIR}/    ./*.h* )
+file(GLOB Z80_LIB_FILE_SRCS    RELATIVE   ${Z80_TOP_DIR}/    ./*.c* )
+file(GLOB Z80_LIB_FILE_DEFS    RELATIVE   ${Z80_TOP_DIR}/    ./*.def )
+
+source_group("Z80Headers" FILES ${Z80_LIB_FILE_HDRS})
+source_group("Z80Sources" FILES ${Z80_LIB_FILE_SRCS})
+source_group("Z80Defines" FILES ${Z80_LIB_FILE_DEFS})
+
+set (Z80_LIB_ALL_FILES  ${Z80_LIB_FILE_HDRS}     ${Z80_LIB_FILE_SRCS}     ${Z80_LIB_FILE_DEFS} )
+list(REMOVE_ITEM        Z80_LIB_ALL_FILES   XXX.c)
+
+message("Z80_LIB_ALL_FILES : ${Z80_LIB_ALL_FILES} ")
+
+#source_group(TREE ${Z80_TOP_DIR} FILES ${Z80_LIB_ALL_FILES})
+
+set (  Z80_LIB_NAME    z80                     )
+set (  Z80_LIB_DEFS    _CRT_SECURE_NO_WARNINGS    _CRT_NONSTDC_NO_WARNINGS    WIN32    _LIB    )#_DEBUG
+set (  Z80_DEP_INCS    ..    .    ../..    ../../support/util )
+
+add_library               (${Z80_LIB_NAME}    STATIC     ${Z80_LIB_ALL_FILES}       )
+target_compile_definitions(${Z80_LIB_NAME}    PRIVATE    ${Z80_LIB_DEFS}            )
+target_include_directories(${Z80_LIB_NAME}    PRIVATE    ${Z80_DEP_INCS}            )
+target_link_directories   (${Z80_LIB_NAME}    PRIVATE    ${Z80_TOP_DIR}             )
+#target_link_libraries     (${Z80_LIB_NAME}    ${dep_libs} )
+#target_link_options       (${Z80_LIB_NAME}    PRIVATE "/SUBSYSTEM:WINDOWS"        "/ENTRY:wWinMainCRTStartup"        "/SAFESEH:NO" )
+set_target_properties     (${Z80_LIB_NAME}    PROPERTIES PREFIX "lib"  )
+
+foreach(FileNameDef ${Z80_LIB_FILE_DEFS})
+    string(REPLACE ".def" "" FileNameDef "${FileNameDef}")
+	add_custom_command(
+		TARGET     ${Z80_LIB_NAME}
+		PRE_BUILD
+		COMMAND    gawk -f ${Z80_TOP_DIR}/../SDCCpeeph.awk ${Z80_TOP_DIR}/${FileNameDef}.def  > ${Z80_TOP_DIR}/${FileNameDef}.rul
+		COMMENT    "Generate ${FileNameDef}.rul "
+	)
+endforeach()

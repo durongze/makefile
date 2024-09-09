@@ -1,0 +1,26 @@
+
+set (PACKIHX_TOP_DIR        ${CMAKE_CURRENT_LIST_DIR}   )
+set (PACKIHX_APP            packihx                        )
+set (PACKIHX_APP_DEFS       _CRT_SECURE_NO_WARNINGS  _CRT_NONSTDC_NO_WARNINGS    WIN32   _CONSOLE )
+set (PACKIHX_APP_DEFS       ${PACKIHX_APP_DEFS}                )
+set (PACKIHX_APP_INC_DIRS   .         ../sdbinutils/include       ./win32        ./libcpp       ./libcpp/include        ./gcc;)
+set (PACKIHX_APP_LIB_DIRS   .         ../asxxsrc    ../../support/util           )
+set (PACKIHX_APP_DEP_LIBS       odbc32.lib           odbccp32.lib              )
+
+file(GLOB IBERTY_LIB_SRCS   RELATIVE ${PACKIHX_TOP_DIR}     ../sdbinutils/libiberty/*.c*    ../sdbinutils/libiberty/*.h*)
+file(GLOB CPP_LIB_SRCS      RELATIVE ${PACKIHX_TOP_DIR}     ./libcpp/*.c*                   ./libcpp/*.h*               )
+file(GLOB WIN32_LIB_SRCS    RELATIVE ${PACKIHX_TOP_DIR}     ./win32/*.c*                    ./win32/*.h*               )
+
+#file(GLOB UTIL_LIB_SRCS     RELATIVE ${PACKIHX_TOP_DIR}     ../../support/util/*.c*         ../../support/util/*.h*     )
+#file(GLOB SDCC_LIB_SRCS     RELATIVE ${PACKIHX_TOP_DIR}     ../../src/SDCC*.c*              ../../src/SDCC*.h*          )
+file(GLOB PACKIHX_APP_HDRS    RELATIVE ${PACKIHX_TOP_DIR}     ./*.h*)
+file(GLOB PACKIHX_APP_SRCS    RELATIVE ${PACKIHX_TOP_DIR}     ./*.c*)
+set (     PACKIHX_ALL_SRCS             ${PACKIHX_APP_HDRS}    ${PACKIHX_APP_SRCS})
+
+add_executable            (${PACKIHX_APP}                ${PACKIHX_APP_HDRS}   ${PACKIHX_ALL_SRCS} )
+target_compile_definitions(${PACKIHX_APP}    PRIVATE     ${PACKIHX_APP_DEFS}                    )
+target_include_directories(${PACKIHX_APP}    PRIVATE     ${PACKIHX_APP_INC_DIRS}/               )
+target_link_directories   (${PACKIHX_APP}    PRIVATE     ${PACKIHX_APP_LIB_DIRS}/               )
+target_link_libraries     (${PACKIHX_APP}                ${PACKIHX_APP_DEP_LIBS}                )
+#target_link_options       (${PACKIHX_APP}    PRIVATE "/SUBSYSTEM:WINDOWS"        "/ENTRY:wWinMainCRTStartup"        "/SAFESEH:NO" )
+

@@ -1,0 +1,24 @@
+
+set (SDAS6808_TOP_DIR        ${CMAKE_CURRENT_LIST_DIR}   )
+set (SDAS6808_APP            sdas6808                        )
+set (SDAS6808_APP_DEFS       _CRT_SECURE_NO_WARNINGS  _CRT_NONSTDC_NO_WARNINGS    WIN32    _CONSOLE )
+set (SDAS6808_APP_DEFS       ${SDAS6808_APP_DEFS}            )
+set (SDAS6808_APP_INC_DIRS   .         ../asxxsrc    ../../support/util  )
+set (SDAS6808_APP_LIB_DIRS   .         ../asxxsrc    ../../support/util  )
+set (SDAS6808_APP_DEP_LIBS       odbc32.lib             odbccp32.lib         )
+
+file(GLOB UTIL_LIB_SRCS      RELATIVE ${SDAS6808_TOP_DIR}     ../../support/util/*.c*    ../../support/util/*.h* )
+file(GLOB ASXX_LIB_SRCS      RELATIVE ${SDAS6808_TOP_DIR}     ../asxxsrc/*.c*            ../asxxsrc/*.h*         )
+file(GLOB SDAS6808_APP_HDRS  RELATIVE ${SDAS6808_TOP_DIR}     ./*.h*)
+file(GLOB SDAS6808_APP_SRCS  RELATIVE ${SDAS6808_TOP_DIR}     ./*.c*)
+set (     SDAS6808_ALL_SRCS    ${UTIL_LIB_SRCS}    ${ASXX_LIB_SRCS}   ${SDAS6808_APP_HDRS}    ${SDAS6808_APP_SRCS})
+
+list(REMOVE_ITEM           SDAS6808_ALL_SRCS       ../../support/util/findme.c)
+
+
+add_executable            (${SDAS6808_APP}                ${SDAS6808_APP_HDRS}   ${SDAS6808_ALL_SRCS} )
+target_compile_definitions(${SDAS6808_APP}    PRIVATE     ${SDAS6808_APP_DEFS}                    )
+target_include_directories(${SDAS6808_APP}    PRIVATE     ${SDAS6808_APP_INC_DIRS}/               )
+target_link_directories   (${SDAS6808_APP}    PRIVATE     ${SDAS6808_APP_LIB_DIRS}/               )
+target_link_libraries     (${SDAS6808_APP}                ${SDAS6808_APP_DEP_LIBS}                )
+#target_link_options       (${SDAS6808_APP}    PRIVATE "/SUBSYSTEM:WINDOWS"        "/ENTRY:wWinMainCRTStartup"        "/SAFESEH:NO" )
