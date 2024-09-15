@@ -1,0 +1,67 @@
+cmake_minimum_required(VERSION 3.15)
+project (kmod)
+
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+set(LIBKMOD_TOP_DIR    ${CMAKE_CURRENT_LIST_DIR})
+set(LIBKMOD_INC_DIR    ${LIBKMOD_TOP_DIR}/libkmod )
+
+
+file(GLOB LibKModSRCS          RELATIVE ${LIBKMOD_TOP_DIR}    libkmod/*.c*     )
+file(GLOB LibKModHDRS          RELATIVE ${LIBKMOD_TOP_DIR}    libkmod/*.h*     )
+
+set (LIBKMOD_HDRS  ${LibKModHDRS})
+
+#${LibKModGkmodSRCS}    ${LibKModGkmodHDRS}
+#${LibKModKeyMapSRCS}
+set(ALL_FILES
+    ${LibKModAccSRCS}      ${LibKModAtaIdSRCS}      ${LibKModCdRomIdSRCS}    ${LibKModCollectSRCS}    ${LibKModFloppySRCS}    ${LibKModV4lIdSRCS}
+    ${LibKModMtdSRCS}      ${LibKModMtdHDRS}
+    ${LibKModScsiSRCS}     ${LibKModScsiHDRS}       
+    ${LibKModSRCS}         ${LibKModHDRS}
+)
+
+list(REMOVE_ITEM ALL_FILES           libkmod/xxxxx.c )
+
+
+#list(REMOVE_ITEM LibKModSRCS   xxx.c)
+set(LIBKMOD_STATIC kmod_static)
+add_library               (${LIBKMOD_STATIC} STATIC  ${ALL_FILES}       )
+target_include_directories(${LIBKMOD_STATIC} PRIVATE ${LIBKMOD_INC_DIR}   ${ZLIB_INCLUDE_DIRS})
+target_link_directories   (${LIBKMOD_STATIC} PRIVATE ${LIBKMOD_SRC_DIR}/  ${ZLIB_LIBRARY_DIRS})
+target_link_libraries     (${LIBKMOD_STATIC} PRIVATE       c                ${ZLIB_LIBRARIES}    )
+target_compile_definitions(${LIBKMOD_STATIC} PRIVATE
+	SYSCONFDIR="/etc/"
+)
+
+set(LIBKMOD_SHARED kmod_shared)
+add_library               (${LIBKMOD_SHARED} SHARED  ${ALL_FILES})
+target_include_directories(${LIBKMOD_SHARED} PRIVATE ${LIBKMOD_INC_DIR}   ${ZLIB_INCLUDE_DIRS} )
+target_link_directories   (${LIBKMOD_SHARED} PRIVATE ${LIBKMOD_SRC_DIR}/  ${ZLIB_LIBRARY_DIRS} )
+target_link_libraries     (${LIBKMOD_SHARED} PRIVATE        c               ${ZLIB_LIBRARIES}    )
+target_compile_definitions(${LIBKMOD_SHARED} PRIVATE
+	SYSCONFDIR="/etc/"
+)
+
+
+SET(install_targets ${LIBKMOD_STATIC}    ${LIBKMOD_SHARED})
+SET(install_hdr_dir include)
+
+set_target_properties(${LIBKMOD_STATIC} PROPERTIES PUBLIC_HEADER "${LIBKMOD_HDRS}")
+
+INSTALL(TARGETS ${install_targets}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION ${install_hdr_dir}
+       )
+
+install(FILES      ${LIBKMOD_HDRS} DESTINATION ${install_hdr_dir})
+install(DIRECTORY  "inc_sub_dir"   DESTINATION ${install_hdr_dir} FILES_MATCHING PATTERN "*.h")

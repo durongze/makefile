@@ -1,0 +1,114 @@
+cmake_minimum_required(VERSION 3.15)
+project (udev)
+
+set(VERSION 1)
+
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/version.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/version.h"
+)
+
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+set(LIBUDEV_TOP_DIR    ${CMAKE_CURRENT_LIST_DIR})
+set(LIBUDEV_INC_DIR    ${LIBUDEV_TOP_DIR}/src    ${LIBUDEV_TOP_DIR}/src/gudev/    ${LIBUDEV_TOP_DIR}/src/mtd_probe    ${LIBUDEV_TOP_DIR}/src/scsi_id)
+set(LIBUDEV_INC_DIR    ${LIBUDEV_INC_DIR}        ${KMOD_INCLUDE_DIRS} )
+
+file(GLOB LibUDevAccSRCS       RELATIVE ${LIBUDEV_TOP_DIR}    src/accelerometer/*.c*     )
+
+file(GLOB LibUDevAtaIdSRCS     RELATIVE ${LIBUDEV_TOP_DIR}    src/ata_id/*.c*     )
+
+file(GLOB LibUDevCdRomIdSRCS   RELATIVE ${LIBUDEV_TOP_DIR}    src/cdrom_id/*.c*     )
+
+file(GLOB LibUDevCollectSRCS   RELATIVE ${LIBUDEV_TOP_DIR}    src/collect/*.c*     )
+
+file(GLOB LibUDevFloppySRCS    RELATIVE ${LIBUDEV_TOP_DIR}    src/floppy/*.c*     )
+
+file(GLOB LibUDevGudevSRCS     RELATIVE ${LIBUDEV_TOP_DIR}    src/gudev/*.c*     )
+file(GLOB LibUDevGudevHDRS     RELATIVE ${LIBUDEV_TOP_DIR}    src/gudev/*.h*     )
+
+file(GLOB LibUDevKeyMapSRCS    RELATIVE ${LIBUDEV_TOP_DIR}    src/keymap/*.c*     )
+
+file(GLOB LibUDevMtdSRCS       RELATIVE ${LIBUDEV_TOP_DIR}    src/mtd_probe/*.c*     )
+file(GLOB LibUDevMtdHDRS       RELATIVE ${LIBUDEV_TOP_DIR}    src/mtd_probe/*.h*     )
+
+file(GLOB LibUDevScsiSRCS      RELATIVE ${LIBUDEV_TOP_DIR}    src/scsi_id/*.c*     )
+file(GLOB LibUDevScsiHDRS      RELATIVE ${LIBUDEV_TOP_DIR}    src/scsi_id/*.h*     )
+
+file(GLOB LibUDevV4lIdSRCS     RELATIVE ${LIBUDEV_TOP_DIR}    src/v4l_id/*.c*     )
+
+file(GLOB LibUDevSRCS          RELATIVE ${LIBUDEV_TOP_DIR}    src/*.c*     )
+file(GLOB LibUDevHDRS          RELATIVE ${LIBUDEV_TOP_DIR}    src/*.h*     )
+
+file(GLOB LibUDevTestSRCS      RELATIVE ${LIBUDEV_TOP_DIR}    src/*test*.c*     )
+
+set (LIBUDEV_HDRS  ${LibUDevHDRS})
+
+#    ${LibUDevGudevSRCS}    ${LibUDevGudevHDRS}
+#    ${LibUDevKeyMapSRCS}
+#    ${LibUDevAccSRCS}      ${LibUDevAtaIdSRCS}      ${LibUDevCdRomIdSRCS}    ${LibUDevCollectSRCS}    ${LibUDevFloppySRCS}    ${LibUDevV4lIdSRCS}
+#    ${LibUDevMtdSRCS}      ${LibUDevMtdHDRS}
+#    ${LibUDevScsiSRCS}     ${LibUDevScsiHDRS} 
+set(ALL_FILES
+   
+    ${LibUDevSRCS}         ${LibUDevHDRS}
+)
+
+# 
+list(REMOVE_ITEM ALL_FILES           ${LibUDevTestSRCS}    src/udevadm.c   src/udevd.c) 
+
+set(LIBUDEV_STATIC udev_static)
+add_library               (${LIBUDEV_STATIC} STATIC  ${ALL_FILES}       )
+target_sources            (${LIBUDEV_STATIC} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/version.h")
+target_include_directories(${LIBUDEV_STATIC} PRIVATE ${LIBUDEV_INC_DIR}   ${ZLIB_INCLUDE_DIRS})
+target_link_directories   (${LIBUDEV_STATIC} PRIVATE ${LIBUDEV_SRC_DIR}/  ${ZLIB_LIBRARY_DIRS})
+target_compile_definitions(${LIBUDEV_STATIC} PRIVATE
+	SYSCONFDIR="/etc/"
+	VERSION="1.0.0"
+	_GNU_SOURCE
+	WITH_SELINUX
+        PKGLIBEXECDIR="${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}"
+	FIRMWARE_PATH=""
+	USB_DATABASE=""
+	PCI_DATABASE=""
+)
+
+set(LIBUDEV_SHARED udev_shared)
+add_library               (${LIBUDEV_SHARED} SHARED  ${ALL_FILES})
+target_sources            (${LIBUDEV_SHARED} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/version.h")
+target_include_directories(${LIBUDEV_SHARED} PRIVATE ${LIBUDEV_INC_DIR}   ${ZLIB_INCLUDE_DIRS} )
+target_link_directories   (${LIBUDEV_SHARED} PRIVATE ${LIBUDEV_SRC_DIR}/  ${ZLIB_LIBRARY_DIRS} )
+target_link_libraries     (${LIBUDEV_SHARED} PRIVATE                       ${ZLIB_LIBRARIES}    )
+target_compile_definitions(${LIBUDEV_SHARED} PRIVATE
+	SYSCONFDIR="/etc/"
+	VERSION="1.0.0"
+	_GNU_SOURCE
+	WITH_SELINUX
+        PKGLIBEXECDIR="${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}"
+	FIRMWARE_PATH=""
+	USB_DATABASE=""
+	PCI_DATABASE=""
+)
+
+
+SET(install_targets ${LIBUDEV_STATIC}    ${LIBUDEV_SHARED})
+SET(install_hdr_dir include)
+
+set_target_properties(${LIBUDEV_STATIC} PROPERTIES PUBLIC_HEADER "${LIBUDEV_HDRS}")
+
+INSTALL(TARGETS ${install_targets}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION ${install_hdr_dir}
+       )
+
+install(FILES      ${LIBUDEV_HDRS} DESTINATION ${install_hdr_dir})
+install(DIRECTORY  "inc_sub_dir"   DESTINATION ${install_hdr_dir} FILES_MATCHING PATTERN "*.h")

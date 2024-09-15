@@ -1,0 +1,101 @@
+cmake_minimum_required(VERSION 3.15)
+project (libblkid)
+
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/config.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/config.h"
+)
+
+set(UTIL_LINUX_TOP_DIR ${CMAKE_CURRENT_LIST_DIR})
+set(UTIL_LINUX_INC_DIR ${UTIL_LINUX_TOP_DIR}/    ${UTIL_LINUX_TOP_DIR}/include ${UTIL_LINUX_TOP_DIR}/lib)
+
+file(GLOB UtilLinuxCommonSRCS       RELATIVE ${UTIL_LINUX_TOP_DIR}    lib/*.c*    )
+file(GLOB UtilLinuxCommonHDRS       RELATIVE ${UTIL_LINUX_TOP_DIR}    lib/*.h*    )
+
+set(LIB_BLKID_DIR_NAME libblkid)
+set(LIB_BLKID_TOP_DIR ${UTIL_LINUX_TOP_DIR}/${LIB_BLKID_DIR_NAME})
+set(LIB_BLKID_INC_DIR ${LIB_BLKID_TOP_DIR}/      ${LIB_BLKID_TOP_DIR}/src      ${CMAKE_CURRENT_BINARY_DIR}/)
+
+file(GLOB LibBlkIdPartitionsSRCS   RELATIVE ${UTIL_LINUX_TOP_DIR}    ${LIB_BLKID_DIR_NAME}/src/partitions/*.c*    )
+file(GLOB LibBlkIdPartitionsHDRS   RELATIVE ${UTIL_LINUX_TOP_DIR}    ${LIB_BLKID_DIR_NAME}/src/partitions/*.h*    )
+
+file(GLOB LibBlkIdSuperBlocksSRCS  RELATIVE ${UTIL_LINUX_TOP_DIR}    ${LIB_BLKID_DIR_NAME}/src/superblocks/*.c*   )
+file(GLOB LibBlkIdSuperBlocksHDRS  RELATIVE ${UTIL_LINUX_TOP_DIR}    ${LIB_BLKID_DIR_NAME}/src/superblocks/*.h*   )
+
+file(GLOB LibBlkIdTopologySRCS     RELATIVE ${UTIL_LINUX_TOP_DIR}    ${LIB_BLKID_DIR_NAME}/src/topology/*.c*    )
+file(GLOB LibBlkIdTopologyHDRS     RELATIVE ${UTIL_LINUX_TOP_DIR}    ${LIB_BLKID_DIR_NAME}/src/topology/*.h*    )
+
+file(GLOB LibBlkIdSRCS             RELATIVE ${UTIL_LINUX_TOP_DIR}    ${LIB_BLKID_DIR_NAME}/src/*.c*    )
+file(GLOB LibBlkIdHDRS             RELATIVE ${UTIL_LINUX_TOP_DIR}    ${LIB_BLKID_DIR_NAME}/src/*.h*    )
+
+set (LIB_BLKID_HDRS  ${LibBlkIdHDRS})
+
+set(ALL_FILES
+    ${UtilLinuxCommonSRCS}       ${UtilLinuxCommonHDRS}
+    ${LibBlkIdPartitionsSRCS}    ${LibBlkIdPartitionsHDRS}
+    ${LibBlkIdSuperBlocksSRCS}   ${LibBlkIdSuperBlocksHDRS}
+    ${LibBlkIdTopologySRCS}      ${LibBlkIdTopologyHDRS}
+    ${LibBlkIdSRCS}              ${LibBlkIdHDRS}
+)
+
+list(REMOVE_ITEM ALL_FILES          ../lib/xxxxxxxxxxxx.c )
+
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/${LIB_BLKID_DIR_NAME}/src/blkid.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/blkid.h"
+)
+
+set                       (  LIB_BLKID_STATIC            blkid_static     )
+add_library               (${LIB_BLKID_STATIC} STATIC  ${ALL_FILES}       )
+target_include_directories(${LIB_BLKID_STATIC} PRIVATE ${LIB_BLKID_INC_DIR}   ${UTIL_LINUX_INC_DIR})
+target_link_directories   (${LIB_BLKID_STATIC} PRIVATE ${LIB_BLKID_SRC_DIR}/  ${UTIL_LINUX_INC_DIR})
+target_link_libraries     (${LIB_BLKID_STATIC} PRIVATE        c               ${ZLIB_LIBRARIES}    )
+target_compile_definitions(${LIB_BLKID_STATIC} PRIVATE
+	HAVE_USLEEP
+	HAVE_FSYNC
+	LIBBLKID_VERSION="1.0.0"
+	LIBBLKID_DATE=__DATE__
+	HAVE_ERRX
+	OPEN_MAX=10
+	HAVE_OPENAT
+)
+
+set                       (  LIB_BLKID_SHARED            blkid_shared     )
+add_library               (${LIB_BLKID_SHARED} SHARED  ${ALL_FILES}       )
+target_include_directories(${LIB_BLKID_SHARED} PRIVATE ${LIB_BLKID_INC_DIR}   ${UTIL_LINUX_INC_DIR} )
+target_link_directories   (${LIB_BLKID_SHARED} PRIVATE ${LIB_BLKID_SRC_DIR}/  ${UTIL_LINUX_INC_DIR} )
+target_link_libraries     (${LIB_BLKID_SHARED} PRIVATE        c               ${ZLIB_LIBRARIES}    )
+target_compile_definitions(${LIB_BLKID_SHARED} PRIVATE
+	HAVE_USLEEP
+	HAVE_FSYNC
+	LIBBLKID_VERSION="1.0.0"
+	LIBBLKID_DATE=__DATE__
+	HAVE_ERRX
+	OPEN_MAX=10
+	HAVE_OPENAT
+)
+
+
+SET(install_targets ${LIB_BLKID_STATIC}    ${LIB_BLKID_SHARED})
+SET(install_hdr_dir include)
+
+set_target_properties(${LIB_BLKID_STATIC} PROPERTIES PUBLIC_HEADER "${LIB_BLKID_HDRS}")
+
+INSTALL(TARGETS ${install_targets}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION ${install_hdr_dir}
+       )
+
+install(FILES      ${LIB_BLKID_HDRS} DESTINATION ${install_hdr_dir})
+install(DIRECTORY  "inc_sub_dir"     DESTINATION ${install_hdr_dir} FILES_MATCHING PATTERN "*.h")
