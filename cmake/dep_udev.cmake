@@ -1,0 +1,25 @@
+#FindUDEV.cmake:FIND_PACKAGE_HANDLE_STANDARD_ARGS(UDEV REQUIRED_VARS UDEV_LIBRARY UDEV_INCLUDE_DIR VERSION_VAR UDEV_VERSION HANDLE_COMPONENTS) 
+if(NOT TARGET udev-master)
+    set(LIBNAME udev-master)
+    set(ALL_LIB_SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/../thirdparty)
+    set(ALL_LIB_BIN_DIR ${CMAKE_BINARY_DIR}/thirdparty)
+    set(${LIBNAME}_SRC_DIR ${ALL_LIB_SRC_DIR}/${LIBNAME})
+    set(${LIBNAME}_BIN_DIR ${ALL_LIB_BIN_DIR}/${LIBNAME})
+    message("${LIBNAME}_SRC_DIR:${${LIBNAME}_SRC_DIR}")
+    message("${LIBNAME}_BIN_DIR:${${LIBNAME}_BIN_DIR}")
+    if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+        add_compile_definitions(DYZ)
+    endif()
+    add_subdirectory(${${LIBNAME}_SRC_DIR}/)
+endif()
+
+set(UDEV_ROOT_DIR     ${${LIBNAME}_SRC_DIR})
+
+set(UDEV_INCLUDE_DIRS ${UDEV_ROOT_DIR}     ${UDEV_ROOT_DIR}/include  ${${LIBNAME}_BIN_DIR}/     ${${LIBNAME}_BIN_DIR}/include  )
+set(UDEV_LIBRARY_DIRS ${UDEV_ROOT_DIR}     ${UDEV_ROOT_DIR}/lib      ${${LIBNAME}_BIN_DIR}/     ${${LIBNAME}_BIN_DIR}/lib      ${${LIBNAME}_BIN_DIR}/Debug)
+
+set(UDEV_LIBRARY   $<TARGET_OBJECTS:udev_static>)
+set(UDEV_LIBRARIES $<TARGET_OBJECTS:udev_static>)
+
+include_directories(${UDEV_INCLUDE_DIRS}  )
+link_directories   (${UDEV_LIBRARY_DIRS}  )

@@ -1,0 +1,25 @@
+#FindKMOD.cmake:FIND_PACKAGE_HANDLE_STANDARD_ARGS(KMOD REQUIRED_VARS KMOD_LIBRARY KMOD_INCLUDE_DIR VERSION_VAR KMOD_VERSION HANDLE_COMPONENTS) 
+if(NOT TARGET kmod-17)
+    set(LIBNAME kmod-17)
+    set(ALL_LIB_SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/../thirdparty)
+    set(ALL_LIB_BIN_DIR ${CMAKE_BINARY_DIR}/thirdparty)
+    set(${LIBNAME}_SRC_DIR ${ALL_LIB_SRC_DIR}/${LIBNAME})
+    set(${LIBNAME}_BIN_DIR ${ALL_LIB_BIN_DIR}/${LIBNAME})
+    message("${LIBNAME}_SRC_DIR:${${LIBNAME}_SRC_DIR}")
+    message("${LIBNAME}_BIN_DIR:${${LIBNAME}_BIN_DIR}")
+    if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+        add_compile_definitions(SYSCONFDIR="/etc")
+    endif()
+    add_subdirectory(${${LIBNAME}_SRC_DIR}/)
+endif()
+
+set(KMOD_ROOT_DIR     ${${LIBNAME}_SRC_DIR})
+
+set(KMOD_INCLUDE_DIRS ${KMOD_ROOT_DIR}/libkmod     ${KMOD_ROOT_DIR}/include  ${${LIBNAME}_BIN_DIR}/     ${${LIBNAME}_BIN_DIR}/include  )
+set(KMOD_LIBRARY_DIRS ${KMOD_ROOT_DIR}             ${KMOD_ROOT_DIR}/lib      ${${LIBNAME}_BIN_DIR}/     ${${LIBNAME}_BIN_DIR}/lib      ${${LIBNAME}_BIN_DIR}/Debug)
+
+set(KMOD_LIBRARY   $<TARGET_OBJECTS:kmod_static>)
+set(KMOD_LIBRARIES $<TARGET_OBJECTS:kmod_static>)
+
+#include_directories(${KMOD_INCLUDE_DIRS}  )
+#link_directories   (${KMOD_LIBRARY_DIRS}  )

@@ -1,0 +1,25 @@
+#FindLIBUSB.cmake:FIND_PACKAGE_HANDLE_STANDARD_ARGS(LIBUSB REQUIRED_VARS LIBUSB_LIBRARY LIBUSB_INCLUDE_DIR VERSION_VAR LIBUSB_VERSION HANDLE_COMPONENTS) 
+if(NOT TARGET libusb)
+    set(LIBNAME libusb)
+    set(ALL_LIB_SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/../thirdparty)
+    set(ALL_LIB_BIN_DIR ${CMAKE_BINARY_DIR}/thirdparty)
+    set(${LIBNAME}_SRC_DIR ${ALL_LIB_SRC_DIR}/${LIBNAME})
+    set(${LIBNAME}_BIN_DIR ${ALL_LIB_BIN_DIR}/${LIBNAME})
+    message("${LIBNAME}_SRC_DIR:${${LIBNAME}_SRC_DIR}")
+    message("${LIBNAME}_BIN_DIR:${${LIBNAME}_BIN_DIR}")
+    if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+        add_compile_definitions(DYZ)
+    endif()
+    add_subdirectory(${${LIBNAME}_SRC_DIR}/)
+endif()
+
+set(LIBUSB_ROOT_DIR     ${${LIBNAME}_SRC_DIR})
+
+set(LIBUSB_INCLUDE_DIRS ${LIBUSB_ROOT_DIR}/libusb     ${LIBUSB_ROOT_DIR}/include  ${${LIBNAME}_BIN_DIR}/     ${${LIBNAME}_BIN_DIR}/include  )
+set(LIBUSB_LIBRARY_DIRS ${LIBUSB_ROOT_DIR}            ${LIBUSB_ROOT_DIR}/lib      ${${LIBNAME}_BIN_DIR}/     ${${LIBNAME}_BIN_DIR}/lib      ${${LIBNAME}_BIN_DIR}/Debug)
+
+set(LIBUSB_LIBRARY   $<TARGET_OBJECTS:libusb_static>)
+set(LIBUSB_LIBRARIES $<TARGET_OBJECTS:libusb_static>)
+
+#include_directories(${LIBUSB_INCLUDE_DIRS}  )
+#link_directories   (${LIBUSB_LIBRARY_DIRS}  )
