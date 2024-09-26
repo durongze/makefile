@@ -1,0 +1,163 @@
+
+CMAKE_MINIMUM_REQUIRED(VERSION 3.4)
+
+PROJECT(nasm)
+
+include(cmake/dep_perl_gen_cpp.cmake)
+
+set (NASM_CFLAGS    /O2 /Zi /DEBUG /OPT:REF /OPT:ICF )
+
+set (NASM_INTERNAL_CFLAGS  ${NASM_INTERNAL_CFLAGS} /I ${srcdir}         /I.          /I ${srcdir}/include  /I ./include )
+set (NASM_INTERNAL_CFLAGS  ${NASM_INTERNAL_CFLAGS} /I ${srcdir}/x86     /I ./x86     /I ${srcdir}/asm      /I ./asm     )
+set (NASM_INTERNAL_CFLAGS  ${NASM_INTERNAL_CFLAGS} /I ${srcdir}/disasm  /I ./disasm  /I ${srcdir}/output   /I ./output  )
+
+set (NASM_LDFLAGS   /link ${LINKFLAGS}    /SUBSYSTEM:CONSOLE    /RELEASE )
+
+set (PERL         perl                             )
+set (PERLFLAGS    -I ${srcdir}/perllib    -I ${srcdir})
+
+set(NASM_TOP_DIR ${CMAKE_CURRENT_LIST_DIR})
+set(NASM_BIN_DIR ${CMAKE_BINARY_DIR})
+set(NASM_INC_DIR ${NASM_TOP_DIR}/    ${NASM_TOP_DIR}/include    ${NASM_TOP_DIR}/config     ${NASM_TOP_DIR}/x86        ${NASM_TOP_DIR}/rdoff)
+set(NASM_INC_DIR ${NASM_INC_DIR}/    ${NASM_TOP_DIR}/stdlib     ${NASM_TOP_DIR}/nasmlib    ${NASM_TOP_DIR}/common     ${NASM_TOP_DIR}/asm)
+set(NASM_INC_DIR ${NASM_INC_DIR}/    ${NASM_TOP_DIR}/macros     ${NASM_TOP_DIR}/output     ${NASM_TOP_DIR}/disasm     ${NASM_BIN_DIR}/)
+set(NASM_INC_DIR ${NASM_INC_DIR}/    ${NASM_BIN_DIR}/x86        ${NASM_BIN_DIR}/asm        ${NASM_BIN_DIR}/disasm     ${NASM_BIN_DIR}/)
+
+file(GLOB LibNasmStdLibSRCS   RELATIVE ${NASM_TOP_DIR}    ./stdlib/*.c*    )
+file(GLOB LibNasmStdLibHDRS   RELATIVE ${NASM_TOP_DIR}    ./stdlib/*.h*    )
+
+file(GLOB LibNasmLibSRCS      RELATIVE ${NASM_TOP_DIR}    ./nasmlib/*.c*    )
+file(GLOB LibNasmLibHDRS      RELATIVE ${NASM_TOP_DIR}    ./nasmlib/*.h*    )
+
+file(GLOB LibNasmCommonSRCS   RELATIVE ${NASM_TOP_DIR}    ./common/*.c*    )
+file(GLOB LibNasmCommonHDRS   RELATIVE ${NASM_TOP_DIR}    ./common/*.h*    )
+
+file(GLOB LibNasmX86SRCS      RELATIVE ${NASM_TOP_DIR}    ./x86/*.c*    )
+file(GLOB LibNasmX86HDRS      RELATIVE ${NASM_TOP_DIR}    ./x86/*.h*    )
+
+file(GLOB LibNasmAsmSRCS      RELATIVE ${NASM_TOP_DIR}    ./asm/*.c*    )
+file(GLOB LibNasmAsmHDRS      RELATIVE ${NASM_TOP_DIR}    ./asm/*.h*    )
+
+file(GLOB LibNasmMacrosSRCS   RELATIVE ${NASM_TOP_DIR}    ./macros/*.c*    )
+file(GLOB LibNasmMacrosHDRS   RELATIVE ${NASM_TOP_DIR}    ./macros/*.h*    )
+
+file(GLOB LibNasmOutputSRCS   RELATIVE ${NASM_TOP_DIR}    ./output/*.c*    )
+file(GLOB LibNasmOutputHDRS   RELATIVE ${NASM_TOP_DIR}    ./output/*.h*    )
+
+file(GLOB LibNasmDisasmSRCS   RELATIVE ${NASM_TOP_DIR}    ./disasm/*.c*    )
+file(GLOB LibNasmDisasmHDRS   RELATIVE ${NASM_TOP_DIR}    ./disasm/*.h*    )
+
+set (ALL_SRC_FILES
+    ${LibNasmStdLibSRCS}
+    ${LibNasmStdLibHDRS}
+    ${LibNasmLibSRCS}
+    ${LibNasmLibHDRS}   
+    ${LibNasmCommonSRCS}
+    ${LibNasmCommonHDRS}
+    ${LibNasmX86SRCS}   
+    ${LibNasmX86HDRS}   
+    ${LibNasmAsmSRCS}   
+    ${LibNasmAsmHDRS}   
+    ${LibNasmMacrosSRCS}
+    ${LibNasmMacrosHDRS}
+    ${LibNasmOutputSRCS}
+    ${LibNasmOutputHDRS}
+    ${LibNasmDisasmSRCS}
+    ${LibNasmDisasmHDRS}
+)
+
+list(REMOVE_ITEM  ALL_SRC_FILES   asm/nasm.c   disasm/ndisasm.c)
+
+message("[INFO] ALL_SRC_FILES ${ALL_SRC_FILES}")
+message("[INFO] NASM_INC_DIR  ${NASM_INC_DIR}")
+
+set                  (       PERL_X86_INSNS_TOOL              ${NASM_TOP_DIR}/x86/insns.pl                                   )
+file                 (GLOB   PERL_X86_INSNS_SRCS  RELATIVE    ${NASM_TOP_DIR}    ${NASM_TOP_DIR}/x86/insns.dat               )
+perl_generate_insns  (       PERL_X86_INSNS_C_SRCS            ${PERL_X86_INSNS_TOOL}    ${PERL_X86_INSNS_SRCS}               )
+
+set                  (       PERL_VER_TOOL                    ${NASM_TOP_DIR}/version.pl                                     )
+file                 (GLOB   PERL_VER_SRCS        RELATIVE    ${NASM_TOP_DIR}    ${NASM_TOP_DIR}/version                     )
+perl_generate_ver    (       PERL_VER_C_SRCS                  ${PERL_VER_TOOL}          ${PERL_VER_SRCS}                     )
+
+set                  (       PERL_X86_REGS_TOOL               ${NASM_TOP_DIR}/x86/regs.pl                                    )
+file                 (GLOB   PERL_X86_REGS_SRCS   RELATIVE    ${NASM_TOP_DIR}    ${NASM_TOP_DIR}/x86/regs.dat                )
+perl_generate_regs   (       PERL_X86_REGS_C_SRCS             ${PERL_X86_REGS_TOOL}     ${PERL_X86_REGS_SRCS}                )
+
+set                  (       PERL_ASM_WARN_TOOL               ${NASM_TOP_DIR}/asm/warnings.pl                                )
+file                 (GLOB   PERL_ASM_WARN_SRCS   RELATIVE    ${NASM_TOP_DIR}    ${NASM_TOP_DIR}/asm/warnings.time           )
+perl_generate_warn   (       PERL_ASM_WARN_C_SRCS             ${PERL_ASM_WARN_TOOL}     ${PERL_ASM_WARN_SRCS}                )
+
+
+set                  (       PERL_ASM_TOK_HASH_TOOL               ${NASM_TOP_DIR}/asm/tokhash.pl                             )
+file                 (GLOB   PERL_ASM_TOK_HASH_SRCS   RELATIVE    ${NASM_TOP_DIR}    ${NASM_TOP_DIR}/x86/insns.dat           ) #     ${NASM_TOP_DIR}/x86/regs.dat     ${NASM_TOP_DIR}/asm/tokens.dat 
+perl_generate_tokhash(       PERL_ASM_TOK_HASH_C_SRCS             ${PERL_ASM_TOK_HASH_TOOL}     ${PERL_ASM_TOK_HASH_SRCS}    )
+
+set                  (       PERL_ASM_PPTOK_TOOL                  ${NASM_TOP_DIR}/asm/pptok.pl                               )
+file                 (GLOB   PERL_ASM_PPTOK_SRCS      RELATIVE    ${NASM_TOP_DIR}    ${NASM_TOP_DIR}/asm/pptok.dat           )
+perl_generate_pptok  (       PERL_ASM_PPTOK_C_SRCS                ${PERL_ASM_PPTOK_TOOL}     ${PERL_ASM_PPTOK_SRCS}          )
+
+set                  (       PERL_ASM_DC_HASH_TOOL                ${NASM_TOP_DIR}/nasmlib/perfhash.pl                            )
+file                 (GLOB   PERL_ASM_DC_HASH_SRCS    RELATIVE    ${NASM_TOP_DIR}    ${NASM_TOP_DIR}/asm/directiv.dat        )
+perl_generate_dc_hash(       PERL_ASM_DC_HASH_C_SRCS              ${PERL_ASM_DC_HASH_TOOL}     ${PERL_ASM_DC_HASH_SRCS}      )
+
+set                  (       PERL_ASM_MACROS_TOOL                ${NASM_TOP_DIR}/macros/macros.pl                             )
+file                 (GLOB   PERL_ASM_MACROS_SRCS    RELATIVE    ${NASM_TOP_DIR}    ${NASM_TOP_DIR}/output/outmacho.mac        )
+perl_generate_macros (       PERL_ASM_MACROS_C_SRCS              ${PERL_ASM_MACROS_TOOL}     ${PERL_ASM_MACROS_SRCS}      )
+
+set(PERL_GEN_ALL_SRCS       ${PERL_X86_INSNS_C_SRCS}    ${PERL_VER_C_SRCS}             ${PERL_X86_REGS_C_SRCS}    ${PERL_ASM_WARN_C_SRCS}   )
+set(PERL_GEN_ALL_SRCS       ${PERL_GEN_ALL_SRCS}        ${PERL_ASM_TOK_HASH_C_SRCS}    ${PERL_ASM_PPTOK_C_SRCS}   ${PERL_ASM_DC_HASH_C_SRCS} ${PERL_ASM_MACROS_C_SRCS} )
+
+set(NASM_APP       nasm)
+
+message("[INFO] : PERL_GEN_ALL_SRCS =${PERL_GEN_ALL_SRCS}")
+
+add_executable            (${NASM_APP}               ${ALL_SRC_FILES}  ${PERL_GEN_ALL_SRCS}    asm/nasm.c) 
+target_include_directories(${NASM_APP}       PRIVATE ${NASM_INC_DIR}                  )
+target_link_directories   (${NASM_APP}       PRIVATE ${NASM_SRC_DIR}/  ${ZLIB_LIBRARY_DIRS})
+target_compile_definitions(${NASM_APP}       PRIVATE
+	WARN_NUMBER_OVERFLOW
+)
+
+set(NDISASM_APP    ndisasm)
+add_executable            (${NDISASM_APP}            ${ALL_SRC_FILES}  ${PERL_GEN_ALL_SRCS}     asm/nasm.c disasm/ndisasm.c)
+target_include_directories(${NDISASM_APP}    PRIVATE ${NASM_INC_DIR}                  )
+target_link_directories   (${NDISASM_APP}    PRIVATE ${NASM_SRC_DIR}/  ${ZLIB_LIBRARY_DIRS})
+target_compile_definitions(${NDISASM_APP}    PRIVATE
+	WARN_NUMBER_OVERFLOW
+)
+
+
+#list(REMOVE_ITEM LibBzip2SRCS   xxx.c)
+set(NASM_STATIC    NASM_static)
+add_library               (${NASM_STATIC}    STATIC  ${ALL_SRC_FILES}  ${PERL_GEN_ALL_SRCS})
+target_include_directories(${NASM_STATIC}    PRIVATE ${NASM_INC_DIR}   ${ZLIB_INCLUDE_DIRS})
+target_link_directories   (${NASM_STATIC}    PRIVATE ${NASM_SRC_DIR}/  ${ZLIB_LIBRARY_DIRS})
+target_compile_definitions(${NASM_STATIC}    PRIVATE
+	WARN_NUMBER_OVERFLOW
+)
+
+set(NASM_SHARED    NASM_shared)
+add_library               (${NASM_SHARED}    SHARED  ${ALL_SRC_FILES}  ${PERL_GEN_ALL_SRCS}   asm/nasm.c)
+target_include_directories(${NASM_SHARED}    PRIVATE ${NASM_INC_DIR}   ${ZLIB_INCLUDE_DIRS})
+target_link_directories   (${NASM_SHARED}    PRIVATE ${NASM_SRC_DIR}/  ${ZLIB_LIBRARY_DIRS})
+target_link_libraries     (${NASM_SHARED}    PRIVATE                   ${ZLIB_LIBRARIES}   )
+target_compile_definitions(${NASM_SHARED}    PRIVATE
+	WARN_NUMBER_OVERFLOW
+)
+
+
+SET(install_targets ${NASM_STATIC}   ${NASM_SHARED} )
+SET(install_hdr_dir include)
+
+set_target_properties(${NASM_STATIC} PROPERTIES PUBLIC_HEADER "${NASM_HDRS}")
+
+INSTALL(TARGETS ${install_targets}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION ${install_hdr_dir}
+       )
+
+install(FILES      ${NASM_HDRS}   DESTINATION ${install_hdr_dir})
+install(DIRECTORY  "inc_sub_dir"  DESTINATION ${install_hdr_dir} FILES_MATCHING PATTERN "*.h")
+
