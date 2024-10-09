@@ -1,0 +1,148 @@
+cmake_minimum_required(VERSION 3.15)
+
+project (gperf)
+
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+set(CMAKE_C_COMPILER_FORCED TRUE)
+set(CMAKE_CXX_COMPILER_FORCED TRUE)
+
+set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS}          ")
+set(CMAKE_C_FLAGS           "${CMAKE_C_FLAGS}            ")
+set(CMAKE_LINK_LIBRARY_FLAG "${CMAKE_LINK_LIBRARY_FLAG}  ")
+
+#set(CMAKE_DEBUG_POSTFIX   "_d")
+#set(CMAKE_RELEASE_POSTFIX "_r")
+
+#include(cmake/dep_yasm_compile.cmake)
+#include(cmake/dep_common_asm.cmake)
+
+
+message(STATUS "ARCH_TYPE ${ARCH_TYPE}")
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+#configure_file( "${CMAKE_CURRENT_LIST_DIR}/config.h.in"    "${CMAKE_CURRENT_LIST_DIR}/config.h"  )
+
+set(GPERF_TOP_DIR ${CMAKE_CURRENT_LIST_DIR})
+set(GPERF_INC_DIR ${GPERF_INC_DIR}/    ${GPERF_TOP_DIR}/lib    ${GPERF_TOP_DIR}/src)
+
+
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(GPERF_INC_DIR ${GPERF_INC_DIR}/    ${GPERF_TOP_DIR}/x86_64 ${GPERF_TOP_DIR}/x86_64/)
+    message(STATUS "64-bit build GPERF_INC_DIR: ${GPERF_INC_DIR}")
+elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    set(GPERF_INC_DIR ${GPERF_INC_DIR}/    ${GPERF_TOP_DIR}/x86    ${GPERF_TOP_DIR}/x86/)
+    message(STATUS "32-bit build GPERF_INC_DIR: ${GPERF_INC_DIR}")
+else()
+    message(STATUS "Unknown architecture")
+endif()
+
+file(GLOB GPerfLibSRCS         RELATIVE ${GPERF_TOP_DIR}    ./lib/*.c*    )
+file(GLOB GPerfLibHDRS         RELATIVE ${GPERF_TOP_DIR}    ./lib/*.h*    )
+file(GLOB GPerfLibFilterSRCS   RELATIVE ${GPERF_TOP_DIR}    ./lib/filter.c*    )
+file(GLOB GPerfLibFilterHDRS   RELATIVE ${GPERF_TOP_DIR}    ./lib/filter.h*    )
+
+file(GLOB GPerfSrcSRCS         RELATIVE ${GPERF_TOP_DIR}    ./src/*.c*    )
+file(GLOB GPerfSrcHDRS         RELATIVE ${GPERF_TOP_DIR}    ./src/*.h*    )
+file(GLOB GPerfSrcFilterSRCS   RELATIVE ${GPERF_TOP_DIR}    ./src/filter.c*    )
+file(GLOB GPerfSrcFilterHDRS   RELATIVE ${GPERF_TOP_DIR}    ./src/filter.h*    )
+
+set (GPERF_HDRS              ${GPerfLibHDRS}              ${GPerfSrcHDRS}                    )
+list(REMOVE_ITEM GPERF_HDRS  ${GPerfLibFilterHDRS}        ${GPerfSrcFilterHDRS}              )
+
+set                  (  GPERF_ASM_LIB              gperf_asm_lib                         )
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set (GPERF_PLATFORM_ASMS       ${LibGPerfX86_64ASMS})
+    #yasm_compile   (${GPERF_ASM_LIB}  YASM_OBJ_SRCS  YASM_S_SRCS                       ${GPERF_PLATFORM_ASMS})
+    #yasm_compile_64(${GPERF_ASM_LIB}  YASM_OBJ_SRCS  YASM_S_SRCS                       ${GPERF_PLATFORM_ASMS})
+    message(STATUS "64-bit build YASM_S_SRCS  : ${YASM_S_SRCS}")
+    message(STATUS "64-bit build YASM_OBJ_SRCS: ${YASM_OBJ_SRCS}")
+
+    set (GPERF_PLATFORM_SRCS                                       ${LibGPerfX86_64SRCS}) # 
+elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    set (GPERF_PLATFORM_ASMS       ${LibGPerfX86ASMS})
+    #yasm_compile   (${GPERF_ASM_LIB}  YASM_OBJ_SRCS    YASM_S_SRCS                     ${GPERF_PLATFORM_ASMS}   )
+    #yasm_compile_32(${GPERF_ASM_LIB}  YASM_OBJ_SRCS  YASM_S_SRCS                       ${GPERF_PLATFORM_ASMS})
+    message(STATUS "32-bit build YASM_OBJ_SRCS: ${YASM_OBJ_SRCS}")
+
+    set (GPERF_PLATFORM_SRCS      ${LibGPerfX86SRCS}           ${LibGPerfX86SRCS} )# 
+else()
+    message(STATUS "Unknown architecture")
+endif()
+
+#add_library          (${GPERF_ASM_LIB}    OBJECT   ${GPERF_PLATFORM_ASMS}                          )  # OBJECT
+#set_target_properties(${GPERF_ASM_LIB} PROPERTIES  OBJECT_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/ )
+
+set(ALL_SRC_FILES
+    ${GPerfLibSRCS}          ${GPerfLibHDRS}
+    ${GPerfSrcSRCS}          ${GPerfSrcHDRS}
+
+)
+
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    list(REMOVE_ITEM ALL_SRC_FILES           ${GPerfLibFilterSRCS} ${GPerfSrcFilterSRCS} )
+elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    list(REMOVE_ITEM ALL_SRC_FILES           ${GPerfLibFilterSRCS} ${GPerfSrcFilterSRCS} )
+else()
+endif()
+
+source_group(TREE ${GPERF_TOP_DIR}    FILES ${ALL_SRC_FILES} )
+
+message("[INFO] ALL_SRC_FILES   ${ALL_SRC_FILES}")
+message("[INFO] GPERF_INC_DIR   ${GPERF_INC_DIR}")
+
+set(MFLAGS          ) # -ML|-MT|-MD 
+set(WARN_CFLAGS     ) # -W1
+set(OPTIMFLAGS      ) # -D_NDEBUG -O1  # -Od -Z7
+set(GPERF_DEFS    ${MFLAGS}         ${WARN_CFLAGS}              ${OPTIMFLAGS}) 
+set(GPERF_DEFS    ${GPERF_DEFS}     _CRT_SECURE_NO_DEPRECATE    _CRT_NONSTDC_NO_DEPRECATE     _CRT_SECURE_NO_WARNINGS)
+
+#list(REMOVE_ITEM LibGmpSRCS   xxx.c)
+set(GPERF_STATIC gperf_static)
+add_library               (${GPERF_STATIC} STATIC      ${ALL_SRC_FILES}                       )
+target_include_directories(${GPERF_STATIC} PRIVATE     ${GPERF_INC_DIR}   ${ZLIB_INCLUDE_DIRS})
+target_link_directories   (${GPERF_STATIC} PRIVATE     ${GPERF_SRC_DIR}/  ${ZLIB_LIBRARY_DIRS})
+target_link_libraries     (${GPERF_STATIC} PRIVATE                        ${ZLIB_LIBRARIES}   )
+set_target_properties     (${GPERF_STATIC} PROPERTIES  PUBLIC_HEADER     "${GPERF_HDRS}"      )
+target_compile_options    (${GPERF_STATIC} PRIVATE     /Z7 /W4                                )
+target_compile_definitions(${GPERF_STATIC} PRIVATE
+	${GPERF_DEFS}   _XKEYCHECK_H  ${TARGET_SYSTEM_BIT}
+)
+
+set(GPERF_SHARED gperf_shared)
+add_library               (${GPERF_SHARED} SHARED      ${ALL_SRC_FILES}                        ) # 
+target_include_directories(${GPERF_SHARED} PRIVATE     ${GPERF_INC_DIR}   ${ZLIB_INCLUDE_DIRS} )
+target_link_directories   (${GPERF_SHARED} PRIVATE     ${GPERF_SRC_DIR}/  ${ZLIB_LIBRARY_DIRS} )
+target_link_libraries     (${GPERF_SHARED} PRIVATE                        ${ZLIB_LIBRARIES}    )  # ${YASM_OBJ_SRCS}
+set_target_properties     (${GPERF_SHARED} PROPERTIES  PUBLIC_HEADER     "${GPERF_HDRS}"       )
+target_compile_options    (${GPERF_SHARED} PRIVATE     /Z7 /W4                                 )
+add_dependencies          (${GPERF_SHARED}             ${GPERF_ASM_LIB}                        )   # ${YASM_OBJ_SRCS}
+target_compile_definitions(${GPERF_SHARED} PRIVATE
+	${GPERF_DEFS}    _XKEYCHECK_H   ${TARGET_SYSTEM_BIT}
+)
+
+set                       (  GPERF_APP                gperf)
+add_executable            (${GPERF_APP}               ${ALL_SRC_FILES}         ${GPERF_APP_LIST} )
+target_compile_definitions(${GPERF_APP}   PRIVATE     __SIZE_T_DEFINED         ${LIBPCRE_DEFS})
+target_include_directories(${GPERF_APP}   PUBLIC      ${GPERF_INC_DIR}         ./src/         )
+target_link_directories   (${GPERF_APP}   PUBLIC      ./lib/ )
+target_link_libraries     (${GPERF_APP}               ${GPERF_STATIC} )
+
+SET(install_targets ${GPERF_STATIC}    ${GPERF_SHARED}    ${GPERF_APP}) #
+SET(install_hdr_dir include)
+
+INSTALL(TARGETS ${install_targets}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION ${install_hdr_dir}
+       )
+
+install(FILES      ${GPERF_HDRS}    DESTINATION ${install_hdr_dir})
+install(DIRECTORY  "inc_sub_dir"  DESTINATION ${install_hdr_dir} FILES_MATCHING PATTERN "*.h")
