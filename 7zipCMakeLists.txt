@@ -1,0 +1,249 @@
+cmake_minimum_required(VERSION 3.15)
+
+project (7zip_proj)
+
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+set(ENV{HomeDir}  ${CMAKE_CURRENT_LIST_DIR}/../out/windows)
+set(ENV{HomeDir}  E:/code/my/7zip/out/windows)
+
+# ${7zip_dep_libs} 
+
+#include(cmake/dep_bzip2.cmake)
+#include(cmake/dep_3rdlib_files.cmake)
+#include(cmake/dep_amf.cmake)
+include(cmake/dep_nasm_compile.cmake)
+#include(cmake/find_bzip2.cmake)
+#include(cmake/find_fontconfig.cmake)
+#include(cmake/find_freetype.cmake)
+#include(cmake/find_fribidi.cmake)
+#include(cmake/find_game_music_emu.cmake)
+#include(cmake/find_getopt.cmake)
+#include(cmake/find_gmp.cmake)
+#include(cmake/find_gnutls.cmake)
+#include(cmake/find_harfbuzz.cmake)
+#include(cmake/find_iconv.cmake)
+#include(cmake/find_lame.cmake)
+#include(cmake/find_libass.cmake)
+#include(cmake/find_libbluray.cmake)
+#include(cmake/find_libcdio.cmake)
+#include(cmake/find_libcdio_paranoia.cmake)
+#include(cmake/find_libgcrypt.cmake)
+#include(cmake/find_libgpg_error.cmake)
+#include(cmake/find_libilbc.cmake)
+#include(cmake/find_libintl.cmake)  
+#include(cmake/find_libssh.cmake)
+#include(cmake/find_libusb.cmake)
+#include(cmake/find_libvpx.cmake)
+#include(cmake/find_libxml2.cmake)
+#include(cmake/find_lzma.cmake)
+#include(cmake/find_mfx_dispatch.cmake)
+#include(cmake/find_modplug.cmake)
+#include(cmake/find_nettle.cmake)
+#include(cmake/find_ogg.cmake)
+#include(cmake/find_opus.cmake)
+#include(cmake/find_sdl_release.cmake)
+#include(cmake/find_soxr.cmake)
+#include(cmake/find_speex.cmake)
+#include(cmake/find_theora.cmake)
+#include(cmake/find_vorbis.cmake)
+#include(cmake/find_x264.cmake)
+#include(cmake/find_x265.cmake)
+#include(cmake/find_xvid.cmake)
+#include(cmake/find_zlib.cmake)
+#include(cmake/find_mbedtls.cmake)
+#include(cmake/find_openssl.cmake)
+include(cmake/import_3rd_libs.cmake)
+
+#gen_dep_lib_dir(all_dep_lib_dir )
+#set(dep_libs ${DepLibs})
+
+set(7zip_dep_libs                       ${BZIP2_LIBRARIES}       ${FONTCONFIG_LIBRARIES}     ${FREETYPE_LIBRARIES}    ${FRIBIDI_LIBRARIES}        ${GME_LIBRARIES}             )# -Wl,-Bstatic 
+set(7zip_dep_libs   ${7zip_dep_libs}    ${GETOPT_LIBRARIES}      ${LIBINTL_LIBRARIES}        ${GMP_LIBRARIES}         ${GNUTLS_LIBRARIES}         ${HARFBUZZ_LIBRARIES}        )
+set(7zip_dep_libs   ${7zip_dep_libs}    ${LAME_LIBRARIES}        ${LIBASS_LIBRARIES}         ${LIBBLURAY_LIBRARIES}   ${LIBCDIO_LIBRARIES}        ${LIBCDIO_PARANOIA_LIBRARIES})
+set(7zip_dep_libs   ${7zip_dep_libs}    ${GCRYPT_LIBRARIES}      ${LIBGPG_ERROR_LIBRARIES}   ${LIBICONV_LIBRARIES}    ${LIBILBC_LIBRARIES}        ${LZMA_LIBRARIES}            )
+set(7zip_dep_libs   ${7zip_dep_libs}    ${LIBSSH_LIBRARIES}      ${LIBVPX_LIBRARIES}         ${LIBXML2_LIBRARIES}     ${MFX_DISPATCH_LIBRARIES}   ${MODPLUG_LIBRARIES}         )
+set(7zip_dep_libs   ${7zip_dep_libs}    ${NETTLE_LIBRARIES}      ${OGG_LIBRARIES}            ${OPUS_LIBRARIES}        ${SDL_LIBRARIES}            ${SOXR_LIBRARIES}            )
+set(7zip_dep_libs   ${7zip_dep_libs}    ${SPEEX_LIBRARIES}       ${THEORA_LIBRARIES}         ${VORBIS_LIBRARIES}      ${X264_LIBRARIES}           ${X265_LIBRARIES}            )
+set(7zip_dep_libs   ${7zip_dep_libs}    ${XVID_LIBRARIES}        ${ZLIB_LIBRARIES}           ${MBEDTLS_LIBRARIES}     ${OPENSSL_LIBRARIES}                                     )
+set(7zip_dep_libs   ${7zip_dep_libs}    bcrypt                         ws2_32                      setupapi                 winmm                    opengl32               crypt32      ) #libcmt  -Wl,-Bdynamic msvcrt
+set(7zip_dep_libs   ${7zip_dep_libs}    imm32                          mfuuid                      version                  mfplat                   strmiids               vfw32      shlwapi )
+
+
+set(7zip_dep_incs                       ${BZIP2_INCLUDE_DIRS}       ${FONTCONFIG_INCLUDE_DIRS}     ${FREETYPE_INCLUDE_DIRS}    ${FRIBIDI_INCLUDE_DIRS}        ${GME_INCLUDE_DIRS}             )
+set(7zip_dep_incs   ${7zip_dep_incs}    ${GETOPT_INCLUDE_DIRS}      ${LIBINTL_INCLUDE_DIRS}        ${GMP_INCLUDE_DIRS}         ${GNUTLS_INCLUDE_DIRS}         ${HARFBUZZ_INCLUDE_DIRS}        )
+set(7zip_dep_incs   ${7zip_dep_incs}    ${LAME_INCLUDE_DIRS}        ${LIBASS_INCLUDE_DIRS}         ${LIBBLURAY_INCLUDE_DIRS}   ${LIBCDIO_INCLUDE_DIRS}        ${LIBCDIO_PARANOIA_INCLUDE_DIRS})
+set(7zip_dep_incs   ${7zip_dep_incs}    ${GCRYPT_INCLUDE_DIRS}     ${LIBGPG_ERROR_INCLUDE_DIRS}   ${LIBICONV_INCLUDE_DIRS}    ${LIBILBC_INCLUDE_DIRS}        ${LZMA_INCLUDE_DIRS}            )
+set(7zip_dep_incs   ${7zip_dep_incs}    ${LIBSSH_INCLUDE_DIRS}      ${LIBVPX_INCLUDE_DIRS}         ${LIBXML2_INCLUDE_DIRS}     ${MFX_DISPATCH_INCLUDE_DIRS}   ${MODPLUG_INCLUDE_DIRS}         )
+set(7zip_dep_incs   ${7zip_dep_incs}    ${NETTLE_INCLUDE_DIRS}      ${OGG_INCLUDE_DIRS}            ${OPUS_INCLUDE_DIRS}        ${SDL_INCLUDE_DIRS}            ${SOXR_INCLUDE_DIRS}            )
+set(7zip_dep_incs   ${7zip_dep_incs}    ${SPEEX_INCLUDE_DIRS}       ${THEORA_INCLUDE_DIRS}         ${VORBIS_INCLUDE_DIRS}      ${X264_INCLUDE_DIRS}           ${X265_INCLUDE_DIRS}            )
+set(7zip_dep_incs   ${7zip_dep_incs}    ${XVID_INCLUDE_DIRS}        ${ZLIB_INCLUDE_DIRS}           ${MBEDTLS_INCLUDE_DIRS}     ${OPENSSL_LIBRARY_DIRS}                                        )
+
+
+set(7ZIP_MAIN_TOP_DIR     ${CMAKE_CURRENT_LIST_DIR}    )
+set(7ZIP_MAIN_INC_DIRS    ${7ZIP_MAIN_TOP_DIR}        ${7ZIP_MAIN_TOP_DIR}/SMP           ${7ZIP_MAIN_TOP_DIR}/thirdparty                                         )
+
+#set(7ZIP_MAIN_DEFS        WIN32    _WINDOWS    HAVE_AV_CONFIG_H    _USE_MATH_DEFINES    _CRT_SECURE_NO_WARNINGS    _WIN32_WINNT=0x0600    _LIB    _DEBUG    DEBUG    )
+
+
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/source-charset:utf-8>")
+
+set (7ZIP_BIN_SRC_DIR ${CMAKE_CURRENT_BINARY_DIR})
+set (7ZIP_TOP_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}) # CMAKE_SOURCE_DIR CMAKE_CURRENT_SOURCE_DIR
+
+file(GLOB           7ZIP_ASM_SRCS_LIST     RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/Asm/x86/*.asm"       )
+
+set(7ZIP_ASM_LIB 7zip_asm_lib)
+
+#set (7ZIP_DEFS  Z7_SFX   )
+
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set (7ZIP_PLATFORM_ASMS       ${7ZIP_ASM_SRCS_LIST}      )   
+    list(REMOVE_ITEM 7ZIP_PLATFORM_ASMS   ${FILTER_7ZIP_X86_ASMS})
+    #yasm_compile  (${7ZIP_ASM_LIB}  YASM_OBJ_SRCS  YASM_S_SRCS                       ${7ZIP_PLATFORM_ASMS})
+    #nasm.exe -Xvc -f win64 -o "xxx.obj" --prefix --postfix -I"E:\code\my\ffmpeg\FFmpeg\/"  -P"config.asm"  "xxx.asm"
+    nasm_compile_64(${7ZIP_ASM_LIB}  YASM_OBJ_SRCS  YASM_S_SRCS                       ${7ZIP_PLATFORM_ASMS})
+    message(STATUS "64-bit build 7ZIP_PLATFORM_ASMS  : ${7ZIP_PLATFORM_ASMS}")
+    message(STATUS "64-bit build YASM_S_SRCS  : ${YASM_S_SRCS}")
+    message(STATUS "64-bit build YASM_OBJ_SRCS: ${YASM_OBJ_SRCS}")
+ 
+    set (7ZIP_DEFS  ${7ZIP_DEFS}   )
+    set (7ZIP_HDRS  ${7ZIP_HDRS}   )
+    set (7ZIP_PLATFORM_SRCS            ) # 
+elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    set (7ZIP_PLATFORM_ASMS       ${7ZIP_ASM_SRCS_LIST}      )   
+    list(REMOVE_ITEM 7ZIP_PLATFORM_ASMS   ${FILTER_7ZIP_X86_ASMS}   )
+    #yasm_compile  (${7ZIP_ASM_LIB}  YASM_OBJ_SRCS    YASM_S_SRCS                     ${7ZIP_PLATFORM_ASMS}   )
+    nasm_compile_32(${7ZIP_ASM_LIB}  YASM_OBJ_SRCS    YASM_S_SRCS                     ${7ZIP_PLATFORM_ASMS})
+    message(STATUS "32-bit build YASM_OBJ_SRCS: ${YASM_OBJ_SRCS}")
+
+    set (7ZIP_DEFS  ${7ZIP_DEFS}   )
+    set (7ZIP_HDRS  ${7ZIP_HDRS}   )
+    set (7ZIP_PLATFORM_SRCS             )# 
+else()
+    message(STATUS "Unknown architecture")
+endif()
+
+message("[INFO] 7ZIP_BIN_SRC_DIR=${7ZIP_BIN_SRC_DIR}")
+message("[INFO] 7ZIP_TOP_SRC_DIR=${7ZIP_TOP_SRC_DIR}")
+message("[INFO] 7zip_dep_libs   =${7zip_dep_libs}"   )
+message("[INFO] 7zip_dep_incs   =${7zip_dep_incs}"   )
+message("[INFO] 7zip_self_libs  =${7zip_self_libs}"  )
+
+file(GLOB           7ZIP_C_SRCS_LIST              RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/C/*.c*"                 )
+file(GLOB           7ZIP_C_UTIL_7Z_SRCS_LIST      RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/C/Util/7z/*.c*"       )
+file(GLOB           7ZIP_C_UTIL_LZMA_SRCS_LIST    RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/C/Util/Lzma/*.c*"     )
+file(GLOB           7ZIP_C_UTIL_LZMA_SRCS_FILTER  RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/C/Util/Lzma/LzmaUtil.c*" )
+
+file(GLOB           7ZIP_CPP_SRCS_LIST                   RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/*.c*"                    )
+file(GLOB           7ZIP_CPP_7ZIP_ARCH_SRCS_LIST         RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/Archive/*.c*" )
+file(GLOB           7ZIP_CPP_7ZIP_ARCH_SRCS_FILTER       RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/Archive/DllExports2.c*" )  # "${7ZIP_TOP_SRC_DIR}/CPP/7zip/Archive/DllExports.c*" 
+file(GLOB           7ZIP_CPP_7ZIP_ARCH_7Z_SRCS_LIST      RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/Archive/7z/*.c*" )
+file(GLOB           7ZIP_CPP_7ZIP_ARCH_CAB_SRCS_LIST     RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/Archive/Cab/*.c*" )
+file(GLOB           7ZIP_CPP_7ZIP_ARCH_CHM_SRCS_LIST     RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/Archive/Chm/*.c*" )
+file(GLOB           7ZIP_CPP_7ZIP_ARCH_COMMON_SRCS_LIST  RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/Archive/Common/*.c*" )
+file(GLOB           7ZIP_CPP_7ZIP_ARCH_ISO_SRCS_LIST     RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/Archive/Iso/*.c*" )
+file(GLOB           7ZIP_CPP_7ZIP_ARCH_NSIS_SRCS_LIST    RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/Archive/Nsis/*.c*" )
+file(GLOB           7ZIP_CPP_7ZIP_ARCH_RAR_SRCS_LIST     RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/Archive/Rar/*.c*" )
+file(GLOB           7ZIP_CPP_7ZIP_ARCH_TAR_SRCS_LIST     RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/Archive/Tar/*.c*" )
+file(GLOB           7ZIP_CPP_7ZIP_ARCH_UDF_SRCS_LIST     RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/Archive/Udf/*.c*" )
+file(GLOB           7ZIP_CPP_7ZIP_ARCH_WIM_SRCS_LIST     RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/Archive/Wim/*.c*" )
+file(GLOB           7ZIP_CPP_7ZIP_ARCH_ZIP_SRCS_LIST     RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/Archive/Zip/*.c*" )
+
+set (7ZIP_CPP_7ZIP_ARCH_ALL_SRCS  ${7ZIP_CPP_SRCS_LIST}            ${7ZIP_CPP_7ZIP_ARCH_SRCS_LIST}       ${7ZIP_CPP_7ZIP_ARCH_7Z_SRCS_LIST}    ${7ZIP_CPP_7ZIP_ARCH_CAB_SRCS_LIST}    )
+set (7ZIP_CPP_7ZIP_ARCH_ALL_SRCS  ${7ZIP_CPP_7ZIP_ARCH_ALL_SRCS}   ${7ZIP_CPP_7ZIP_ARCH_CHM_SRCS_LIST}   ${7ZIP_CPP_7ZIP_ARCH_ISO_SRCS_LIST}   ${7ZIP_CPP_7ZIP_ARCH_NSIS_SRCS_LIST}   )
+set (7ZIP_CPP_7ZIP_ARCH_ALL_SRCS  ${7ZIP_CPP_7ZIP_ARCH_ALL_SRCS}   ${7ZIP_CPP_7ZIP_ARCH_RAR_SRCS_LIST}   ${7ZIP_CPP_7ZIP_ARCH_TAR_SRCS_LIST}   ${7ZIP_CPP_7ZIP_ARCH_UDF_SRCS_LIST}    )
+set (7ZIP_CPP_7ZIP_ARCH_ALL_SRCS  ${7ZIP_CPP_7ZIP_ARCH_ALL_SRCS}   ${7ZIP_CPP_7ZIP_ARCH_WIM_SRCS_LIST}   ${7ZIP_CPP_7ZIP_ARCH_ZIP_SRCS_LIST}   ${7ZIP_CPP_7ZIP_ARCH_COMMON_SRCS_LIST} )
+
+#file(GLOB           7ZIP_CPP_7ZIP_BUNDLES_ALONE_SRCS_LIST      RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/Bundles/Alone/*.c*" )
+#file(GLOB           7ZIP_CPP_7ZIP_BUNDLES_ALONE2_SRCS_LIST     RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/Bundles/Alone2/*.c*" )
+#file(GLOB           7ZIP_CPP_7ZIP_BUNDLES_ALONE7Z_SRCS_LIST    RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/Bundles/Alone7z/*.c*" )
+#file(GLOB           7ZIP_CPP_7ZIP_BUNDLES_FORMAT7Z_SRCS_LIST   RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/Bundles/Format7z/*.c*" )
+#file(GLOB           7ZIP_CPP_7ZIP_BUNDLES_LZMACON_SRCS_LIST    RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/Bundles/LzmaCon/*.c*" )
+#file(GLOB           7ZIP_CPP_7ZIP_BUNDLES_SFXCON_SRCS_LIST     RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/Bundles/SFXCon/*.c*" )
+#file(GLOB           7ZIP_CPP_7ZIP_BUNDLES_SFXWIN_SRCS_LIST     RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/Bundles/SFXWin/*.c*" )
+
+set (7ZIP_CPP_7ZIP_BUNDLES_ALL_SRCS  ${7ZIP_CPP_7ZIP_BUNDLES_ALONE_SRCS_LIST}  ${7ZIP_CPP_7ZIP_BUNDLES_ALONE2_SRCS_LIST}    ${7ZIP_CPP_7ZIP_BUNDLES_ALONE7Z_SRCS_LIST}   )
+set (7ZIP_CPP_7ZIP_BUNDLES_ALL_SRCS  ${7ZIP_CPP_7ZIP_BUNDLES_ALL_SRCS}         ${7ZIP_CPP_7ZIP_BUNDLES_FORMAT7Z_SRCS_LIST}  ${7ZIP_CPP_7ZIP_BUNDLES_LZMACON_SRCS_LIST}   )
+set (7ZIP_CPP_7ZIP_BUNDLES_ALL_SRCS  ${7ZIP_CPP_7ZIP_BUNDLES_ALL_SRCS}         ${7ZIP_CPP_7ZIP_ARCH_RAR_SRCS_LIST}          ${7ZIP_CPP_7ZIP_ARCH_TAR_SRCS_LIST}          )
+set (7ZIP_CPP_7ZIP_BUNDLES_ALL_SRCS  ${7ZIP_CPP_7ZIP_BUNDLES_ALL_SRCS}         ${7ZIP_CPP_7ZIP_BUNDLES_SFXCON_SRCS_LIST}    ${7ZIP_CPP_7ZIP_BUNDLES_SFXWIN_SRCS_LIST}    )
+
+file(GLOB           7ZIP_CPP_7ZIP_COMMON_SRCS_LIST     RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/Common/*.c*" )
+file(GLOB           7ZIP_CPP_7ZIP_COMPRESS_SRCS_LIST   RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/Compress/*.c*" )
+file(GLOB           7ZIP_CPP_7ZIP_COMPRESS_SRCS_FILTER RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/Compress/DllExports2Compress.c*" "${7ZIP_TOP_SRC_DIR}/CPP/7zip/Compress/DllExportsCompress.c*" ) # "${7ZIP_TOP_SRC_DIR}/CPP/7zip/Compress/DllExportsCompress.c*"
+
+file(GLOB           7ZIP_CPP_7ZIP_CRYPTO_SRCS_LIST     RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/Crypto/*.c*" )
+
+#file(GLOB           7ZIP_CPP_7ZIP_UI_AGENT_SRCS_LIST     RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/UI/Agent/*.c*"    )  
+#file(GLOB           7ZIP_CPP_7ZIP_UI_CLIENT7Z_SRCS_LIST  RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/UI/Client7z/*.c*" )
+#file(GLOB           7ZIP_CPP_7ZIP_UI_COMMON_SRCS_LIST    RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/UI/Common/*.c*"   )
+file(GLOB           7ZIP_CPP_7ZIP_UI_COMMON_SRCS_FILTER  RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/UI/Common/CompressCall*.c*"    "${7ZIP_TOP_SRC_DIR}/CPP/7zip/UI/Common/LoadCodecs*.c*"  )
+#file(GLOB           7ZIP_CPP_7ZIP_UI_CONSOLE_SRCS_LIST   RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/UI/Console/*.c*"  )  
+#file(GLOB           7ZIP_CPP_7ZIP_UI_CONSOLE_SRCS_FILTER RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/UI/Console/MainAr.c*" )
+#file(GLOB           7ZIP_CPP_7ZIP_UI_EXPLORER_SRCS_LIST  RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/UI/Explorer/*.c*" ) 
+#file(GLOB           7ZIP_CPP_7ZIP_UI_FAR_SRCS_LIST       RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/UI/Far/*.c*"      ) 
+#file(GLOB           7ZIP_CPP_7ZIP_UI_FILE_MGR_SRCS_LIST  RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/7zip/UI/FileManager/*.c*" )
+set (7ZIP_CPP_7ZIP_ALL_SRCS  ${7ZIP_CPP_7ZIP_COMMON_SRCS_LIST}   ${7ZIP_CPP_7ZIP_COMPRESS_SRCS_LIST}      ${7ZIP_CPP_7ZIP_CRYPTO_SRCS_LIST}   ${7ZIP_CPP_7ZIP_UI_COMMON_SRCS_LIST}  ${7ZIP_CPP_7ZIP_UI_CONSOLE_SRCS_LIST})
+set (7ZIP_CPP_7ZIP_ALL_SRCS  ${7ZIP_CPP_7ZIP_ALL_SRCS}           ${7ZIP_CPP_7ZIP_UI_EXPLORER_SRCS_LIST}   ${7ZIP_CPP_7ZIP_UI_FAR_SRCS_LIST}   ${7ZIP_CPP_7ZIP_UI_FILE_MGR_SRCS_LIST}  )
+
+file(GLOB           7ZIP_CPP_COMMON_SRCS_LIST          RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/Common/*.c*" )
+file(GLOB           7ZIP_CPP_WINDOWS_SRCS_LIST         RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/Windows/*.c*" )
+file(GLOB           7ZIP_CPP_WINDOWS_SRCS_FILTER       RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/Windows/SystemInfo.c*" )
+
+#file(GLOB           7ZIP_CPP_WINDOWS_CONTROL_SRCS_LIST RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/CPP/Windows/Control/*.c*" )
+
+set (7ZIP_CPP_ALL_SRCS  ${7ZIP_CPP_COMMON_SRCS_LIST}   ${7ZIP_CPP_WINDOWS_SRCS_LIST}    ${7ZIP_CPP_WINDOWS_CONTROL_SRCS_LIST} )
+
+file(GLOB           7ZIP_APP_LIST        RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/7zip*.c*"             )
+
+file(GLOB           7ZIP_APP_FILTER      RELATIVE ${7ZIP_TOP_SRC_DIR} "${7ZIP_TOP_SRC_DIR}/xxxx.c*"  )
+
+set (  7ZIP_ALL_SRCS  ${7ZIP_C_SRCS_LIST}   ${7ZIP_C_UTIL_7Z_SRCS_LIST}   ${7ZIP_C_UTIL_LZMA_SRCS_LIST}   ${7ZIP_CPP_7ZIP_ARCH_ALL_SRCS}      ${7ZIP_CPP_7ZIP_BUNDLES_ALL_SRCS}  )
+set (  7ZIP_ALL_SRCS  ${7ZIP_ALL_SRCS}      ${7ZIP_CPP_7ZIP_ALL_SRCS}     ${7ZIP_CPP_ALL_SRCS}     )
+
+message("[INFO] 7ZIP_ALL_SRCS=${7ZIP_ALL_SRCS}")
+message("[INFO] 7ZIP_CPP_COMMON_SRCS_LIST=${7ZIP_CPP_COMMON_SRCS_LIST}")
+
+list(REMOVE_ITEM    7ZIP_ALL_SRCS                 ${7ZIP_APP_FILTER}   ${7ZIP_CPP_7ZIP_COMPRESS_SRCS_FILTER}   ${7ZIP_CPP_7ZIP_ARCH_SRCS_FILTER}   ${7ZIP_C_UTIL_LZMA_SRCS_FILTER}  ${7ZIP_CPP_7ZIP_UI_COMMON_SRCS_FILTER} ${7ZIP_CPP_7ZIP_UI_CONSOLE_SRCS_FILTER}  ${7ZIP_CPP_WINDOWS_SRCS_FILTER})
+
+source_group(TREE ${7ZIP_TOP_SRC_DIR}    FILES    ${7ZIP_ALL_SRCS} )
+source_group(TREE ${7ZIP_TOP_SRC_DIR}    FILES    ${7ZIP_APP_LIST}  )
+
+set                       (  7ZIP_STATIC                7zip_static                            )
+add_library               (${7ZIP_STATIC}   STATIC      ${7ZIP_ALL_SRCS}               )
+target_compile_definitions(${7ZIP_STATIC}   PRIVATE      ${7ZIP_DEFS}                               )
+target_include_directories(${7ZIP_STATIC}   PUBLIC      ${7ZIP_MAIN_INC_DIRS}     ./src/             )
+target_link_directories   (${7ZIP_STATIC}   PUBLIC                                ./lib/             )
+target_link_libraries     (${7ZIP_STATIC}                                         ${7zip_dep_libs}           ${7zip_self_libs}   Mpr Comctl32  oleaut32 ole32)
+set_target_properties     (${7ZIP_STATIC}   PROPERTIES  COMPILE_FLAGS             "/FIcompat.h"      )
+set_target_properties     (${7ZIP_STATIC}   PROPERTIES  CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME "7zip_static" )
+
+set                       (  7ZIP_APP                   7zip                                       )
+add_executable            (${7ZIP_APP}                  ${7ZIP_ALL_SRCS}          ${7ZIP_APP_LIST}    )
+target_compile_definitions(${7ZIP_APP}      PRIVATE     __SIZE_T_DEFINED          ${${7ZIP_DEFS}}    )
+target_include_directories(${7ZIP_APP}      PUBLIC      ${7ZIP_MAIN_INC_DIRS}     ./src/             )
+target_link_directories   (${7ZIP_APP}      PUBLIC                                ./lib/             )
+target_link_libraries     (${7ZIP_APP}                  ${7ZIP_STATIC}          ${7zip_dep_libs}           ${7zip_self_libs}    Mpr Comctl32   oleaut32 ole32)
+
+
+SET(install_targets           ${7ZIP_STATIC}   ${7ZIP_APP} )
+SET(install_hdr_dir include)
+
+
+
+INSTALL(TARGETS ${install_targets}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION ${install_hdr_dir}
+       )
+
+install(FILES      ${7ZIP_HDRS}       DESTINATION ${install_hdr_dir})
+install(DIRECTORY  "inc_sub_dir"      DESTINATION ${install_hdr_dir} FILES_MATCHING PATTERN "*.h")
