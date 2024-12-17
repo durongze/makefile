@@ -1,0 +1,112 @@
+cmake_minimum_required(VERSION 3.15)
+
+project(LIBUSB_STATIC)
+
+set(CMAKE_C_STANDARD 99) 
+set(CMAKE_C_STANDARD_REQUIRED ON) 
+set(CMAKE_CXX_STANDARD 11) 
+set(CMAKE_CXX_STANDARD_REQUIRED ON) 
+set(CMAKE_CXX_EXTENSIONS OFF) 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON) 
+
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON) 
+
+set(ENV{HomeDir}  ${CMAKE_CURRENT_LIST_DIR}/../out/${CMAKE_SYSTEM_NAME})
+
+set(LIBUSB_STATIC_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR})                  
+set(LIBUSB_STATIC_TOP_DIR ${CMAKE_CURRENT_SOURCE_DIR}) #CMAKE_SOURCE_DIR
+
+set(LIBUSB_STATIC_INC_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/msvc   ${CMAKE_CURRENT_SOURCE_DIR}/libusb    ${CMAKE_CURRENT_SOURCE_DIR}/msvc/getopt   ${CMAKE_CURRENT_SOURCE_DIR}/inc)                  
+set(LIBUSB_STATIC_LIB_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/lib) #CMAKE_SOURCE_DIR
+
+
+
+file        (GLOB           FILTER_LIBUSB_OS_CPPS         RELATIVE   ${LIBUSB_STATIC_TOP_DIR}  
+        libusb/os/darwin_usb.c
+        libusb/os/emscripten_webusb.cpp
+        libusb/os/events_posix.c
+        libusb/os/haiku_pollfs.cpp
+        libusb/os/haiku_usb_backend.cpp
+        libusb/os/haiku_usb_raw.cpp
+        libusb/os/linux_netlink.c
+        libusb/os/linux_udev.c
+        libusb/os/linux_usbfs.c
+        libusb/os/netbsd_usb.c
+        libusb/os/null_usb.c
+        libusb/os/openbsd_usb.c
+        libusb/os/sunos_usb.c
+        libusb/os/threads_posix.c
+    )
+
+
+file        (GLOB           FILTER_LIBUSB_OS_HPPS         RELATIVE   ${LIBUSB_STATIC_TOP_DIR}  
+        libusb/os/darwin_usb.h
+        libusb/os/events_posix.h
+        libusb/os/haiku_usb.h
+        libusb/os/haiku_usb_raw.h
+        libusb/os/linux_usbfs.h
+        libusb/os/sunos_usb.h
+        libusb/os/threads_posix.h
+    )
+
+file        (GLOB           FILTER_EXAMPLE_CPPS         RELATIVE   ${LIBUSB_STATIC_TOP_DIR}   examples/dpfp.c)
+
+file        (GLOB           LIBUSB_STATIC_ASM_LIST         RELATIVE   ${LIBUSB_STATIC_TOP_DIR}  
+        msvc/*.asm*           libusb/*.asm*           libusb/os/*.asm*       )
+
+file        (GLOB           LIBUSB_STATIC_INC_LIST         RELATIVE   ${LIBUSB_STATIC_TOP_DIR}  
+        msvc/*.h*           libusb/*.h*           libusb/os/*.h*       )
+
+file        (GLOB           LIBUSB_STATIC_SRC_LIST         RELATIVE   ${LIBUSB_STATIC_TOP_DIR}  
+        msvc/*.c*           libusb/*.c*           libusb/os/*.c*       )
+
+file        (GLOB           LIBUSB_STATIC_APP_LIST         RELATIVE   ${LIBUSB_STATIC_TOP_DIR}  
+        examples/fxload*.c*   examples/ezusb.c*     msvc/getopt/*.c*         )
+
+list        (REMOVE_ITEM    LIBUSB_STATIC_SRC_LIST                    ${FILTER_LIBUSB_OS_CPPS}    )
+list        (REMOVE_ITEM    LIBUSB_STATIC_APP_LIST                    ${FILTER_EXAMPLE_CPPS}    )
+
+
+source_group(TREE         ${LIBUSB_STATIC_TOP_DIR}     FILES       ${LIBUSB_STATIC_SRC_LIST}    )
+
+
+
+set                       (  LIBUSB_STATIC_STATIC               libusb_static_static          )
+add_library               (${LIBUSB_STATIC_STATIC}   STATIC     ${LIBUSB_STATIC_SRC_LIST}    )
+target_compile_definitions(${LIBUSB_STATIC_STATIC}   PRIVATE    ${LIBUSB_STATIC_DEF_LIST}          HAVE_CONFIG_H)
+target_include_directories(${LIBUSB_STATIC_STATIC}   PUBLIC     ${LIBUSB_STATIC_INC_DIRS}                )
+target_link_directories   (${LIBUSB_STATIC_STATIC}   PUBLIC     ${LIBUSB_STATIC_LIB_DIRS}                )
+target_link_libraries     (${LIBUSB_STATIC_STATIC}              ${LIBUSB_STATIC_DEP_LIBS}        ${dep_libs}  )
+target_compile_options    (${LIBUSB_STATIC_STATIC}   PRIVATE     /Z7     /W4           )
+set_target_properties     (${LIBUSB_STATIC_STATIC}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME libusb_static_static  )
+
+set                       (  LIBUSB_STATIC_SHARED               libusb_static_shared          )
+add_library               (${LIBUSB_STATIC_SHARED}   SHARED     ${LIBUSB_STATIC_SRC_LIST}    )
+target_compile_definitions(${LIBUSB_STATIC_SHARED}   PRIVATE    ${LIBUSB_STATIC_DEF_LIST}    HAVE_CONFIG_H      )
+target_include_directories(${LIBUSB_STATIC_SHARED}   PUBLIC     ${LIBUSB_STATIC_INC_DIRS}                 )
+target_link_directories   (${LIBUSB_STATIC_SHARED}   PUBLIC     ${LIBUSB_STATIC_LIB_DIRS}                 )
+target_link_libraries     (${LIBUSB_STATIC_SHARED}              ${LIBUSB_STATIC_DEP_LIBS}   ${dep_libs}        )
+target_compile_options    (${LIBUSB_STATIC_SHARED}   PRIVATE     /Z7     /W4           )
+set_target_properties     (${LIBUSB_STATIC_SHARED}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME libusb_static_shared  )
+
+set                       (  LIBUSB_STATIC_APP                libusb_static_app        )
+add_executable            (${LIBUSB_STATIC_APP}               ${LIBUSB_STATIC_SRC_LIST}        ${LIBUSB_STATIC_APP_LIST}            )
+target_compile_definitions(${LIBUSB_STATIC_APP}   PRIVATE     ${LIBUSB_STATIC_APP_DEFS}     __SIZE_T_DEFINED  HAVE_STRING_H	)
+target_include_directories(${LIBUSB_STATIC_APP}   PUBLIC      ${LIBUSB_STATIC_INC_DIRS}                   )
+target_link_directories   (${LIBUSB_STATIC_APP}   PUBLIC      ${LIBUSB_STATIC_LIB_DIRS}                   )
+target_link_libraries     (${LIBUSB_STATIC_APP}               ${LIBUSB_STATIC_STATIC}         )
+
+
+SET(install_targets ${LIBUSB_STATIC_STATIC}    ${LIBUSB_STATIC_SHARED}   ) #  ${LIBUSB_STATIC_APP}
+SET(install_hdr_dir include)#
+
+INSTALL(TARGETS       ${install_targets}
+        RUNTIME       DESTINATION bin
+        LIBRARY       DESTINATION lib
+        ARCHIVE       DESTINATION lib
+        PUBLIC_HEADER DESTINATION ${install_hdr_dir}
+)
+install(FILES      ${LIBUSB_STATIC_INC_LIST}    DESTINATION    ${install_hdr_dir})
+install(DIRECTORY  "inc_sub_dir"                        DESTINATION    ${install_hdr_dir}    FILES_MATCHING    PATTERN   "*.h"   )

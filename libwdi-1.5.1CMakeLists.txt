@@ -1,0 +1,107 @@
+cmake_minimum_required(VERSION 3.15)
+
+project(LIBWDI_STATIC)
+
+set(CMAKE_C_STANDARD 99) 
+set(CMAKE_C_STANDARD_REQUIRED ON) 
+set(CMAKE_CXX_STANDARD 11) 
+set(CMAKE_CXX_STANDARD_REQUIRED ON) 
+set(CMAKE_CXX_EXTENSIONS OFF) 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON) 
+
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON) 
+
+set(ENV{HomeDir}  ${CMAKE_CURRENT_LIST_DIR}/../out/${CMAKE_SYSTEM_NAME})
+
+set(LIBWDI_STATIC_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR})                  
+set(LIBWDI_STATIC_TOP_DIR ${CMAKE_CURRENT_SOURCE_DIR}) #CMAKE_SOURCE_DIR
+
+set(LIBWDI_STATIC_INC_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/msvc    ${CMAKE_CURRENT_SOURCE_DIR}/libwdi )                  
+set(LIBWDI_STATIC_LIB_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/lib) #CMAKE_SOURCE_DIR
+
+set (LIBWDI_STATIC_DEFS_DEBUG_WIN32_CPPS    DEBUG    _DEBUG    _WIN32    _CRTDBG_MAP_ALLOC    _LIB    _CRT_SECURE_NO_WARNINGS        )
+
+set (LIBWDI_STATIC_DEFS_DEBUG_X64_CPPS    DEBUG    _DEBUG    _WIN32    _CRTDBG_MAP_ALLOC    _WIN64    _LIB    _CRT_SECURE_NO_WARNINGS        )
+
+set (LIBWDI_STATIC_DEFS_RELEASE_WIN32_CPPS    _WIN32    _LIB    _CRT_SECURE_NO_WARNINGS        )
+
+set (LIBWDI_STATIC_DEFS_RELEASE_X64_CPPS    _WIN32    _WIN64    _LIB    _CRT_SECURE_NO_WARNINGS        )
+
+
+file        (GLOB           FILTER_CPPS         RELATIVE   ${LIBWDI_STATIC_TOP_DIR}  
+        libwdi/embedder.c
+        libwdi/installer.c
+        libwdi/libusb0.cat.in
+        libwdi/libusbk.cat.in
+        libwdi/usbser.cat.in
+        libwdi/winusb.cat.in
+    )
+
+
+file        (GLOB           FILTER_HPPS         RELATIVE   ${LIBWDI_STATIC_TOP_DIR}  
+        libwdi/embedder.h
+    )
+
+
+file        (GLOB           FILTER__MSVC_HPPS         RELATIVE   ${LIBWDI_STATIC_TOP_DIR}  
+        msvc/inttypes.h
+        msvc/stdint.h
+    )
+
+
+file        (GLOB           LIBWDI_STATIC_ASM_LIST         RELATIVE   ${LIBWDI_STATIC_TOP_DIR}  
+        libwdi/*.asm*           msvc/*.asm*       )
+
+file        (GLOB           LIBWDI_STATIC_INC_LIST         RELATIVE   ${LIBWDI_STATIC_TOP_DIR}  
+        libwdi/*.h*           msvc/*.h*       )
+
+file        (GLOB           LIBWDI_STATIC_SRC_LIST         RELATIVE   ${LIBWDI_STATIC_TOP_DIR}  
+        libwdi/*.c*           msvc/*.c*       )
+
+file        (GLOB           LIBWDI_STATIC_APP_LIST         RELATIVE   ${LIBWDI_STATIC_TOP_DIR}  
+        libwdi/*.c*           msvc/*.c*       )
+
+list        (REMOVE_ITEM    LIBWDI_STATIC_SRC_LIST                    ${FILTER_CPPS}    )
+source_group(TREE         ${LIBWDI_STATIC_TOP_DIR}     FILES       ${LIBWDI_STATIC_SRC_LIST}    )
+
+
+
+set                       (  LIBWDI_STATIC_STATIC               libwdi_static_static          )
+add_library               (${LIBWDI_STATIC_STATIC}   STATIC     ${LIBWDI_STATIC_SRC_LIST}    )
+target_compile_definitions(${LIBWDI_STATIC_STATIC}   PRIVATE    ${LIBWDI_STATIC_DEF_LIST}          HAVE_CONFIG_H)
+target_include_directories(${LIBWDI_STATIC_STATIC}   PUBLIC     ${LIBWDI_STATIC_INC_DIRS}                )
+target_link_directories   (${LIBWDI_STATIC_STATIC}   PUBLIC     ${LIBWDI_STATIC_LIB_DIRS}                )
+target_link_libraries     (${LIBWDI_STATIC_STATIC}              ${LIBWDI_STATIC_DEP_LIBS}        ${dep_libs}  )
+target_compile_options    (${LIBWDI_STATIC_STATIC}   PRIVATE     /Z7     /W4           )
+set_target_properties     (${LIBWDI_STATIC_STATIC}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME libwdi_static_static  )
+
+set                       (  LIBWDI_STATIC_SHARED               libwdi_static_shared          )
+add_library               (${LIBWDI_STATIC_SHARED}   SHARED     ${LIBWDI_STATIC_SRC_LIST}    )
+target_compile_definitions(${LIBWDI_STATIC_SHARED}   PRIVATE    ${LIBWDI_STATIC_DEF_LIST}    HAVE_CONFIG_H      )
+target_include_directories(${LIBWDI_STATIC_SHARED}   PUBLIC     ${LIBWDI_STATIC_INC_DIRS}                 )
+target_link_directories   (${LIBWDI_STATIC_SHARED}   PUBLIC     ${LIBWDI_STATIC_LIB_DIRS}                 )
+target_link_libraries     (${LIBWDI_STATIC_SHARED}              ${LIBWDI_STATIC_DEP_LIBS}   ${dep_libs}        )
+target_compile_options    (${LIBWDI_STATIC_SHARED}   PRIVATE     /Z7     /W4           )
+set_target_properties     (${LIBWDI_STATIC_SHARED}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME libwdi_static_shared  )
+
+set                       (  LIBWDI_STATIC_APP                libwdi_static_app        )
+add_executable            (${LIBWDI_STATIC_APP}               ${LIBWDI_STATIC_SRC_LIST}        ${LIBWDI_STATIC_APP_LIST}            )
+target_compile_definitions(${LIBWDI_STATIC_APP}   PRIVATE     ${LIBWDI_STATIC_APP_DEFS}     __SIZE_T_DEFINED	)
+target_include_directories(${LIBWDI_STATIC_APP}   PUBLIC      ${LIBWDI_STATIC_INC_DIRS}                   )
+target_link_directories   (${LIBWDI_STATIC_APP}   PUBLIC      ${LIBWDI_STATIC_LIB_DIRS}                   )
+target_link_libraries     (${LIBWDI_STATIC_APP}               ${LIBWDI_STATIC_STATIC}         )
+
+
+SET(install_targets ${LIBWDI_STATIC_STATIC}    ${LIBWDI_STATIC_SHARED}  ${LIBWDI_STATIC_APP}  ) #
+SET(install_hdr_dir include)#
+
+INSTALL(TARGETS       ${install_targets}
+        RUNTIME       DESTINATION bin
+        LIBRARY       DESTINATION lib
+        ARCHIVE       DESTINATION lib
+        PUBLIC_HEADER DESTINATION ${install_hdr_dir}
+)
+install(FILES      ${LIBWDI_STATIC_INC_LIST}    DESTINATION    ${install_hdr_dir})
+install(DIRECTORY  "inc_sub_dir"                        DESTINATION    ${install_hdr_dir}    FILES_MATCHING    PATTERN   "*.h"   )
