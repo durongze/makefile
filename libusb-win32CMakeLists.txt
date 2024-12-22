@@ -1,0 +1,261 @@
+cmake_minimum_required(VERSION 3.16)
+
+project(libusb-win32)
+
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /WX")
+#set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   /W4 /WX")
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+find_package(WDK REQUIRED)
+#
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/source-charset:utf-8>")
+
+set(CMAKE_C_STANDARD 99) 
+set(CMAKE_C_STANDARD_REQUIRED ON) 
+set(CMAKE_CXX_STANDARD 11) 
+set(CMAKE_CXX_STANDARD_REQUIRED ON) 
+set(CMAKE_CXX_EXTENSIONS OFF) 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON) 
+
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+set(ENV{HomeDir}  ${CMAKE_CURRENT_LIST_DIR}/out/${CMAKE_SYSTEM_NAME})
+
+#####################################################################
+set (LIBUSB_WIN32_BIN_DIR  ${CMAKE_CURRENT_BINARY_DIR})
+set (LIBUSB_WIN32_TOP_DIR  ${CMAKE_CURRENT_SOURCE_DIR}) #CMAKE_SOURCE_DIR
+set (LIBUSB_WIN32_SRC_DIR  ${LIBUSB_WIN32_TOP_DIR}/src)
+set (LIBUSB_WIN32_INC_DIRS ${LIBUSB_WIN32_TOP_DIR}/        ${LIBUSB_WIN32_SRC_DIR}/     ${LIBUSB_WIN32_SRC_DIR}/driver   )
+#####################################################################
+set (LIBWDI_TOP_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/projects/additional/libwdi) #CMAKE_SOURCE_DIR
+set (LIBWDI_SRC_DIR  ${LIBWDI_TOP_DIR}/libwdi)
+set (LIBWDI_INC_DIRS ${CMAKE_CURRENT_BINARY_DIR}  ${LIBUSB_WIN32_INC_DIRS}  ${LIBWDI_TOP_DIR}/      ${LIBWDI_TOP_DIR}/msvc   ${LIBWDI_SRC_DIR}/     ${LIBWDI_SRC_DIR}/msvc   )
+#####################################################################
+
+configure_file(${LIBWDI_SRC_DIR}/winusb.inf.in             ${LIBUSB_WIN32_BIN_DIR}/winusb.inf.in)
+configure_file(${LIBWDI_SRC_DIR}/libusb-win32.inf.in       ${LIBUSB_WIN32_BIN_DIR}/libusb-win32.inf.in)
+configure_file(${LIBWDI_SRC_DIR}/libusbk.inf.in            ${LIBUSB_WIN32_BIN_DIR}/libusbk.inf.in)
+
+configure_file(${LIBWDI_SRC_DIR}/winusb.cat.in             ${LIBUSB_WIN32_BIN_DIR}/winusb.cat.in)
+configure_file(${LIBWDI_SRC_DIR}/libusb-win32.cat.in       ${LIBUSB_WIN32_BIN_DIR}/libusb-win32.cat.in)
+configure_file(${LIBWDI_SRC_DIR}/libusbk.cat.in            ${LIBUSB_WIN32_BIN_DIR}/libusbk.cat.in)
+
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    message(STATUS "64-bit ")
+elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    message(STATUS "32-bit ")
+else()
+    message(STATUS "Unknown architecture")
+endif()
+
+#####################################################################
+file(GLOB   LIBUSB_WIN32_SRCS_LIST RELATIVE ${LIBUSB_WIN32_TOP_DIR} ${LIBUSB_WIN32_SRC_DIR}/*.c )
+file(GLOB   LIBUSB_WIN32_HDRS_LIST RELATIVE ${LIBUSB_WIN32_TOP_DIR} ${LIBUSB_WIN32_SRC_DIR}/*.h )
+
+file(GLOB   LIBUSB_COMMON_LIST     RELATIVE ${LIBUSB_WIN32_TOP_DIR} ${LIBUSB_WIN32_SRC_DIR}/error.c   ${LIBUSB_WIN32_SRC_DIR}/install.c    ${LIBUSB_WIN32_SRC_DIR}/registry.c   )
+
+file(GLOB   LIBUSB0_LIST           RELATIVE ${LIBUSB_WIN32_TOP_DIR} ${LIBUSB_WIN32_SRC_DIR}/usb.c     ${LIBUSB_WIN32_SRC_DIR}/windows.c    ${LIBUSB_WIN32_SRC_DIR}/descriptors.c)
+
+file(GLOB   INSTALL_FILTER_LIST    RELATIVE ${LIBUSB_WIN32_TOP_DIR} ${LIBUSB_WIN32_SRC_DIR}/install_filter.c      )
+
+file(GLOB   INF_WIZARD_LIST        RELATIVE ${LIBUSB_WIN32_TOP_DIR} ${LIBUSB_WIN32_SRC_DIR}/inf_wizard.c      )
+
+file(GLOB         LIBUSB_SYS_LIST        RELATIVE ${LIBUSB_WIN32_TOP_DIR} ${LIBUSB_WIN32_SRC_DIR}/driver/*.c    ${LIBUSB_WIN32_SRC_DIR}/error.c   ) #  
+file(GLOB         LIBUSB_SYS_FILTER      RELATIVE ${LIBUSB_WIN32_TOP_DIR} ${LIBUSB_WIN32_SRC_DIR}/driver/driver_debug.c)
+
+list(REMOVE_ITEM  LIBUSB_SYS_LIST        ${LIBUSB_SYS_FILTER})
+
+source_group(TREE ${LIBUSB_WIN32_TOP_DIR}    FILES ${LIBUSB_WIN32_SRCS_LIST}  ${LIBUSB_SYS_LIST})
+#####################################################################
+file(GLOB   LIBWDI_SRC_LIST RELATIVE ${LIBUSB_WIN32_TOP_DIR} ${LIBWDI_SRC_DIR}/*.c )
+file(GLOB   LIBWDI_HDR_LIST RELATIVE ${LIBUSB_WIN32_TOP_DIR} ${LIBWDI_SRC_DIR}/*.h )
+
+file(GLOB   WDI_INSTALLER_SRC_LIST RELATIVE ${LIBUSB_WIN32_TOP_DIR} ${LIBWDI_SRC_DIR}/installer.c )
+file(GLOB   WDI_EMBEDDER_SRC_LIST  RELATIVE ${LIBUSB_WIN32_TOP_DIR} ${LIBWDI_SRC_DIR}/embedder.c )
+#file(GLOB   WDI_PKI_SRC_LIST       RELATIVE ${LIBUSB_WIN32_TOP_DIR} ${LIBWDI_SRC_DIR}/pki.c )
+
+list(REMOVE_ITEM  LIBWDI_SRC_LIST        ${WDI_INSTALLER_SRC_LIST}  ${WDI_EMBEDDER_SRC_LIST}   )
+
+source_group(TREE ${LIBUSB_WIN32_TOP_DIR}    FILES ${LIBWDI_SRC_LIST}        ${LIBWDI_HDR_LIST}   ${WDI_INSTALLER_SRC_LIST}        ${WDI_EMBEDDER_SRC_LIST})
+
+include(${LIBUSB_WIN32_TOP_DIR}/cmake/dep_embedder_gen_hdr.cmake)
+set              (EMBEDDER_HDRS        embedded.h       )
+set              (embedder_app         wdi_embedder     ) 
+embedder_generate(EMBEDDER_HDRS_LIST   ${EMBEDDER_HDRS} )
+message("[INFO]   EMBEDDER_HDRS_LIST : ${EMBEDDER_HDRS_LIST}")
+#####################################################################
+
+
+#list(REMOVE_ITEM  LIBUSB_WIN32_SRCS_LIST ${LIBUSB_WIN32_APP_LIST})
+
+set (LIBUSB_SYS_DEP_DEFS        TARGETTYPE=3              )
+set (LIBUSB_SYS_SRC_LIST      ${LIBUSB_SYS_LIST}          )
+set (LIBUSB_SYS_INC_DIRS      ${LIBUSB_WIN32_INC_DIRS}    )
+set (LIBUSB_SYS_DEP_LIBS      ${WDK_ROOT}/Lib/${WDK_VERSION}/km/${WDK_PLATFORM}/usbd.lib )
+
+set (LIBUSB_0_SRC_LIST        ${LIBUSB_COMMON_LIST}      ${LIBUSB0_LIST}          )
+set (LIBUSB_0_INC_DIRS        ${LIBUSB_WIN32_INC_DIRS} )
+
+
+set (INSTALL_FILTER_APP_LIST  ${LIBUSB_COMMON_LIST}      ${INSTALL_FILTER_LIST}   )
+set (INSTALL_FILTER_INC_DIRS  ${LIBUSB_WIN32_INC_DIRS} )
+
+set (INF_WIZARD_APP_LIST      ${INF_WIZARD_LIST}       )
+set (INF_WIZARD_INC_DIRS      ${LIBUSB_WIN32_INC_DIRS}  ${LIBWDI_INC_DIRS})
+
+#RESOURCES = intl.res
+
+source_group(TREE ${LIBUSB_WIN32_TOP_DIR}    FILES ${LIBUSB_SYS_SRC_LIST}        ${LIBUSB_0_SRC_LIST}   ${INSTALL_FILTER_APP_LIST}        ${INF_WIZARD_APP_LIST} )
+
+message("[INFO] LIBUSB_WIN32_SRCS_LIST:${LIBUSB_WIN32_SRCS_LIST}")
+
+#include(${LIBUSB_WIN32_TOP_DIR}/cmake/dep_3rdlib_files.cmake)
+
+#gen_dep_lib_dir(all_dep_lib_dir )
+#set(dep_libs ${DepLibs})
+
+
+
+set (sys_dep_libs           setupapi winmm imm32 version   crypt32                          )
+set (LIBUSB_WIN32_DEP_LIBS   ${LIBPCRE_LIBRARY}    ${NETTLE_LIBRARIES}   ${SDL_LIBRARIES}   )
+
+#set (LIBUSB_WIN32_DEP_DEFS  LOCALEDIR="" LOCALE_ALIAS_PATH="" HAVE_CONFIG_H IN_LIBUSB_WIN32 ENABLE_RELOCATABLE=0 IN_LIBRARY INSTALLDIR="" NO_XMALLOC  DEPENDS_ON_LIBICONV=0  )
+
+
+
+########################################################################################
+set                       (  LIBUSB_SYS                    libusbsys              )
+wdk_add_driver            (${LIBUSB_SYS}                   ${LIBUSB_SYS_SRC_LIST} )
+target_compile_definitions(${LIBUSB_SYS}        PRIVATE    ${LIBUSB_SYS_DEP_DEFS} )
+
+target_include_directories(${LIBUSB_SYS}        PUBLIC     ${LIBUSB_SYS_INC_DIRS})
+target_link_libraries     (${LIBUSB_SYS}                   ${LIBUSB_SYS_DEP_LIBS})
+
+set                       (  LIBUSB_0_STATIC               libusb0_static)
+add_library               (${LIBUSB_0_STATIC}   STATIC     ${LIBUSB_0_SRC_LIST} )
+target_compile_definitions(${LIBUSB_0_STATIC}   PRIVATE    ${LIBUSB_0_DEP_DEFS} )
+target_include_directories(${LIBUSB_0_STATIC}   PUBLIC     ${LIBUSB_0_INC_DIRS} )
+target_link_directories   (${LIBUSB_0_STATIC}   PUBLIC     ${LIBUSB_0_LIB_DIRS} )
+target_link_libraries     (${LIBUSB_0_STATIC}              ${LIBUSB_0_DEP_LIBS}      ${sys_dep_libs}                )
+target_compile_options    (${LIBUSB_0_STATIC}   PRIVATE     /Z7     /W4         )
+set_target_properties     (${LIBUSB_0_STATIC}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME "libusb0_static"   )
+
+set                       (  LIBUSB_0_SHARED               libusb0_shared)
+add_library               (${LIBUSB_0_SHARED}   SHARED     ${LIBUSB_0_SRC_LIST} )
+target_compile_definitions(${LIBUSB_0_SHARED}   PRIVATE    ${LIBUSB_0_DEP_DEFS} )
+target_include_directories(${LIBUSB_0_SHARED}   PUBLIC     ${LIBUSB_0_INC_DIRS} )
+target_link_directories   (${LIBUSB_0_SHARED}   PUBLIC     ${LIBUSB_0_LIB_DIRS} )
+target_link_libraries     (${LIBUSB_0_SHARED}              ${LIBUSB_0_DEP_LIBS}      ${sys_dep_libs}                ) #  ${sys_dep_libs}
+target_compile_options    (${LIBUSB_0_SHARED}   PRIVATE     /Z7     /W4         )
+set_target_properties     (${LIBUSB_0_SHARED}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME "libusb0_shared"   )
+set_target_properties     (${LIBUSB_0_SHARED}   PROPERTIES PUBLIC_HEADER             "${LIBUSB_WIN32_HDRS_LIST}")
+
+set                       (  INSTALL_FILTER_APP                install_filter)
+add_executable            (${INSTALL_FILTER_APP}               ${INSTALL_FILTER_APP_LIST} )
+target_compile_definitions(${INSTALL_FILTER_APP}   PRIVATE     ${INSTALL_FILTER_DEP_DEFS}     ${LIBPCRE_DEFS}  )
+target_include_directories(${INSTALL_FILTER_APP}   PUBLIC      ${INSTALL_FILTER_INC_DIRS} )
+target_link_directories   (${INSTALL_FILTER_APP}   PUBLIC      ${INSTALL_FILTER_LIB_DIRS} )
+target_link_libraries     (${INSTALL_FILTER_APP}               ${LIBUSB_0_STATIC}   )  # LIBUSB_0_LIB_STATIC
+#target_link_libraries     (${INSTALL_FILTER_APP}               ${LIBUSB_0_SHARED}   )  # must be REALSE
+
+########################################################################################
+
+set                       (  LIBWDI_STATIC               libwdi_static      )
+add_library               (${LIBWDI_STATIC}   STATIC     ${LIBWDI_SRC_LIST}      ${EMBEDDER_HDRS_LIST}    )
+target_compile_definitions(${LIBWDI_STATIC}   PRIVATE    ${LIBWDI_DEP_DEFS} )
+target_include_directories(${LIBWDI_STATIC}   PUBLIC     ${LIBWDI_INC_DIRS} )
+target_link_directories   (${LIBWDI_STATIC}   PUBLIC     ${LIBWDI_LIB_DIRS} )
+target_link_libraries     (${LIBWDI_STATIC}              ${LIBWDI_DEP_LIBS}      ${sys_dep_libs}                )
+target_compile_options    (${LIBWDI_STATIC}   PRIVATE     /Z7     /W4       )
+set_target_properties     (${LIBWDI_STATIC}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME "libwdi_static"   )
+
+set                       (  LIBWDI_SHARED               libwdi_shared)
+add_library               (${LIBWDI_SHARED}   SHARED     ${LIBWDI_SRC_LIST}      ${EMBEDDER_HDRS_LIST}    )
+target_compile_definitions(${LIBWDI_SHARED}   PRIVATE    ${LIBWDI_DEP_DEFS} )
+target_include_directories(${LIBWDI_SHARED}   PUBLIC     ${LIBWDI_INC_DIRS} )
+target_link_directories   (${LIBWDI_SHARED}   PUBLIC     ${LIBWDI_LIB_DIRS} )
+target_link_libraries     (${LIBWDI_SHARED}              ${LIBWDI_DEP_LIBS}      ${sys_dep_libs}                ) #  ${sys_dep_libs}
+target_compile_options    (${LIBWDI_SHARED}   PRIVATE     /Z7     /W4       )
+set_target_properties     (${LIBWDI_SHARED}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME "libwdi_shared"   )
+set_target_properties     (${LIBWDI_SHARED}   PROPERTIES PUBLIC_HEADER             "${LIBWDI_HDR_LIST}")
+
+set                       (  WDI_EMBEDDER_APP                wdi_embedder   )
+add_executable            (${WDI_EMBEDDER_APP}               ${WDI_EMBEDDER_SRC_LIST}     )
+target_compile_definitions(${WDI_EMBEDDER_APP}   PRIVATE     ${WDI_EMBEDDER_DEP_DEFS}     ${LIBPCRE_DEFS}      )
+target_include_directories(${WDI_EMBEDDER_APP}   PUBLIC      ${WDI_EMBEDDER_INC_DIRS}     ${LIBWDI_INC_DIRS}   )
+target_link_directories   (${WDI_EMBEDDER_APP}   PUBLIC      ${WDI_EMBEDDER_LIB_DIRS} )
+#target_link_libraries     (${WDI_EMBEDDER_APP}               ${LIBWDI_STATIC}   )  # 
+#target_link_libraries     (${WDI_EMBEDDER_APP}               ${LIBWDI_SHARED}   )  # 
+
+set                       (  WDI_INSTALLER_X86_APP                wdi_installer_x86)
+add_executable            (${WDI_INSTALLER_X86_APP}               ${WDI_INSTALLER_SRC_LIST}      )
+target_compile_definitions(${WDI_INSTALLER_X86_APP}   PRIVATE     ${WDI_INSTALLER_DEP_DEFS}     ${LIBPCRE_DEFS}     )
+target_include_directories(${WDI_INSTALLER_X86_APP}   PUBLIC      ${WDI_INSTALLER_INC_DIRS}     ${LIBWDI_INC_DIRS} )
+target_link_directories   (${WDI_INSTALLER_X86_APP}   PUBLIC      ${WDI_INSTALLER_LIB_DIRS} )
+target_link_libraries     (${WDI_INSTALLER_X86_APP}               ${LIBWDI_STATIC}              ${sys_dep_libs}  newdev )  # 
+#target_link_libraries     (${WDI_INSTALLER_X86_APP}               ${LIBWDI_SHARED}   )  # 
+
+set                       (  WDI_INSTALLER_X64_APP                wdi_installer_x64)
+add_executable            (${WDI_INSTALLER_X64_APP}               ${WDI_INSTALLER_SRC_LIST}      )
+target_compile_definitions(${WDI_INSTALLER_X64_APP}   PRIVATE     ${WDI_INSTALLER_DEP_DEFS}     ${LIBPCRE_DEFS}      )
+target_include_directories(${WDI_INSTALLER_X64_APP}   PUBLIC      ${WDI_INSTALLER_INC_DIRS} )
+target_link_directories   (${WDI_INSTALLER_X64_APP}   PUBLIC      ${WDI_INSTALLER_LIB_DIRS} )
+target_link_libraries     (${WDI_INSTALLER_X64_APP}               ${LIBWDI_STATIC}               ${sys_dep_libs}  newdev  )  # 
+#target_link_libraries     (${WDI_INSTALLER_X64_APP}               ${LIBWDI_SHARED}   )  # 
+
+########################################################################################
+
+set                       (  INF_WIZARD_APP                inf_wizard)
+add_executable            (${INF_WIZARD_APP}   WIN32       ${INF_WIZARD_APP_LIST} )
+target_compile_definitions(${INF_WIZARD_APP}   PRIVATE     ${INF_WIZARD_DEP_DEFS}     ${LIBPCRE_DEFS}  )
+target_include_directories(${INF_WIZARD_APP}   PUBLIC      ${INF_WIZARD_INC_DIRS} )
+target_link_directories   (${INF_WIZARD_APP}   PUBLIC      ${INF_WIZARD_LIB_DIRS} )
+target_link_libraries     (${INF_WIZARD_APP}               ${LIBUSB_0_STATIC}  ${LIBWDI_STATIC}  comctl32  newdev )  # LIBUSB_0_LIB_STATIC
+#target_link_libraries     (${INF_WIZARD_APP}               ${LIBUSB_0_SHARED}   )  # must be REALSE
+
+set (install_platform_src_lic   ${LIBUSB_WIN32_TOP_DIR}/installer_license.txt)
+set (install_platform_dst_lic   ${CMAKE_INSTALL_PREFIX}/installer_license.txt)
+if("${CMAKE_GENERATOR_PLATFORM}" STREQUAL "x64")
+    message(STATUS "Building for x64 platform")
+    #set (install_platform x64)
+    set (install_platform amd64)
+    set (install_platform_src_dll ${CMAKE_INSTALL_PREFIX}/bin/${install_platform}/${LIBUSB_0_SHARED}.dll)
+    #set (install_platform_dst_dll ${CMAKE_INSTALL_PREFIX}/bin/${install_platform}/libusb0_x64.dll)
+    set (install_platform_dst_dll ${CMAKE_INSTALL_PREFIX}/bin/${install_platform}/libusb0.dll)
+    set (install_platform_src_sys ${CMAKE_INSTALL_PREFIX}/bin/${install_platform}/${LIBUSB_SYS}.sys)
+    set (install_platform_dst_sys ${CMAKE_INSTALL_PREFIX}/bin/${install_platform}/libusb0.sys)
+elseif("${CMAKE_GENERATOR_PLATFORM}" STREQUAL "Win32")
+    message(STATUS "Building for x86 platform")
+    set (install_platform x86)
+    set (install_platform_src_dll ${CMAKE_INSTALL_PREFIX}/bin/${install_platform}/${LIBUSB_0_SHARED}.dll)
+    set (install_platform_dst_dll ${CMAKE_INSTALL_PREFIX}/bin/${install_platform}/libusb0_x86.dll)
+    set (install_platform_src_sys ${CMAKE_INSTALL_PREFIX}/bin/${install_platform}/${LIBUSB_SYS}.sys)
+    set (install_platform_dst_sys ${CMAKE_INSTALL_PREFIX}/bin/${install_platform}/libusb0.sys)
+else()
+    message(STATUS "Building for an ${CMAKE_GENERATOR_PLATFORM} platform")
+    set (install_platform arm)
+endif()
+
+message("[INFO] ${install_platform_src_dll} -> ${install_platform_dst_dll}" )
+
+embedder_fcopy("${install_platform_src_lic}"  "${install_platform_dst_lic}" )
+embedder_fcopy("${install_platform_src_dll}"  "${install_platform_dst_dll}" )
+embedder_fcopy("${install_platform_src_sys}"  "${install_platform_dst_sys}" )
+
+add_custom_target(wdi_embedder_dep ALL DEPENDS ${install_platform_dst_lic} ${install_platform_dst_dll} ${install_platform_dst_sys} )
+
+# ${INF_WIZARD_APP} 
+SET(install_targets ${LIBUSB_SYS}   ${LIBUSB_0_STATIC}    ${LIBUSB_0_SHARED}    ${INSTALL_FILTER_APP}  ${WDI_INSTALLER_X86_APP} ${WDI_INSTALLER_X64_APP})
+SET(install_hdr_dir include)
+
+INSTALL(TARGETS ${install_targets}
+        RUNTIME DESTINATION bin/${install_platform}
+        LIBRARY DESTINATION lib/${install_platform}
+        ARCHIVE DESTINATION lib/${install_platform}
+        PUBLIC_HEADER DESTINATION ${install_hdr_dir}
+       )
+
+install(FILES      ${LIBUSB_WIN32_HDRS_LIST} DESTINATION ${install_hdr_dir})
+#install(DIRECTORY  "inc_sub_dir"            DESTINATION ${install_hdr_dir} FILES_MATCHING PATTERN "*.h")
