@@ -1,63 +1,150 @@
 cmake_minimum_required(VERSION 3.15)
-project (libusb)
 
-set(CMAKE_C_STANDARD 99)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+project(LIBUSB)
 
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+set(CMAKE_C_STANDARD 99) 
+set(CMAKE_C_STANDARD_REQUIRED ON) 
+set(CMAKE_CXX_STANDARD 11) 
+set(CMAKE_CXX_STANDARD_REQUIRED ON) 
+set(CMAKE_CXX_EXTENSIONS OFF) 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON) 
 
-#configure_file( "${CMAKE_CURRENT_LIST_DIR}/config.h.in"    "${CMAKE_CURRENT_LIST_DIR}/config.h"  )
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
-set(LIBUSB_TOP_DIR ${CMAKE_CURRENT_LIST_DIR})
-set(LIBUSB_INC_DIR ${LIBUSB_TOP_DIR}/    ${LIBUSB_TOP_DIR}/libusb    ${LIBUSB_TOP_DIR}/libusb/os)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON) 
 
-file(GLOB LibUsbSRCS   RELATIVE ${LIBUSB_TOP_DIR}    libusb/*.c*    libusb/os/*linux*.c*    libusb/os/*posix*.c* )
-file(GLOB LibUsbHDRS   RELATIVE ${LIBUSB_TOP_DIR}    libusb/*.h*    libusb/os/*linux*.h*    libusb/os/*posix*.h* )
+set(ENV{HomeDir}  ${CMAKE_CURRENT_LIST_DIR}/out/${CMAKE_SYSTEM_NAME})
 
-set (LIBUSB_HDRS  ${LibUsbHDRS})
+set(LIBUSB_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR})                  
+set(LIBUSB_TOP_DIR ${CMAKE_CURRENT_SOURCE_DIR}) #CMAKE_SOURCE_DIR
+set(LIBUSB_SRC_DIR ${LIBUSB_TOP_DIR}/libusb)
 
-set(ALL_FILES
-    ${LibUsbSRCS}  ${LibUsbHDRS}
-)
-
-list(REMOVE_ITEM ALL_FILES           libusb/xxxxx.c )
-
-message("[INFO] LIBUSB_INC_DIR ${LIBUSB_INC_DIR}")
-
-#list(REMOVE_ITEM LibUsbSRCS   xxx.c)
-set(LIBUSB_STATIC libusb_static)
-add_library               (${LIBUSB_STATIC} STATIC  ${ALL_FILES}       )
-target_include_directories(${LIBUSB_STATIC} PRIVATE ${LIBUSB_INC_DIR}   ${ZLIB_INCLUDE_DIRS})
-target_link_directories   (${LIBUSB_STATIC} PRIVATE ${LIBUSB_SRC_DIR}/  ${ZLIB_LIBRARY_DIRS})
-target_compile_definitions(${LIBUSB_STATIC} PRIVATE
-	DYZ
-)
-
-set(LIBUSB_SHARED libusb_shared)
-add_library               (${LIBUSB_SHARED} SHARED  ${ALL_FILES})
-target_include_directories(${LIBUSB_SHARED} PRIVATE ${LIBUSB_INC_DIR}   ${ZLIB_INCLUDE_DIRS} )
-target_link_directories   (${LIBUSB_SHARED} PRIVATE ${LIBUSB_SRC_DIR}/  ${ZLIB_LIBRARY_DIRS} )
-target_link_libraries     (${LIBUSB_SHARED} PRIVATE                     ${ZLIB_LIBRARIES}    )
-target_compile_definitions(${LIBUSB_SHARED} PRIVATE
-	DYZ
-)
+set(LIBUSB_INC_DIRS ${LIBUSB_TOP_DIR}/msvc/getopt   ${LIBUSB_TOP_DIR}/msvc/   ${LIBUSB_SRC_DIR}/   ${LIBUSB_SRC_DIR}/os)                  
+set(LIBUSB_LIB_DIRS ${LIBUSB_TOP_DIR}/lib) #CMAKE_SOURCE_DIR
 
 
-SET(install_targets ${LIBUSB_STATIC}    )
-SET(install_hdr_dir include)
+file        (GLOB           FILTER_LIBUSB_OS_CPPS         RELATIVE   ${LIBUSB_TOP_DIR}  
+        libusb/os/darwin_usb.c
+        libusb/os/emscripten_webusb.cpp
+        libusb/os/events_posix.c
+        libusb/os/haiku_pollfs.cpp
+        libusb/os/haiku_usb_backend.cpp
+        libusb/os/haiku_usb_raw.cpp
+        libusb/os/linux_netlink.c
+        libusb/os/linux_udev.c
+        libusb/os/linux_usbfs.c
+        libusb/os/netbsd_usb.c
+        libusb/os/null_usb.c
+        libusb/os/openbsd_usb.c
+        libusb/os/sunos_usb.c
+        libusb/os/threads_posix.c
+    )
 
-set_target_properties(${LIBUSB_STATIC} PROPERTIES PUBLIC_HEADER "${LIBUSB_HDRS}")
 
-INSTALL(TARGETS ${install_targets}
-        RUNTIME DESTINATION bin
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
+file        (GLOB           FILTER_LIBUSB_OS_HPPS         RELATIVE   ${LIBUSB_TOP_DIR}  
+        libusb/os/darwin_usb.h
+        libusb/os/events_posix.h
+        libusb/os/haiku_usb.h
+        libusb/os/haiku_usb_raw.h
+        libusb/os/linux_usbfs.h
+        libusb/os/sunos_usb.h
+        libusb/os/threads_posix.h
+    )
+
+
+file        (GLOB           LIBGETOPT_SRC_LIST       RELATIVE   ${LIBUSB_TOP_DIR}  
+        msvc/getopt/*.c*  )
+
+file        (GLOB           LIBUSB_ASM_LIST         RELATIVE   ${LIBUSB_TOP_DIR}  
+        msvc/*.asm*           libusb/*.asm*           libusb/os/*.asm*       )
+
+file        (GLOB           LIBUSB_INC_LIST         RELATIVE   ${LIBUSB_TOP_DIR}  
+        msvc/*.h*           libusb/*.h*           libusb/os/*.h*       )
+
+file        (GLOB           LIBUSB_SRC_LIST         RELATIVE   ${LIBUSB_TOP_DIR}  
+        msvc/*.c*           libusb/*.c*           libusb/os/*.c*       )
+
+file        (GLOB           XUSB_APP_LIST         RELATIVE   ${LIBUSB_TOP_DIR}  
+        examples/xusb*.c*       )
+
+file        (GLOB           LISTDEVS_APP_LIST       RELATIVE   ${LIBUSB_TOP_DIR}  
+        examples/listdevs*.c*       )
+
+file        (GLOB           DPFP_APP_LIST         RELATIVE   ${LIBUSB_TOP_DIR}  
+        examples/dpfp*.c*       )
+
+file        (GLOB           FXLOAD_APP_LIST       RELATIVE   ${LIBUSB_TOP_DIR}  
+        examples/fxload*.c*  examples/ezusb*.c*    )
+
+list        (REMOVE_ITEM    LIBUSB_SRC_LIST                 ${FILTER_LIBUSB_OS_CPPS}    )
+source_group(TREE         ${LIBUSB_TOP_DIR}     FILES       ${LIBUSB_SRC_LIST}    )
+
+
+
+set                       (  GETOPT_STATIC               libgetopt_static          )
+add_library               (${GETOPT_STATIC}   STATIC     ${LIBGETOPT_SRC_LIST}    )
+target_compile_definitions(${GETOPT_STATIC}   PRIVATE    ${LIBGETOPT_DEF_LIST}          HAVE_STRING_H)
+target_include_directories(${GETOPT_STATIC}   PUBLIC     ${LIBGETOPT_INC_DIRS}                )
+target_link_directories   (${GETOPT_STATIC}   PUBLIC     ${LIBGETOPT_LIB_DIRS}                )
+target_link_libraries     (${GETOPT_STATIC}              ${LIBGETOPT_DEP_LIBS}        ${dep_libs}  )
+target_compile_options    (${GETOPT_STATIC}   PRIVATE     /Z7     /W4           )
+set_target_properties     (${GETOPT_STATIC}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME libgetopt_static  )
+
+
+set                       (  LIBUSB_STATIC               libusb_static          )
+add_library               (${LIBUSB_STATIC}   STATIC     ${LIBUSB_SRC_LIST}    )
+target_compile_definitions(${LIBUSB_STATIC}   PRIVATE    ${LIBUSB_DEF_LIST}          HAVE_CONFIG_H)
+target_include_directories(${LIBUSB_STATIC}   PUBLIC     ${LIBUSB_INC_DIRS}                )
+target_link_directories   (${LIBUSB_STATIC}   PUBLIC     ${LIBUSB_LIB_DIRS}                )
+target_link_libraries     (${LIBUSB_STATIC}              ${LIBUSB_DEP_LIBS}        ${dep_libs}  )
+target_compile_options    (${LIBUSB_STATIC}   PRIVATE     /Z7     /W4           )
+set_target_properties     (${LIBUSB_STATIC}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME libusb_static  )
+
+set                       (  LIBUSB_SHARED               libusb_shared          )
+add_library               (${LIBUSB_SHARED}   SHARED     ${LIBUSB_SRC_LIST}    )
+target_compile_definitions(${LIBUSB_SHARED}   PRIVATE    ${LIBUSB_DEF_LIST}    HAVE_CONFIG_H      )
+target_include_directories(${LIBUSB_SHARED}   PUBLIC     ${LIBUSB_INC_DIRS}                 )
+target_link_directories   (${LIBUSB_SHARED}   PUBLIC     ${LIBUSB_LIB_DIRS}                 )
+target_link_libraries     (${LIBUSB_SHARED}              ${LIBUSB_DEP_LIBS}   ${dep_libs}        )
+target_compile_options    (${LIBUSB_SHARED}   PRIVATE     /Z7     /W4           )
+set_target_properties     (${LIBUSB_SHARED}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME libusb_shared  )
+
+set                       (  XUSB_APP                xusb        )
+add_executable            (${XUSB_APP}               ${XUSB_APP_LIST}                 )
+target_compile_definitions(${XUSB_APP}   PRIVATE     ${XUSB_APP_DEFS}     __SIZE_T_DEFINED	)
+target_include_directories(${XUSB_APP}   PUBLIC      ${LIBUSB_INC_DIRS}                   )
+target_link_directories   (${XUSB_APP}   PUBLIC      ${LIBUSB_LIB_DIRS}                   )
+target_link_libraries     (${XUSB_APP}               ${LIBUSB_STATIC}         )
+
+set                       (  LISTDEVS_APP                listdevs        )
+add_executable            (${LISTDEVS_APP}               ${LISTDEVS_APP_LIST}                 )
+target_compile_definitions(${LISTDEVS_APP}   PRIVATE     ${LISTDEVS_APP_DEFS}     __SIZE_T_DEFINED	)
+target_include_directories(${LISTDEVS_APP}   PUBLIC      ${LIBUSB_INC_DIRS}                   )
+target_link_directories   (${LISTDEVS_APP}   PUBLIC      ${LIBUSB_LIB_DIRS}                   )
+target_link_libraries     (${LISTDEVS_APP}               ${LIBUSB_STATIC}         )
+
+set                       (  DPFP_APP                dpfp        )
+add_executable            (${DPFP_APP}               ${DPFP_APP_LIST}                 )
+target_compile_definitions(${DPFP_APP}   PRIVATE     ${DPFP_APP_DEFS}     __SIZE_T_DEFINED	)
+target_include_directories(${DPFP_APP}   PUBLIC      ${LIBUSB_INC_DIRS}                   )
+target_link_directories   (${DPFP_APP}   PUBLIC      ${LIBUSB_LIB_DIRS}                   )
+target_link_libraries     (${DPFP_APP}               ${LIBUSB_STATIC}         )
+
+set                       (  FXLOAD_APP                fxload        )
+add_executable            (${FXLOAD_APP}               ${FXLOAD_APP_LIST}                 )
+target_compile_definitions(${FXLOAD_APP}   PRIVATE     ${FXLOAD_APP_DEFS}     __SIZE_T_DEFINED	)
+target_include_directories(${FXLOAD_APP}   PUBLIC      ${LIBUSB_INC_DIRS}                   )
+target_link_directories   (${FXLOAD_APP}   PUBLIC      ${LIBUSB_LIB_DIRS}                   )
+target_link_libraries     (${FXLOAD_APP}               ${LIBUSB_STATIC}   ${GETOPT_STATIC}      )
+
+SET(install_targets ${LIBUSB_STATIC}    ${LIBUSB_SHARED}  ${LIBUSB_APP}  ) #
+SET(install_hdr_dir include)#
+
+INSTALL(TARGETS       ${install_targets}
+        RUNTIME       DESTINATION bin
+        LIBRARY       DESTINATION lib
+        ARCHIVE       DESTINATION lib
         PUBLIC_HEADER DESTINATION ${install_hdr_dir}
-       )
-
-install(FILES      ${LIBUSB_HDRS} DESTINATION ${install_hdr_dir})
-install(DIRECTORY  "inc_sub_dir"  DESTINATION ${install_hdr_dir} FILES_MATCHING PATTERN "*.h")
+)
+install(FILES      ${LIBUSB_INC_LIST}    DESTINATION    ${install_hdr_dir})
+install(DIRECTORY  "inc_sub_dir"                        DESTINATION    ${install_hdr_dir}    FILES_MATCHING    PATTERN   "*.h"   )
