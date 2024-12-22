@@ -1,0 +1,122 @@
+cmake_minimum_required(VERSION 3.16)
+
+project(YUView-develop)
+
+#OBJECTS = bindtextdom.obj dcgettext.obj dgettext.obj gettext.obj finddomain.obj loadmsgcat.obj localealias.obj textdomain.obj l10nflist.obj explodename.obj dcigettext.obj dcngettext.obj dngettext.obj ngettext.obj plural.obj plural-exp.obj localcharset.obj relocatable.obj langprefs.obj localename.obj log.obj printf.obj osdep.obj intl-compat.obj
+
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/source-charset:utf-8>")
+
+set(CMAKE_C_STANDARD 99) 
+set(CMAKE_C_STANDARD_REQUIRED ON) 
+set(CMAKE_CXX_STANDARD 17) 
+set(CMAKE_CXX_STANDARD_REQUIRED ON) 
+set(CMAKE_CXX_EXTENSIONS OFF) 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON) 
+
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON) 
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+set(ENV{HomeDir}  ${CMAKE_CURRENT_LIST_DIR}/out/${CMAKE_SYSTEM_NAME})
+
+
+set (YUV_VIEW_BIN_DIR  ${CMAKE_CURRENT_BINARY_DIR})
+set (YUV_VIEW_TOP_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/)  # CMAKE_SOURCE_DIR
+set (YUV_VIEW_SRC_DIR  ${YUV_VIEW_TOP_DIR}/)
+set (YUV_VIEW_APP_DIR  ${YUV_VIEW_TOP_DIR}/YUViewApp)
+set (YUV_VIEW_LIB_DIR  ${YUV_VIEW_TOP_DIR}/YUViewLib)
+set (YUV_VIEW_INC_DIRS ${YUV_VIEW_TOP_DIR}/       ${YUV_VIEW_SRC_DIR}/      ${YUV_VIEW_APP_DIR}/   ${YUV_VIEW_LIB_DIR}/    ${YUV_VIEW_LIB_DIR}/src  )
+
+#include(${YUV_VIEW_TOP_DIR}/cmake/dep_check_libs.cmake)
+#include(${YUV_VIEW_TOP_DIR}/cmake/dep_3rdlib_files.cmake)
+#gen_dep_lib_dir(all_dep_lib_dir )
+#set(dep_libs ${DepLibs})
+
+#include(cmake/dep_dotnet.cmake)
+
+#include(${YUV_VIEW_TOP_DIR}/cmake/dep_libqt5.cmake)
+#include(${YUV_VIEW_TOP_DIR}/cmake/dep_libqt6.cmake)
+include(${YUV_VIEW_TOP_DIR}/cmake/find_libqt5.cmake)
+#include(${YUV_VIEW_TOP_DIR}/cmake/find_libqt6.cmake)
+
+set(CMAKE_AUTOUIC_SEARCH_PATHS "${YUV_VIEW_LIB_DIR}/ui")
+
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    message(STATUS "64-bit _O_SRCS: ${_O_SRCS}")
+elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    message(STATUS "32-bit _O_SRCS: ${_O_SRCS}")
+else()
+    message(STATUS "Unknown architecture")
+endif()
+
+file(GLOB_RECURSE  YUV_VIEW_LIB_LIST  RELATIVE ${YUV_VIEW_TOP_DIR} "${YUV_VIEW_LIB_DIR}/*.cpp"  "${YUV_VIEW_LIB_DIR}/*.h"   "${YUV_VIEW_LIB_DIR}/*.ui"  "${YUV_VIEW_LIB_DIR}/*.qrc")
+file(GLOB_RECURSE  YUV_VIEW_APP_LIST  RELATIVE ${YUV_VIEW_TOP_DIR} "${YUV_VIEW_APP_DIR}/*.cpp"  "${YUV_VIEW_APP_DIR}/*.h"   "${YUV_VIEW_LIB_DIR}/*.ui"  "${YUV_VIEW_LIB_DIR}/*.qrc")
+
+#list(REMOVE_ITEM  YUV_VIEW_LIB_LIST           ${YUV_VIEW_SRC_DIR}/os2compat.c)
+
+source_group(TREE ${YUV_VIEW_TOP_DIR}    FILES ${YUV_VIEW_LIB_LIST} ${YUV_VIEW_APP_LIST})
+
+
+file(GLOB_RECURSE YUV_VIEW_HDRS_LIST  RELATIVE ${YUV_VIEW_TOP_DIR} ${YUV_VIEW_LIB_DIR}/*.h)
+
+#RESOURCES = intl.res
+
+message("[INFO] YUV_VIEW_LIB_LIST:${YUV_VIEW_LIB_LIST}")
+message("[INFO] YUV_VIEW_APP_LIST:${YUV_VIEW_APP_LIST}")
+
+
+set(LIBPCRE_DEFS      PCRE_STATIC)
+
+#configure_file(${YUV_VIEW_SRC_DIR}/3rdlib_config.h.in             ${YUV_VIEW_SRC_DIR}/3rdlib_config.h)
+
+#CFLAGS = /arch:IA32 $(MFLAGS) $(WARN_CFLAGS) $(OPTIMFLAGS)  -D LOCALEDIR=\"$(IIlocaledir)\" -DLOCALE_ALIAS_PATH=\"$(IIaliaspath)\" -DIN_test_3rdlib -DENABLE_RELOCATABLE=1 -D IN_LIBRARY -D INSTALLDIR=\"$(IIbindir)\" -DNO_XMALLOC -Dset_relocation_prefix=test_3rdlib_set_relocation_prefix -Drelocate=test_3rdlib_relocate -DDEPENDS_ON_LIBICONV=1
+
+set (sys_dep_libs           setupapi winmm imm32 version                                )
+set (YUV_VIEW_DEP_LIBS     ${LIBQT5_LIBRARIES}   )
+
+#set (YUV_VIEW_DEP_DEFS  LOCALEDIR="" LOCALE_ALIAS_PATH="" HAVE_CONFIG_H IN_YUV_VIEW ENABLE_RELOCATABLE=0 IN_LIBRARY INSTALLDIR="" NO_XMALLOC  DEPENDS_ON_LIBICONV=0  )
+set (YUV_VIEW_DEP_DEFS   UNICODE _UNICODE)
+
+set                       (  YUV_VIEW_STATIC              libyuview_static)
+add_library               (${YUV_VIEW_STATIC}   STATIC    ${YUV_VIEW_LIB_LIST})
+target_compile_definitions(${YUV_VIEW_STATIC}   PRIVATE   ${YUV_VIEW_DEP_DEFS}    ${LIBPCRE_DEFS}  YUV_VIEW_LIB_STATIC)
+target_include_directories(${YUV_VIEW_STATIC}   PUBLIC    ${YUV_VIEW_INC_DIRS} )
+target_link_directories   (${YUV_VIEW_STATIC}   PUBLIC    ${YUV_VIEW_LIB_DIRS} )
+target_link_libraries     (${YUV_VIEW_STATIC}   PUBLIC    ${YUV_VIEW_DEP_LIBS}    ${sys_dep_libs}             )
+target_compile_options    (${YUV_VIEW_STATIC}   PRIVATE     /Z7     /W4          )
+set_target_properties     (${YUV_VIEW_STATIC}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME "libyuview_static"   )
+
+set                       (  YUV_VIEW_SHARED              libyuview_shared)
+add_library               (${YUV_VIEW_SHARED}   SHARED    ${YUV_VIEW_LIB_LIST})
+target_compile_definitions(${YUV_VIEW_SHARED}   PRIVATE   ${YUV_VIEW_DEP_DEFS}    ${LIBPCRE_DEFS}  YUV_VIEW_LIB_EXPORTS)
+target_include_directories(${YUV_VIEW_SHARED}   PUBLIC    ${YUV_VIEW_INC_DIRS} )
+target_link_directories   (${YUV_VIEW_SHARED}   PUBLIC    ${YUV_VIEW_LIB_DIRS} )
+target_link_libraries     (${YUV_VIEW_SHARED}   PUBLIC    ${YUV_VIEW_DEP_LIBS}    ${sys_dep_libs}             ) #  ${sys_dep_libs}
+target_compile_options    (${YUV_VIEW_SHARED}   PRIVATE     /Z7     /W4          )
+set_target_properties     (${YUV_VIEW_SHARED}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME "libyuview_shared"   )
+set_target_properties     (${YUV_VIEW_SHARED}   PROPERTIES PUBLIC_HEADER             "${YUV_VIEW_HDRS_LIST}")
+
+set                       (  YUV_VIEW_APP                yuview_app           )
+add_executable            (${YUV_VIEW_APP}               ${YUV_VIEW_APP_LIST} )
+target_compile_definitions(${YUV_VIEW_APP}   PRIVATE     ${YUV_VIEW_DEP_DEFS}     ${LIBPCRE_DEFS}  )
+target_include_directories(${YUV_VIEW_APP}   PUBLIC      ${YUV_VIEW_INC_DIRS} )
+target_link_directories   (${YUV_VIEW_APP}   PUBLIC      ${YUV_VIEW_LIB_DIRS} )
+#target_link_libraries     (${YUV_VIEW_APP}               ${YUV_VIEW_STATIC}   )  # YUV_VIEW_LIB_STATIC
+target_link_libraries     (${YUV_VIEW_APP}               ${YUV_VIEW_SHARED}   )  # must be REALSE
+
+SET(install_targets ${YUV_VIEW_STATIC}    ${YUV_VIEW_SHARED}    ${YUV_VIEW_APP})
+SET(install_hdr_dir include)
+
+INSTALL(TARGETS ${install_targets}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION ${install_hdr_dir}
+    )
+
+install(FILES      ${YUV_VIEW_HDRS_LIST} DESTINATION ${install_hdr_dir})
+#install(DIRECTORY  "inc_sub_dir"            DESTINATION ${install_hdr_dir} FILES_MATCHING PATTERN "*.h")
