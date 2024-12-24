@@ -126,7 +126,7 @@ set (LIBUSB_WIN32_DEP_LIBS   ${LIBPCRE_LIBRARY}    ${NETTLE_LIBRARIES}   ${SDL_L
 
 
 ########################################################################################
-set                       (  LIBUSB_SYS                    libusbsys              )
+set                       (  LIBUSB_SYS                    libusb0                )
 wdk_add_driver            (${LIBUSB_SYS}                   ${LIBUSB_SYS_SRC_LIST} )
 target_compile_definitions(${LIBUSB_SYS}        PRIVATE    ${LIBUSB_SYS_DEP_DEFS} )
 
@@ -152,34 +152,35 @@ target_compile_options    (${LIBUSB_0_SHARED}   PRIVATE     /Z7     /W4         
 set_target_properties     (${LIBUSB_0_SHARED}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME "libusb0_shared"   )
 set_target_properties     (${LIBUSB_0_SHARED}   PROPERTIES PUBLIC_HEADER             "${LIBUSB_WIN32_HDRS_LIST}")
 
-set                       (  INSTALL_FILTER_APP                install_filter)
+set                       (  INSTALL_FILTER_APP                install-filter)
 add_executable            (${INSTALL_FILTER_APP}               ${INSTALL_FILTER_APP_LIST} )
-target_compile_definitions(${INSTALL_FILTER_APP}   PRIVATE     ${INSTALL_FILTER_DEP_DEFS}     ${LIBPCRE_DEFS}  )
+target_compile_definitions(${INSTALL_FILTER_APP}   PRIVATE     ${INSTALL_FILTER_DEP_DEFS}      )
 target_include_directories(${INSTALL_FILTER_APP}   PUBLIC      ${INSTALL_FILTER_INC_DIRS} )
 target_link_directories   (${INSTALL_FILTER_APP}   PUBLIC      ${INSTALL_FILTER_LIB_DIRS} )
 target_link_libraries     (${INSTALL_FILTER_APP}               ${LIBUSB_0_STATIC}   )  # LIBUSB_0_LIB_STATIC
 #target_link_libraries     (${INSTALL_FILTER_APP}               ${LIBUSB_0_SHARED}   )  # must be REALSE
 
 ########################################################################################
-
-set                       (  LIBWDI_STATIC               libwdi_static      )
-add_library               (${LIBWDI_STATIC}   STATIC     ${LIBWDI_SRC_LIST}      ${EMBEDDER_HDRS_LIST}    )
-target_compile_definitions(${LIBWDI_STATIC}   PRIVATE    ${LIBWDI_DEP_DEFS} )
-target_include_directories(${LIBWDI_STATIC}   PUBLIC     ${LIBWDI_INC_DIRS} )
-target_link_directories   (${LIBWDI_STATIC}   PUBLIC     ${LIBWDI_LIB_DIRS} )
-target_link_libraries     (${LIBWDI_STATIC}              ${LIBWDI_DEP_LIBS}      ${sys_dep_libs}                )
-target_compile_options    (${LIBWDI_STATIC}   PRIVATE     /Z7     /W4       )
-set_target_properties     (${LIBWDI_STATIC}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME "libwdi_static"   )
-
-set                       (  LIBWDI_SHARED               libwdi_shared)
-add_library               (${LIBWDI_SHARED}   SHARED     ${LIBWDI_SRC_LIST}      ${EMBEDDER_HDRS_LIST}    )
-target_compile_definitions(${LIBWDI_SHARED}   PRIVATE    ${LIBWDI_DEP_DEFS} )
-target_include_directories(${LIBWDI_SHARED}   PUBLIC     ${LIBWDI_INC_DIRS} )
-target_link_directories   (${LIBWDI_SHARED}   PUBLIC     ${LIBWDI_LIB_DIRS} )
-target_link_libraries     (${LIBWDI_SHARED}              ${LIBWDI_DEP_LIBS}      ${sys_dep_libs}                ) #  ${sys_dep_libs}
-target_compile_options    (${LIBWDI_SHARED}   PRIVATE     /Z7     /W4       )
-set_target_properties     (${LIBWDI_SHARED}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME "libwdi_shared"   )
-set_target_properties     (${LIBWDI_SHARED}   PROPERTIES PUBLIC_HEADER             "${LIBWDI_HDR_LIST}")
+if(USE_LIBWDI)
+    set                       (  LIBWDI_STATIC               libwdi_static      )
+    add_library               (${LIBWDI_STATIC}   STATIC     ${LIBWDI_SRC_LIST}      ${EMBEDDER_HDRS_LIST}    )
+    target_compile_definitions(${LIBWDI_STATIC}   PRIVATE    ${LIBWDI_DEP_DEFS} )
+    target_include_directories(${LIBWDI_STATIC}   PUBLIC     ${LIBWDI_INC_DIRS} )
+    target_link_directories   (${LIBWDI_STATIC}   PUBLIC     ${LIBWDI_LIB_DIRS} )
+    target_link_libraries     (${LIBWDI_STATIC}              ${LIBWDI_DEP_LIBS}      ${sys_dep_libs}                )
+    target_compile_options    (${LIBWDI_STATIC}   PRIVATE     /Z7     /W4       )
+    set_target_properties     (${LIBWDI_STATIC}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME "libwdi_static"   )
+    
+    set                       (  LIBWDI_SHARED               libwdi_shared)
+    add_library               (${LIBWDI_SHARED}   SHARED     ${LIBWDI_SRC_LIST}      ${EMBEDDER_HDRS_LIST}    )
+    target_compile_definitions(${LIBWDI_SHARED}   PRIVATE    ${LIBWDI_DEP_DEFS} )
+    target_include_directories(${LIBWDI_SHARED}   PUBLIC     ${LIBWDI_INC_DIRS} )
+    target_link_directories   (${LIBWDI_SHARED}   PUBLIC     ${LIBWDI_LIB_DIRS} )
+    target_link_libraries     (${LIBWDI_SHARED}              ${LIBWDI_DEP_LIBS}      ${sys_dep_libs}                ) #  ${sys_dep_libs}
+    target_compile_options    (${LIBWDI_SHARED}   PRIVATE     /Z7     /W4       )
+    set_target_properties     (${LIBWDI_SHARED}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME "libwdi_shared"   )
+    set_target_properties     (${LIBWDI_SHARED}   PROPERTIES PUBLIC_HEADER             "${LIBWDI_HDR_LIST}")
+endif()
 
 set                       (  WDI_EMBEDDER_APP                wdi_embedder   )
 add_executable            (${WDI_EMBEDDER_APP}               ${WDI_EMBEDDER_SRC_LIST}     )
@@ -189,7 +190,7 @@ target_link_directories   (${WDI_EMBEDDER_APP}   PUBLIC      ${WDI_EMBEDDER_LIB_
 #target_link_libraries     (${WDI_EMBEDDER_APP}               ${LIBWDI_STATIC}   )  # 
 #target_link_libraries     (${WDI_EMBEDDER_APP}               ${LIBWDI_SHARED}   )  # 
 
-set                       (  WDI_INSTALLER_X86_APP                wdi_installer_x86)
+set                       (  WDI_INSTALLER_X86_APP                installer_x86)
 add_executable            (${WDI_INSTALLER_X86_APP}               ${WDI_INSTALLER_SRC_LIST}      )
 target_compile_definitions(${WDI_INSTALLER_X86_APP}   PRIVATE     ${WDI_INSTALLER_DEP_DEFS}     ${LIBPCRE_DEFS}     )
 target_include_directories(${WDI_INSTALLER_X86_APP}   PUBLIC      ${WDI_INSTALLER_INC_DIRS}     ${LIBWDI_INC_DIRS} )
@@ -197,7 +198,7 @@ target_link_directories   (${WDI_INSTALLER_X86_APP}   PUBLIC      ${WDI_INSTALLE
 target_link_libraries     (${WDI_INSTALLER_X86_APP}               ${LIBWDI_STATIC}              ${sys_dep_libs}  newdev )  # 
 #target_link_libraries     (${WDI_INSTALLER_X86_APP}               ${LIBWDI_SHARED}   )  # 
 
-set                       (  WDI_INSTALLER_X64_APP                wdi_installer_x64)
+set                       (  WDI_INSTALLER_X64_APP                installer_x64)
 add_executable            (${WDI_INSTALLER_X64_APP}               ${WDI_INSTALLER_SRC_LIST}      )
 target_compile_definitions(${WDI_INSTALLER_X64_APP}   PRIVATE     ${WDI_INSTALLER_DEP_DEFS}     ${LIBPCRE_DEFS}      )
 target_include_directories(${WDI_INSTALLER_X64_APP}   PUBLIC      ${WDI_INSTALLER_INC_DIRS} )
@@ -206,21 +207,21 @@ target_link_libraries     (${WDI_INSTALLER_X64_APP}               ${LIBWDI_STATI
 #target_link_libraries     (${WDI_INSTALLER_X64_APP}               ${LIBWDI_SHARED}   )  # 
 
 ########################################################################################
-
-set                       (  INF_WIZARD_APP                inf_wizard)
-add_executable            (${INF_WIZARD_APP}   WIN32       ${INF_WIZARD_APP_LIST} )
-target_compile_definitions(${INF_WIZARD_APP}   PRIVATE     ${INF_WIZARD_DEP_DEFS}     ${LIBPCRE_DEFS}  )
-target_include_directories(${INF_WIZARD_APP}   PUBLIC      ${INF_WIZARD_INC_DIRS} )
-target_link_directories   (${INF_WIZARD_APP}   PUBLIC      ${INF_WIZARD_LIB_DIRS} )
-target_link_libraries     (${INF_WIZARD_APP}               ${LIBUSB_0_STATIC}  ${LIBWDI_STATIC}  comctl32  newdev )  # LIBUSB_0_LIB_STATIC
-#target_link_libraries     (${INF_WIZARD_APP}               ${LIBUSB_0_SHARED}   )  # must be REALSE
+if(USE_LIBWDI)
+    set                       (  INF_WIZARD_APP                inf_wizard)
+    add_executable            (${INF_WIZARD_APP}   WIN32       ${INF_WIZARD_APP_LIST} )
+    target_compile_definitions(${INF_WIZARD_APP}   PRIVATE     ${INF_WIZARD_DEP_DEFS}     ${LIBPCRE_DEFS}  )
+    target_include_directories(${INF_WIZARD_APP}   PUBLIC      ${INF_WIZARD_INC_DIRS} )
+    target_link_directories   (${INF_WIZARD_APP}   PUBLIC      ${INF_WIZARD_LIB_DIRS} )
+    target_link_libraries     (${INF_WIZARD_APP}               ${LIBUSB_0_STATIC}  ${LIBWDI_STATIC}  comctl32  newdev )  # LIBUSB_0_LIB_STATIC
+    #target_link_libraries     (${INF_WIZARD_APP}               ${LIBUSB_0_SHARED}   )  # must be REALSE
+endif()
 
 set (install_platform_src_lic   ${LIBUSB_WIN32_TOP_DIR}/installer_license.txt)
 set (install_platform_dst_lic   ${CMAKE_INSTALL_PREFIX}/installer_license.txt)
 if("${CMAKE_GENERATOR_PLATFORM}" STREQUAL "x64")
     message(STATUS "Building for x64 platform")
-    #set (install_platform x64)
-    set (install_platform amd64)
+    set (install_platform x64)
     set (install_platform_src_dll ${CMAKE_INSTALL_PREFIX}/bin/${install_platform}/${LIBUSB_0_SHARED}.dll)
     #set (install_platform_dst_dll ${CMAKE_INSTALL_PREFIX}/bin/${install_platform}/libusb0_x64.dll)
     set (install_platform_dst_dll ${CMAKE_INSTALL_PREFIX}/bin/${install_platform}/libusb0.dll)
@@ -230,9 +231,13 @@ elseif("${CMAKE_GENERATOR_PLATFORM}" STREQUAL "Win32")
     message(STATUS "Building for x86 platform")
     set (install_platform x86)
     set (install_platform_src_dll ${CMAKE_INSTALL_PREFIX}/bin/${install_platform}/${LIBUSB_0_SHARED}.dll)
-    set (install_platform_dst_dll ${CMAKE_INSTALL_PREFIX}/bin/${install_platform}/libusb0_x86.dll)
+    #set (install_platform_dst_dll ${CMAKE_INSTALL_PREFIX}/bin/${install_platform}/libusb0_x86.dll)
+    set (install_platform_dst_dll ${CMAKE_INSTALL_PREFIX}/bin/${install_platform}/libusb0.dll)
     set (install_platform_src_sys ${CMAKE_INSTALL_PREFIX}/bin/${install_platform}/${LIBUSB_SYS}.sys)
     set (install_platform_dst_sys ${CMAKE_INSTALL_PREFIX}/bin/${install_platform}/libusb0.sys)
+elseif("${CMAKE_GENERATOR_PLATFORM}" STREQUAL "X64")
+    message(STATUS "Building for an ${CMAKE_GENERATOR_PLATFORM} platform")
+    set (install_platform amd64)
 else()
     message(STATUS "Building for an ${CMAKE_GENERATOR_PLATFORM} platform")
     set (install_platform arm)
@@ -240,9 +245,9 @@ endif()
 
 message("[INFO] ${install_platform_src_dll} -> ${install_platform_dst_dll}" )
 
-embedder_fcopy("${install_platform_src_lic}"  "${install_platform_dst_lic}" )
-embedder_fcopy("${install_platform_src_dll}"  "${install_platform_dst_dll}" )
-embedder_fcopy("${install_platform_src_sys}"  "${install_platform_dst_sys}" )
+#embedder_fcopy("${install_platform_src_lic}"  "${install_platform_dst_lic}" )
+#embedder_fcopy("${install_platform_src_dll}"  "${install_platform_dst_dll}" )
+#embedder_fcopy("${install_platform_src_sys}"  "${install_platform_dst_sys}" )
 
 add_custom_target(wdi_embedder_dep ALL DEPENDS ${install_platform_dst_lic} ${install_platform_dst_dll} ${install_platform_dst_sys} )
 
