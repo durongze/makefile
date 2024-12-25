@@ -21,10 +21,7 @@ set(LIBCRYPTO_TOP_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/crypto)
 
 set(LIBSSL_TOP_DIR     ${CMAKE_CURRENT_SOURCE_DIR}/ssl)
 
-include(cmake/dep_gen_hdrs.cmake)
-
-file(GLOB           LIBCRYPTO_MD2_HDRS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/md2/*.h         )
-generate_fcopy("${LIBCRYPTO_MD2_HDRS_LIST}"    "${OPENSSL_BIN_DIR}/include/openssl")
+include(cmake/dep_copy_pre_hdrs.cmake)
 
 
 set (LIBCRYPTO_INC_DIRS ${LIBCRYPTO_TOP_DIR}/     ${LIBCRYPTO_TOP_DIR}/aes          ${LIBCRYPTO_TOP_DIR}/aria          ${LIBCRYPTO_TOP_DIR}/asn1     )
@@ -60,20 +57,23 @@ set (LIBPROVIDERS_INC_DIRS  ${LIBPROVIDERS_INC_DIRS}/                           
 set (LIBPROVIDERS_INC_DIRS  ${LIBPROVIDERS_INC_DIRS}/                                                ${LIBPROVIDERS_TOP_DIR}/implementations/include                                           )
 
 file(GLOB           LIBCRYPTO_AES_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/aes/*.c         )
-file(GLOB           LIBCRYPTO_AES_SRCS_FILTER     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/aes/aes_core.c         )
+file(GLOB           LIBCRYPTO_AES_SRCS_FILTER     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/aes/aes_misc.c  ${LIBCRYPTO_TOP_DIR}/aes/aes_core.c  )  #  
 
 file(GLOB           LIBCRYPTO_ARIA_SRCS_LIST      RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/aria/*.c        )
 file(GLOB           LIBCRYPTO_ASN1_SRCS_LIST      RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/asn1/*.c        )
 file(GLOB           LIBCRYPTO_ASYNC_SRCS_LIST     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/async/*.c       ${LIBCRYPTO_TOP_DIR}/async/arch/async_win.c)
 file(GLOB           LIBCRYPTO_BF_SRCS_LIST        RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/bf/*.c          )
+file(GLOB           LIBCRYPTO_BF_SRCS_FILTER      RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/bf/bf_opts.c    ${LIBCRYPTO_TOP_DIR}/bf/bfspeed.c     ${LIBCRYPTO_TOP_DIR}/bf/bftest.c    ${LIBCRYPTO_TOP_DIR}/bf/bf_cbc.c        )
 file(GLOB           LIBCRYPTO_BIO_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/bio/*.c         )
 file(GLOB           LIBCRYPTO_BIO_SRCS_FILTER     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/bio/bss_rtcp.c         )
 
 file(GLOB           LIBCRYPTO_BN_SRCS_LIST        RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/bn/*.c          )
-file(GLOB           LIBCRYPTO_BN_SRCS_FILTER      RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/bn/bn_ppc.c      ${LIBCRYPTO_TOP_DIR}/bn/bn_ppc.c    ${LIBCRYPTO_TOP_DIR}/bn/bn_sparc.c )
+file(GLOB           LIBCRYPTO_BN_SRCS_FILTER      RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/bn/bn_ppc.c   ${LIBCRYPTO_TOP_DIR}/bn/divtest.c    ${LIBCRYPTO_TOP_DIR}/bn/exptest.c    ${LIBCRYPTO_TOP_DIR}/bn/exp.c 
+ ${LIBCRYPTO_TOP_DIR}/bn/expspeed.c    ${LIBCRYPTO_TOP_DIR}/bn/bn_sparc.c    ${LIBCRYPTO_TOP_DIR}/bn/bntest.c    ${LIBCRYPTO_TOP_DIR}/bn/bnspeed.c  )
 file(GLOB           LIBCRYPTO_BUFFER_SRCS_LIST    RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/buffer/*.c      )
 file(GLOB           LIBCRYPTO_CAMELLIA_SRCS_LIST  RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/camellia/*.c    )
 file(GLOB           LIBCRYPTO_CAST_SRCS_LIST      RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/cast/*.c        )
+file(GLOB           LIBCRYPTO_CAST_SRCS_FILTER    RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/cast/cast_spd.c  ${LIBCRYPTO_TOP_DIR}/cast/castopts.c    ${LIBCRYPTO_TOP_DIR}/cast/casttest.c     )
 file(GLOB           LIBCRYPTO_CHACHA_SRCS_LIST    RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/chacha/*.c      )
 file(GLOB           LIBCRYPTO_CHACHA_SRCS_FILTER  RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/chacha/chacha_ppc.c      )
 file(GLOB           LIBCRYPTO_CMAC_SRCS_LIST      RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/cmac/*.c        )
@@ -86,33 +86,56 @@ file(GLOB           LIBCRYPTO_CONF_SRCS_FILTER    RELATIVE    ${OPENSSL_TOP_DIR}
 file(GLOB           LIBCRYPTO_CRMF_SRCS_LIST      RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/crmf/*.c        )
 file(GLOB           LIBCRYPTO_CT_SRCS_LIST        RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/ct/*.c          )
 file(GLOB           LIBCRYPTO_DES_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/des/*.c         )
-file(GLOB           LIBCRYPTO_DES_SRCS_FILTER     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/des/ncbc_enc.c       ${LIBCRYPTO_TOP_DIR}/des/read_pwd.c   )
+file(GLOB           LIBCRYPTO_DES_SRCS_FILTER     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/des/ncbc_enc.c    ${LIBCRYPTO_TOP_DIR}/des/des.c   ${LIBCRYPTO_TOP_DIR}/des/destest.c  ${LIBCRYPTO_TOP_DIR}/des/rpw.c   ${LIBCRYPTO_TOP_DIR}/des/des_opts.c  ${LIBCRYPTO_TOP_DIR}/des/speed.c    ${LIBCRYPTO_TOP_DIR}/des/read_pwd.c   )
 file(GLOB           LIBCRYPTO_DH_SRCS_LIST        RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/dh/*.c          )
+file(GLOB           LIBCRYPTO_DH_SRCS_FILTER      RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/dh/p512.c     ${LIBCRYPTO_TOP_DIR}/dh/p192.c       ${LIBCRYPTO_TOP_DIR}/dh/p1024.c     ${LIBCRYPTO_TOP_DIR}/dh/dhtest.c   )
+
 file(GLOB           LIBCRYPTO_DSA_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/dsa/*.c         )
+file(GLOB           LIBCRYPTO_DSA_SRCS_FILTER     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/dsa/dsatest.c   ${LIBCRYPTO_TOP_DIR}/dsa/dsagen.c       )
+
 file(GLOB           LIBCRYPTO_DSO_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/dso/*.c         )
 file(GLOB           LIBCRYPTO_EC_SRCS_LIST        RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/ec/*.c          )
 file(GLOB           LIBCRYPTO_EC_SRCS_FILTER_1    RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/ec/ecp_nistp*.c  ${LIBCRYPTO_TOP_DIR}/ec/ecp_nistz256*.c     ${LIBCRYPTO_TOP_DIR}/ec/ecp_ppc.c  ${LIBCRYPTO_TOP_DIR}/ec/*_s390x*.c  )
-file(GLOB           LIBCRYPTO_EC_SRCS_FILTER_2    RELATIVE    ${OPENSSL_TOP_DIR}       ${LIBCRYPTO_TOP_DIR}/ec/xxx.c       ) #  ${LIBCRYPTO_TOP_DIR}/ec/ecx_backend*.c   ${LIBCRYPTO_TOP_DIR}/ec/ecx_meth.c  ${LIBCRYPTO_TOP_DIR}/ec/ecp_nistz256_table.c
+file(GLOB           LIBCRYPTO_EC_SRCS_FILTER_2    RELATIVE    ${OPENSSL_TOP_DIR}       ${LIBCRYPTO_TOP_DIR}/ec/ectest.c       ) #  ${LIBCRYPTO_TOP_DIR}/ec/ecx_backend*.c   ${LIBCRYPTO_TOP_DIR}/ec/ecx_meth.c  ${LIBCRYPTO_TOP_DIR}/ec/ecp_nistz256_table.c
 set (LIBCRYPTO_EC_SRCS_FILTER  ${LIBCRYPTO_EC_SRCS_FILTER_1}   ${LIBCRYPTO_EC_SRCS_FILTER_2})
 file(GLOB           LIBCRYPTO_EC_CURVE_SRCS_LIST  RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/ec/curve448/*.c  ${LIBCRYPTO_TOP_DIR}/ec/curve448/arch_32/*.c )
 
+file(GLOB           LIBCRYPTO_ECDH_SRCS_LIST      RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/ecdh/*.c        )
+file(GLOB           LIBCRYPTO_ECDH_SRCS_FILTER    RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/ecdh/ecdhtest.c        )
+file(GLOB           LIBCRYPTO_ECDSA_SRCS_LIST     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/ecdsa/*.c       )
+file(GLOB           LIBCRYPTO_ECDSA_SRCS_FILTER   RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/ecdsa/ecdsatest.c       )
+
 file(GLOB           LIBCRYPTO_ENC_DEC_SRCS_LIST   RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/encode_decode/*.c   )
 file(GLOB           LIBCRYPTO_ENGINE_SRCS_LIST    RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/engine/*.c      )
+file(GLOB           LIBCRYPTO_ENGINE_SRCS_FILTER  RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/engine/enginetest.c      )
+
 file(GLOB           LIBCRYPTO_ERR_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/err/*.c         )
 file(GLOB           LIBCRYPTO_ESS_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/ess/*.c         )
 file(GLOB           LIBCRYPTO_EVP_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/evp/*.c         )
-file(GLOB           LIBCRYPTO_EVP_SRCS_FILTER     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/evp/e_dsa.c         )
+file(GLOB           LIBCRYPTO_EVP_SRCS_FILTER     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/evp/e_dsa.c     ${LIBCRYPTO_TOP_DIR}/evp/evp_test.c      ${LIBCRYPTO_TOP_DIR}/evp/evp_extra_test.c  )
 file(GLOB           LIBCRYPTO_FFC_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/ffc/*.c         )
 file(GLOB           LIBCRYPTO_HMAC_SRCS_LIST      RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/hmac/*.c        )
+file(GLOB           LIBCRYPTO_HMAC_SRCS_FILTER    RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/hmac/hmactest.c        )
+
 file(GLOB           LIBCRYPTO_HTTP_SRCS_LIST      RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/http/*.c        )
 file(GLOB           LIBCRYPTO_IDEA_SRCS_LIST      RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/idea/*.c        )
+file(GLOB           LIBCRYPTO_IDEA_SRCS_FILTER    RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/idea/idea_spd.c        ${LIBCRYPTO_TOP_DIR}/idea/ideatest.c    )
 file(GLOB           LIBCRYPTO_KDF_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/kdf/*.c         )
 file(GLOB           LIBCRYPTO_LHASH_SRCS_LIST     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/lhash/*.c       )
 file(GLOB           LIBCRYPTO_LHASH_SRCS_FILTER   RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/lhash/lh_test.c       )
-file(GLOB           LIBCRYPTO_MD2_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/md2/*.c         )
+#file(GLOB           LIBCRYPTO_MD2_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/md2/*.c         )
+file(GLOB           LIBCRYPTO_MD2_SRCS_FILTER     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/md2/md2test.c         )
+file(GLOB           LIBCRYPTO_MD2_HDRS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/md2/*.h         )
+
 file(GLOB           LIBCRYPTO_MD4_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/md4/*.c         )
+file(GLOB           LIBCRYPTO_MD4_SRCS_FILTER     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/md4/md4.c       ${LIBCRYPTO_TOP_DIR}/md4/md4test.c      )
+
 file(GLOB           LIBCRYPTO_MD5_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/md5/*.c         )
+file(GLOB           LIBCRYPTO_MD5_SRCS_FILTER     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/md5/md5test.c      ${LIBCRYPTO_TOP_DIR}/md5/md5.c     )
+
 file(GLOB           LIBCRYPTO_MDC2_SRCS_LIST      RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/mdc2/*.c        )
+file(GLOB           LIBCRYPTO_MDC2_SRCS_FILTER    RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/mdc2/mdc2test.c        )
+
 file(GLOB           LIBCRYPTO_MODES_SRCS_LIST     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/modes/*.c       )
 file(GLOB           LIBCRYPTO_OBJECTS_SRCS_LIST   RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/objects/*.c     )
 file(GLOB           LIBCRYPTO_OCSP_SRCS_LIST      RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/ocsp/*.c        )
@@ -123,31 +146,51 @@ file(GLOB           LIBCRYPTO_PKCS7_SRCS_LIST     RELATIVE    ${OPENSSL_TOP_DIR}
 file(GLOB           LIBCRYPTO_POLY1305_SRCS_LIST  RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/poly1305/*.c    )
 file(GLOB           LIBCRYPTO_POLY1305_SRCS_FILTER  RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/poly1305/poly1305_base2_44.c     ${LIBCRYPTO_TOP_DIR}/poly1305/poly1305_ieee754.c     ${LIBCRYPTO_TOP_DIR}/poly1305/poly1305_ppc.c)
 
+
+file(GLOB           LIBCRYPTO_PQUEUE_SRCS_LIST    RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/pqueue/*.c    )
+file(GLOB           LIBCRYPTO_PQUEUE_SRCS_FILTER  RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/pqueue/pq_test.c    )
+
 file(GLOB           LIBCRYPTO_PROPERTY_SRCS_LIST  RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/property/*.c    )
 file(GLOB           LIBCRYPTO_PROVIDERS_SRCS_LIST RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/providers/*.c   )
 file(GLOB           LIBCRYPTO_RAND_SRCS_LIST      RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/rand/*.c        )
+file(GLOB           LIBCRYPTO_RAND_SRCS_FILTER    RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/rand/randtest.c        )
+
 file(GLOB           LIBCRYPTO_RC2_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/rc2/*.c         )
+file(GLOB           LIBCRYPTO_RC2_SRCS_FILTER     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/rc2/rc2speed.c   ${LIBCRYPTO_TOP_DIR}/rc2/tab.c    ${LIBCRYPTO_TOP_DIR}/rc2/rc2test.c    )
+file(GLOB           LIBCRYPTO_RC2_HDRS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/rc2/*.h         )
 file(GLOB           LIBCRYPTO_RC4_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/rc4/*.c         )
-file(GLOB           LIBCRYPTO_RC5_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/rc5/*.c         )
+file(GLOB           LIBCRYPTO_RC4_SRCS_FILTER     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/rc4/rc4speed.c    ${LIBCRYPTO_TOP_DIR}/rc4/rc4.c     ${LIBCRYPTO_TOP_DIR}/rc4/rc4test.c  )
+#file(GLOB           LIBCRYPTO_RC5_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/rc5/*.c         )
+file(GLOB           LIBCRYPTO_RC5_HDRS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/rc5/*.h         )
 file(GLOB           LIBCRYPTO_RIPEMD_SRCS_LIST    RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/ripemd/*.c      )
+file(GLOB           LIBCRYPTO_RIPEMD_SRCS_FILTER  RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/ripemd/rmdtest.c    ${LIBCRYPTO_TOP_DIR}/ripemd/rmd160.c    )
+
 file(GLOB           LIBCRYPTO_RSA_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/rsa/*.c         )
-file(GLOB           LIBCRYPTO_RSA_SRCS_FILTER     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/rsa/rsa_acvp_test_params.c         )
+file(GLOB           LIBCRYPTO_RSA_SRCS_FILTER     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/rsa/rsa_acvp_test_params.c      ${LIBCRYPTO_TOP_DIR}/rsa/rsa_test.c   )
 file(GLOB           LIBCRYPTO_SEED_SRCS_LIST      RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/seed/*.c        )
 file(GLOB           LIBCRYPTO_SHA_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/sha/*.c         )
-file(GLOB           LIBCRYPTO_SHA_SRCS_FILTER     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/sha/sha_ppc.c   )
+file(GLOB           LIBCRYPTO_SHA_SRCS_FILTER     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/sha/sha_ppc.c    ${LIBCRYPTO_TOP_DIR}/sha/sha.c   ${LIBCRYPTO_TOP_DIR}/sha/sha1.c   ${LIBCRYPTO_TOP_DIR}/sha/sha512t.c    ${LIBCRYPTO_TOP_DIR}/sha/sha256t.c   ${LIBCRYPTO_TOP_DIR}/sha/shatest.c  ${LIBCRYPTO_TOP_DIR}/sha/sha1test.c  )
 
 file(GLOB           LIBCRYPTO_SIPHASH_SRCS_LIST   RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/siphash/*.c     )
 file(GLOB           LIBCRYPTO_SM2_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/sm2/*.c         )
 file(GLOB           LIBCRYPTO_SM3_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/sm3/*.c         )
 file(GLOB           LIBCRYPTO_SM4_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/sm4/*.c         )
 file(GLOB           LIBCRYPTO_SRP_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/srp/*.c         )
+file(GLOB           LIBCRYPTO_SRP_SRCS_FILTER     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/srp/ srptest.c        )
 file(GLOB           LIBCRYPTO_STACK_SRCS_LIST     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/stack/*.c       )
-file(GLOB           LIBCRYPTO_STORE_SRCS_LIST     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/store/*.c       )
+#file(GLOB           LIBCRYPTO_STORE_SRCS_LIST     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/store/*.c       )
+file(GLOB           LIBCRYPTO_STORE_HDRS_LIST     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/store/*.h       )
 file(GLOB           LIBCRYPTO_TS_SRCS_LIST        RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/ts/*.c          )
 file(GLOB           LIBCRYPTO_TXT_DB_SRCS_LIST    RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/txt_db/*.c      )
 file(GLOB           LIBCRYPTO_UI_SRCS_LIST        RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/ui/*.c          )
 file(GLOB           LIBCRYPTO_WHRLPOOL_SRCS_LIST  RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/whrlpool/*.c    )
+file(GLOB           LIBCRYPTO_WHRLPOOL_SRCS_FILTER  RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/whrlpool/wp_test.c   )
+
 file(GLOB           LIBCRYPTO_X509_SRCS_LIST      RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/x509/*.c        )
+file(GLOB           LIBCRYPTO_X509_SRCS_FILTER    RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/x509/verify_extra_test.c        )
+
+file(GLOB           LIBCRYPTO_X509V3_SRCS_LIST    RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/x509v3/*.c      )
+file(GLOB           LIBCRYPTO_X509V3_SRCS_FILTER  RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/x509v3/v3conf.c   ${LIBCRYPTO_TOP_DIR}/x509v3/v3prin.c  ${LIBCRYPTO_TOP_DIR}/x509v3/v3nametest.c    ${LIBCRYPTO_TOP_DIR}/x509v3/tabtest.c)
 file(GLOB           LIBCRYPTO_SRCS_LIST           RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/*.c           ${LIBCRYPTO_TOP_DIR}/*.h )
 file(GLOB           LIBCRYPTO_SRCS_FILTER_1       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/LPdir_*.c       )
 file(GLOB           LIBCRYPTO_SRCS_FILTER_2       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/ppccap.c    ${LIBCRYPTO_TOP_DIR}/sparcv9cap.c   ${LIBCRYPTO_TOP_DIR}/armcap.c  ${LIBCRYPTO_TOP_DIR}/s390xcap.c) #  
@@ -161,7 +204,8 @@ set (LIBCRYPTO_SRCS_LIST   ${LIBCRYPTO_SRCS_LIST}   ${LIBCRYPTO_CAST_SRCS_LIST} 
 set (LIBCRYPTO_SRCS_LIST   ${LIBCRYPTO_SRCS_LIST}   ${LIBCRYPTO_CMP_SRCS_LIST}       ${LIBCRYPTO_CMS_SRCS_LIST}      ${LIBCRYPTO_COMP_SRCS_LIST}      )
 set (LIBCRYPTO_SRCS_LIST   ${LIBCRYPTO_SRCS_LIST}   ${LIBCRYPTO_CONF_SRCS_LIST}      ${LIBCRYPTO_CRMF_SRCS_LIST}     ${LIBCRYPTO_CT_SRCS_LIST}        )
 set (LIBCRYPTO_SRCS_LIST   ${LIBCRYPTO_SRCS_LIST}   ${LIBCRYPTO_DES_SRCS_LIST}       ${LIBCRYPTO_DH_SRCS_LIST}       ${LIBCRYPTO_DSA_SRCS_LIST}       )
-set (LIBCRYPTO_SRCS_LIST   ${LIBCRYPTO_SRCS_LIST}   ${LIBCRYPTO_DSO_SRCS_LIST}       ${LIBCRYPTO_EC_SRCS_LIST}       ${LIBCRYPTO_EC_CURVE_SRCS_LIST}    ${LIBCRYPTO_ENC_DEC_SRCS_LIST}   )
+set (LIBCRYPTO_SRCS_LIST   ${LIBCRYPTO_SRCS_LIST}   ${LIBCRYPTO_DSO_SRCS_LIST}       ${LIBCRYPTO_EC_SRCS_LIST}       ${LIBCRYPTO_EC_CURVE_SRCS_LIST}  )
+set (LIBCRYPTO_SRCS_LIST   ${LIBCRYPTO_SRCS_LIST}   ${LIBCRYPTO_ECDH_SRCS_LIST}      ${LIBCRYPTO_ECDSA_SRCS_LIST}    ${LIBCRYPTO_ENC_DEC_SRCS_LIST}   )
 set (LIBCRYPTO_SRCS_LIST   ${LIBCRYPTO_SRCS_LIST}   ${LIBCRYPTO_ENGINE_SRCS_LIST}    ${LIBCRYPTO_ERR_SRCS_LIST}      ${LIBCRYPTO_ESS_SRCS_LIST}       )
 set (LIBCRYPTO_SRCS_LIST   ${LIBCRYPTO_SRCS_LIST}   ${LIBCRYPTO_EVP_SRCS_LIST}       ${LIBCRYPTO_FFC_SRCS_LIST}      ${LIBCRYPTO_HMAC_SRCS_LIST}      )
 set (LIBCRYPTO_SRCS_LIST   ${LIBCRYPTO_SRCS_LIST}   ${LIBCRYPTO_HTTP_SRCS_LIST}      ${LIBCRYPTO_IDEA_SRCS_LIST}     ${LIBCRYPTO_KDF_SRCS_LIST}       )
@@ -176,44 +220,41 @@ set (LIBCRYPTO_SRCS_LIST   ${LIBCRYPTO_SRCS_LIST}   ${LIBCRYPTO_SEED_SRCS_LIST} 
 set (LIBCRYPTO_SRCS_LIST   ${LIBCRYPTO_SRCS_LIST}   ${LIBCRYPTO_SM2_SRCS_LIST}       ${LIBCRYPTO_SM3_SRCS_LIST}      ${LIBCRYPTO_SM4_SRCS_LIST}       )
 set (LIBCRYPTO_SRCS_LIST   ${LIBCRYPTO_SRCS_LIST}   ${LIBCRYPTO_SRP_SRCS_LIST}       ${LIBCRYPTO_STACK_SRCS_LIST}    ${LIBCRYPTO_STORE_SRCS_LIST}     )
 set (LIBCRYPTO_SRCS_LIST   ${LIBCRYPTO_SRCS_LIST}   ${LIBCRYPTO_TS_SRCS_LIST}        ${LIBCRYPTO_TXT_DB_SRCS_LIST}   ${LIBCRYPTO_UI_SRCS_LIST}        )
-set (LIBCRYPTO_SRCS_LIST   ${LIBCRYPTO_SRCS_LIST}   ${LIBCRYPTO_WHRLPOOL_SRCS_LIST}  ${LIBCRYPTO_X509_SRCS_LIST}  )
+set (LIBCRYPTO_SRCS_LIST   ${LIBCRYPTO_SRCS_LIST}   ${LIBCRYPTO_WHRLPOOL_SRCS_LIST}  ${LIBCRYPTO_X509_SRCS_LIST}     ${LIBCRYPTO_X509V3_SRCS_LIST}    )
+set (LIBCRYPTO_SRCS_LIST   ${LIBCRYPTO_SRCS_LIST}   ${LIBCRYPTO_PQUEUE_SRCS_LIST} )
+
 
 set (LIBCRYPTO_SRCS_FILTER_ALL   ${LIBCRYPTO_SRCS_FILTER}      ${LIBCRYPTO_AES_SRCS_FILTER}  ${LIBCRYPTO_RSA_SRCS_FILTER}       ${LIBCRYPTO_EC_SRCS_FILTER}  )
 set (LIBCRYPTO_SRCS_FILTER_ALL   ${LIBCRYPTO_SRCS_FILTER_ALL}  ${LIBCRYPTO_BN_SRCS_FILTER}   ${LIBCRYPTO_CHACHA_SRCS_FILTER}    ${LIBCRYPTO_DES_SRCS_FILTER} )
 set (LIBCRYPTO_SRCS_FILTER_ALL   ${LIBCRYPTO_SRCS_FILTER_ALL}  ${LIBCRYPTO_SHA_SRCS_FILTER}  ${LIBCRYPTO_POLY1305_SRCS_FILTER}  ${LIBCRYPTO_CONF_SRCS_FILTER})
 set (LIBCRYPTO_SRCS_FILTER_ALL   ${LIBCRYPTO_SRCS_FILTER_ALL}  ${LIBCRYPTO_LHASH_SRCS_FILTER} ${LIBCRYPTO_EVP_SRCS_FILTER}      ${LIBCRYPTO_BIO_SRCS_FILTER} )
+set (LIBCRYPTO_SRCS_FILTER_ALL   ${LIBCRYPTO_SRCS_FILTER_ALL}  ${LIBCRYPTO_BF_SRCS_FILTER}   ${LIBCRYPTO_X509V3_SRCS_FILTER}    ${LIBCRYPTO_CAST_SRCS_FILTER} )
+set (LIBCRYPTO_SRCS_FILTER_ALL   ${LIBCRYPTO_SRCS_FILTER_ALL}  ${LIBCRYPTO_IDEA_SRCS_FILTER} ${LIBCRYPTO_RC2_SRCS_FILTER}       ${LIBCRYPTO_RC4_SRCS_FILTER} ) 
+set (LIBCRYPTO_SRCS_FILTER_ALL   ${LIBCRYPTO_SRCS_FILTER_ALL}  ${LIBCRYPTO_MD4_SRCS_FILTER}  ${LIBCRYPTO_PQUEUE_SRCS_FILTER}    ${LIBCRYPTO_X509_SRCS_FILTER})  
+set (LIBCRYPTO_SRCS_FILTER_ALL   ${LIBCRYPTO_SRCS_FILTER_ALL}  ${LIBCRYPTO_WHRLPOOL_SRCS_FILTER}  ${LIBCRYPTO_SRP_SRCS_FILTER}    ${LIBCRYPTO_RIPEMD_SRCS_FILTER})  
+set (LIBCRYPTO_SRCS_FILTER_ALL   ${LIBCRYPTO_SRCS_FILTER_ALL}  ${LIBCRYPTO_RAND_SRCS_FILTER}  ${LIBCRYPTO_MDC2_SRCS_FILTER}    ${LIBCRYPTO_MD5_SRCS_FILTER})  
+set (LIBCRYPTO_SRCS_FILTER_ALL   ${LIBCRYPTO_SRCS_FILTER_ALL}  ${LIBCRYPTO_HMAC_SRCS_FILTER}  ${LIBCRYPTO_ENGINE_SRCS_FILTER}    ${LIBCRYPTO_ECDSA_SRCS_FILTER})  
+set (LIBCRYPTO_SRCS_FILTER_ALL   ${LIBCRYPTO_SRCS_FILTER_ALL}  ${LIBCRYPTO_DSA_SRCS_FILTER}  ${LIBCRYPTO_DH_SRCS_FILTER}    ${LIBCRYPTO_ECDSA_SRCS_FILTER})  
+
+
 list(REMOVE_ITEM             LIBCRYPTO_SRCS_LIST          ${LIBCRYPTO_SRCS_FILTER_ALL}        )
 source_group(TREE ${OPENSSL_TOP_DIR}       FILES       ${LIBCRYPTO_SRCS_LIST}  )
 
-set                       (  LIBCRYPTO_DEFS      MONOLITH   WIN32
-_WINDOWS
-MODULESDIR="f:/program/openssl"
-OPENSSL_NO_ASM
-OPENSSL_NO_STATIC_ENGINE
-OPENSSLDIR="C:/ssl"
-ENGINESDIR="C:/engines-1.1"
-OPENSSL_SYSNAME_WIN32
-WIN32_LEAN_AND_MEAN
-_CRT_SECURE_NO_WARNINGS
-CMAKE_INTDIR="Debug"                                         )
+set (LIBCRYPTO_PRE_HDRS_LIST  ${LIBCRYPTO_MD2_HDRS_LIST}  ${LIBCRYPTO_RC5_HDRS_LIST}  ${LIBCRYPTO_STORE_HDRS_LIST})
 
+copy_pre_hdrs( pre_hdrs_list   "${OPENSSL_BIN_DIR}/openssl"   ${LIBCRYPTO_PRE_HDRS_LIST})
 
-set                       ( LIBCRYPTO_DEP_LIBS  ws2_32.lib
-crypt32.lib
-kernel32.lib
-user32.lib
-gdi32.lib
-winspool.lib
-shell32.lib
-ole32.lib
-oleaut32.lib
-uuid.lib
-comdlg32.lib
-advapi32.lib
-)
+set                       (  OPENSSL_COM_DEFS   MODULESDIR="f:/program/openssl"   OPENSSLDIR="f:/program/openssl/ssl"    ENGINESDIR="f:/program/openssl/engines-1.1"     )
+set                       (  OPENSSL_WIN_DEFS   MONOLITH   WIN32   _WINDOWS       WIN32_LEAN_AND_MEAN   OPENSSL_NO_ASM   OPENSSL_NO_STATIC_ENGINE   OPENSSL_SYSNAME_WIN32)
+set                       (  OPENSSL_ALL_DEFS   ${OPENSSL_COM_DEFS}   ${OPENSSL_WIN_DEFS}  OPENSSL_SYS_MSDOS  _CRT_SECURE_NO_WARNINGS   CMAKE_INTDIR="Debug"  MK1MF_BUILD  )
+
+set                       (  LIBCRYPTO_DEFS     ${OPENSSL_ALL_DEFS} )
+
+set                       ( LIBCRYPTO_DEP_LIBS  ws2_32.lib   crypt32.lib   kernel32.lib   user32.lib   gdi32.lib      winspool.lib  shell32.lib  )
+set                       ( LIBCRYPTO_DEP_LIBS  ${LIBCRYPTO_DEP_LIBS}      ole32.lib     oleaut32.lib   uuid.lib     comdlg32.lib   advapi32.lib )
 
 set                       (  LIBCRYPTO_STATIC               libcrypto_static                )
-add_library               (${LIBCRYPTO_STATIC}   STATIC     ${LIBCRYPTO_SRCS_LIST}          )
+add_library               (${LIBCRYPTO_STATIC}   STATIC     ${LIBCRYPTO_SRCS_LIST}          ${pre_hdrs_list})
 target_compile_definitions(${LIBCRYPTO_STATIC}   PRIVATE    ${LIBCRYPTO_DEFS}               )
 target_include_directories(${LIBCRYPTO_STATIC}   PUBLIC     ${LIBCRYPTO_INC_DIRS}           ${OPENSSL_INC_DIRS}        ${LIBPROVIDERS_INC_DIRS}   ${LIBSSL_INC_DIRS})
 target_link_directories   (${LIBCRYPTO_STATIC}   PUBLIC     ./lib/                          )
@@ -221,57 +262,33 @@ target_link_libraries     (${LIBCRYPTO_STATIC}              ${LIBCRYPTO_DEP_LIBS
 set_target_properties     (${LIBCRYPTO_STATIC}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME "libcrypto_static"   )
 
 set                       (  LIBCRYPTO_SHARED               libcrypto_shared                )
-add_library               (${LIBCRYPTO_SHARED}   SHARED     ${LIBCRYPTO_SRCS_LIST}          )
+add_library               (${LIBCRYPTO_SHARED}   SHARED     ${LIBCRYPTO_SRCS_LIST}          ${pre_hdrs_list})
 target_compile_definitions(${LIBCRYPTO_SHARED}   PRIVATE    ${LIBCRYPTO_DEFS}               )
 target_include_directories(${LIBCRYPTO_SHARED}   PUBLIC     ${LIBCRYPTO_INC_DIRS}           ${OPENSSL_INC_DIRS}        ${LIBPROVIDERS_INC_DIRS}   ${LIBSSL_INC_DIRS})
 target_link_directories   (${LIBCRYPTO_SHARED}   PUBLIC     ./lib/                          )
-target_link_libraries     (${LIBCRYPTO_SHARED}              ${LIBCRYPTO_DEP_LIBS}     libproviders_static             libssl_static )
+target_link_libraries     (${LIBCRYPTO_SHARED}              ${LIBCRYPTO_DEP_LIBS}                  libssl_static )
 set_target_properties     (${LIBCRYPTO_SHARED}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME "libcrypto_shared"   )
 set_target_properties     (${LIBCRYPTO_SHARED}   PROPERTIES PUBLIC_HEADER             "${LIBCRYPTO_HDRS_LIST}"         )
-
-
-
 
 
 file(GLOB               LIBSSL_RECORD_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBSSL_TOP_DIR}/record/*.c         )
 file(GLOB               LIBSSL_STATEM_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBSSL_TOP_DIR}/statem/*.c         )
 file(GLOB               LIBSSL_SRCS_LIST              RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBSSL_TOP_DIR}/*.c           ${LIBSSL_TOP_DIR}/*.h       )
 file(GLOB               LIBSSL_HDRS_LIST              RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBSSL_TOP_DIR}/*.h                )
-file(GLOB               LIBSSL_SRCS_FILTER            RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBSSL_TOP_DIR}/os2compat.c   ${LIBSSL_TOP_DIR}/ssl_task.c  )
+file(GLOB               LIBSSL_SRCS_FILTER            RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBSSL_TOP_DIR}/os2compat.c   ${LIBSSL_TOP_DIR}/ssl_task.c  ${LIBSSL_TOP_DIR}/ssltest.c ${LIBSSL_TOP_DIR}/heartbeat_test.c)
 set (LIBSSL_SRCS_LIST ${LIBSSL_SRCS_LIST}                                                 ${LIBSSL_RECORD_SRCS_LIST}      ${LIBSSL_STATEM_SRCS_LIST}  )
 list(REMOVE_ITEM        LIBSSL_SRCS_LIST                                                  ${LIBSSL_SRCS_FILTER} )
 source_group(TREE ${OPENSSL_TOP_DIR}       FILES       ${LIBSSL_SRCS_LIST} )
 
 message ("[INFO] LIBSSL_SRCS_FILTER=${LIBSSL_SRCS_FILTER}")
 
-set                       (  LIBSSL_DEFS          WIN32
-_WINDOWS
-OPENSSL_NO_ASM
-OPENSSL_NO_STATIC_ENGINE
-OPENSSLDIR="C:/ssl"
-ENGINESDIR="C:/engines-1.1"
-MODULESDIR="f:/program/openssl"
-OPENSSL_SYSNAME_WIN32
-WIN32_LEAN_AND_MEAN
-_CRT_SECURE_NO_WARNINGS
-OPENSSL_NO_KTLS
-CMAKE_INTDIR="Debug"                                       )
+set                       (  LIBSSL_DEFS    ${OPENSSL_ALL_DEFS}     OPENSSL_NO_KTLS   )
 
-set                       ( LIBSSL_DEP_LIBS  ws2_32.lib
-crypt32.lib
-kernel32.lib
-user32.lib
-gdi32.lib
-winspool.lib
-shell32.lib
-ole32.lib
-oleaut32.lib
-uuid.lib
-comdlg32.lib
-advapi32.lib)
+set                       ( LIBSSL_DEP_LIBS  ws2_32.lib   crypt32.lib   kernel32.lib   user32.lib   gdi32.lib   winspool.lib   shell32.lib)
+set                       ( LIBSSL_DEP_LIBS  ${LIBSSL_DEP_LIBS}  ole32.lib   oleaut32.lib   uuid.lib   comdlg32.lib   advapi32.lib)
 
 set                       (  LIBSSL_STATIC               libssl_static                )
-add_library               (${LIBSSL_STATIC}   STATIC     ${LIBSSL_SRCS_LIST}          )
+add_library               (${LIBSSL_STATIC}   STATIC     ${LIBSSL_SRCS_LIST}          ${pre_hdrs_list})
 target_compile_definitions(${LIBSSL_STATIC}   PRIVATE    ${LIBSSL_DEFS}               )
 target_include_directories(${LIBSSL_STATIC}   PUBLIC     ${LIBSSL_INC_DIRS}           ${OPENSSL_INC_DIRS}         ${LIBCRYPTO_INC_DIRS}    ${LIBPROVIDERS_INC_DIRS} )
 target_link_directories   (${LIBSSL_STATIC}   PUBLIC     ./lib/                       )
@@ -279,14 +296,13 @@ target_link_libraries     (${LIBSSL_STATIC}              ${LIBSSL_DEP_LIBS}     
 set_target_properties     (${LIBSSL_STATIC}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME "libssl_static"   )
 
 set                       (  LIBSSL_SHARED               libssl_shared                )
-add_library               (${LIBSSL_SHARED}   SHARED     ${LIBSSL_SRCS_LIST}          )
+add_library               (${LIBSSL_SHARED}   SHARED     ${LIBSSL_SRCS_LIST}          ${pre_hdrs_list})
 target_compile_definitions(${LIBSSL_SHARED}   PRIVATE    ${LIBSSL_DEFS}               )
 target_include_directories(${LIBSSL_SHARED}   PUBLIC     ${LIBSSL_INC_DIRS}           ${OPENSSL_INC_DIRS}         ${LIBCRYPTO_INC_DIRS}    ${LIBPROVIDERS_INC_DIRS} )
 target_link_directories   (${LIBSSL_SHARED}   PUBLIC     ./lib/                       )
-target_link_libraries     (${LIBSSL_SHARED}              ${LIBSSL_DEP_LIBS}          ${LIBCRYPTO_STATIC}         ${LIBPROVIDERS_STATIC}  libproviders_static)
+target_link_libraries     (${LIBSSL_SHARED}              ${LIBSSL_DEP_LIBS}          ${LIBCRYPTO_STATIC}         ${LIBPROVIDERS_STATIC}  )
 set_target_properties     (${LIBSSL_SHARED}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME "libssl_shared"   )
 set_target_properties     (${LIBSSL_SHARED}   PROPERTIES PUBLIC_HEADER             "${LIBSSL_HDRS_LIST}"         )
-
 
 
 file(GLOB               LIBPROVIDERS_COMMON_SRCS_LIST            RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBPROVIDERS_TOP_DIR}/common/*.c               ${LIBPROVIDERS_TOP_DIR}/common/der/*.c       )
@@ -322,32 +338,10 @@ set (LIBPROVIDERS_SRCS_LIST ${LIBPROVIDERS_SRCS_LIST}                           
 list(REMOVE_ITEM        LIBPROVIDERS_SRCS_LIST                                                       ${LIBPROVIDERS_IMPL_MACS_SRCS_FILTER}      ${LIBPROVIDERS_COMMON_SRCS_FILTER}        ${LIBPROVIDERS_FIPS_SRCS_FILTER}         ${LIBPROVIDERS_SRCS_FILTER}       ${LIBPROVIDERS_IMPL_KEY_MGMT_SRCS_FILTER})
 source_group(TREE ${OPENSSL_TOP_DIR}       FILES       ${LIBPROVIDERS_SRCS_LIST} )
 
-set                       (  LIBPROVIDERS_DEFS                   WIN32
-_WINDOWS
-INCLUDE_FUNCTION_TABLE
-OPENSSL_NO_ASM
-OPENSSL_NO_STATIC_ENGINE
-OPENSSLDIR="C:/ssl"
-ENGINESDIR="C:/engines-1.1"
-MODULESDIR="f:/program/openssl"
-OPENSSL_SYSNAME_WIN32
-WIN32_LEAN_AND_MEAN
-_CRT_SECURE_NO_WARNINGS
-MONOLITH
-CMAKE_INTDIR="Debug"                              ) # FIPS_MODULE
+set                       (  LIBPROVIDERS_DEFS          ${OPENSSL_ALL_DEFS}   INCLUDE_FUNCTION_TABLE      ) # FIPS_MODULE
 
-set                       ( LIBPROVIDERS_DEP_LIBS  ws2_32.lib
-crypt32.lib
-kernel32.lib
-user32.lib
-gdi32.lib
-winspool.lib
-shell32.lib
-ole32.lib
-oleaut32.lib
-uuid.lib
-comdlg32.lib
-advapi32.lib)
+set                       ( LIBPROVIDERS_DEP_LIBS  ws2_32.lib   crypt32.lib   kernel32.lib   user32.lib   gdi32.lib   winspool.lib   shell32.lib)
+set                       ( LIBPROVIDERS_DEP_LIBS  ${LIBPROVIDERS_DEP_LIBS}   ole32.lib   oleaut32.lib   uuid.lib   comdlg32.lib   advapi32.lib)
 
 if (HAVE_PROVIDERS)
     set                       (  LIBPROVIDERS_STATIC               libproviders_static                )
@@ -376,28 +370,16 @@ set (OPENSSL_APP_SRCS_LIST ${OPENSSL_APP_SRCS_LIST}                             
 list(REMOVE_ITEM             OPENSSL_APP_SRCS_LIST                                                  ${OPENSSL_APP_TOP_DIR}/os2compat.c                                    )
 source_group(TREE          ${OPENSSL_TOP_DIR}        FILES       ${OPENSSL_APP_SRCS_LIST}                                       )
 
-set                       (  OPENSSL_APP_DEFS        WIN32
-_WINDOWS
-INCLUDE_FUNCTION_TABLE
-OPENSSL_NO_ASM
-OPENSSL_NO_STATIC_ENGINE
-OPENSSLDIR="C:/ssl"
-ENGINESDIR="C:/engines-1.1"
-MODULESDIR="f:/program/openssl"
-OPENSSL_SYSNAME_WIN32
-WIN32_LEAN_AND_MEAN
-_CRT_SECURE_NO_WARNINGS
-MONOLITH
-CMAKE_INTDIR="Debug"                                         )
+set                       (  OPENSSL_APP_DEFS          ${OPENSSL_ALL_DEFS}   INCLUDE_FUNCTION_TABLE          )
 
 set                       (  OPENSSL_APP                openssl)
-add_executable            (${OPENSSL_APP}               ${LIBCRYPTO_SRCS_LIST}          ${LIBSSL_SRCS_LIST}         ${LIBPROVIDERS_SRCS_LIST}     ${OPENSSL_APP_SRCS_LIST})
+add_executable            (${OPENSSL_APP}               ${OPENSSL_APP_SRCS_LIST}  ${pre_hdrs_list})
 target_compile_definitions(${OPENSSL_APP}   PRIVATE     ${OPENSSL_APP_DEFS}                                               )
-target_include_directories(${OPENSSL_APP}   PUBLIC      ./src/                          ${LIBCRYPTO_INC_DIRS}       ${LIBSSL_INC_DIRS}           ${OPENSSL_INC_DIRS}  ${OPENSSL_APP_INC_DIRS})
+target_include_directories(${OPENSSL_APP}   PUBLIC      ${OPENSSL_APP_INC_DIRS}         ${LIBCRYPTO_INC_DIRS}       ${LIBSSL_INC_DIRS}           ${OPENSSL_INC_DIRS}  )
 target_link_directories   (${OPENSSL_APP}   PUBLIC      ./lib/                                                            )
-target_link_libraries     (${OPENSSL_APP}               ${LIBCRYPTO_STATIC}             ${LIBSSL_STATIC}            ${LIBPROVIDERS_STATIC}      )
+target_link_libraries     (${OPENSSL_APP}                         ${LIBSSL_STATIC}          ${LIBCRYPTO_STATIC}           )
 
-SET(install_targets ${LIBCRYPTO_STATIC}    ${LIBCRYPTO_SHARED}     ${LIBSSL_STATIC}     ${LIBSSL_SHARED}      ${LIBPROVIDERS_STATIC}     ${LIBPROVIDERS_SHARED}   ${OPENSSL_APP})
+SET(install_targets ${LIBCRYPTO_STATIC}    ${LIBCRYPTO_SHARED}     ${LIBSSL_STATIC}     ${LIBSSL_SHARED}       ${OPENSSL_APP})
 SET(install_hdr_dir include)
 
 INSTALL(TARGETS ${install_targets}
