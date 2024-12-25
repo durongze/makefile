@@ -366,8 +366,11 @@ set (OPENSSL_APP_TOP_DIR   ${CMAKE_CURRENT_SOURCE_DIR}/apps)
 set (OPENSSL_APP_INC_DIRS  ${OPENSSL_APP_TOP_DIR}/                                                  ${OPENSSL_APP_TOP_DIR}/lib           ${OPENSSL_APP_TOP_DIR}/include )
 file(GLOB                    OPENSSL_APP_LIB_SRCS_LIST          RELATIVE    ${OPENSSL_TOP_DIR}      ${OPENSSL_APP_TOP_DIR}/lib/*.c    )
 file(GLOB                    OPENSSL_APP_SRCS_LIST              RELATIVE    ${OPENSSL_TOP_DIR}      ${OPENSSL_APP_TOP_DIR}/*.c           ${OPENSSL_APP_TOP_DIR}/*.h       )
+file(GLOB                    OPENSSL_APP_SRCS_FILTER            RELATIVE    ${OPENSSL_TOP_DIR}      ${OPENSSL_APP_TOP_DIR}/md4.c         ${OPENSSL_APP_TOP_DIR}/os2compat.c   )
+
 set (OPENSSL_APP_SRCS_LIST ${OPENSSL_APP_SRCS_LIST}                                                 ${OPENSSL_APP_LIB_SRCS_LIST}                                          )
-list(REMOVE_ITEM             OPENSSL_APP_SRCS_LIST                                                  ${OPENSSL_APP_TOP_DIR}/os2compat.c                                    )
+
+list(REMOVE_ITEM             OPENSSL_APP_SRCS_LIST                                                  ${OPENSSL_APP_SRCS_FILTER}                                      )
 source_group(TREE          ${OPENSSL_TOP_DIR}        FILES       ${OPENSSL_APP_SRCS_LIST}                                       )
 
 set                       (  OPENSSL_APP_DEFS          ${OPENSSL_ALL_DEFS}   INCLUDE_FUNCTION_TABLE          )
