@@ -159,7 +159,7 @@ file(GLOB           LIBCRYPTO_RC2_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}
 file(GLOB           LIBCRYPTO_RC2_SRCS_FILTER     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/rc2/rc2speed.c   ${LIBCRYPTO_TOP_DIR}/rc2/tab.c    ${LIBCRYPTO_TOP_DIR}/rc2/rc2test.c    )
 file(GLOB           LIBCRYPTO_RC2_HDRS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/rc2/*.h         )
 file(GLOB           LIBCRYPTO_RC4_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/rc4/*.c         )
-file(GLOB           LIBCRYPTO_RC4_SRCS_FILTER     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/rc4/rc4speed.c    ${LIBCRYPTO_TOP_DIR}/rc4/rc4.c     ${LIBCRYPTO_TOP_DIR}/rc4/rc4test.c  )
+file(GLOB           LIBCRYPTO_RC4_SRCS_FILTER     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/rc4/rc4speed.c       ${LIBCRYPTO_TOP_DIR}/rc4/rc4test.c  )  #   ${LIBCRYPTO_TOP_DIR}/rc4/rc4.c
 #file(GLOB           LIBCRYPTO_RC5_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/rc5/*.c         )
 file(GLOB           LIBCRYPTO_RC5_HDRS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/rc5/*.h         )
 file(GLOB           LIBCRYPTO_RIPEMD_SRCS_LIST    RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/ripemd/*.c      )
@@ -176,7 +176,7 @@ file(GLOB           LIBCRYPTO_SM2_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}
 file(GLOB           LIBCRYPTO_SM3_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/sm3/*.c         )
 file(GLOB           LIBCRYPTO_SM4_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/sm4/*.c         )
 file(GLOB           LIBCRYPTO_SRP_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/srp/*.c         )
-file(GLOB           LIBCRYPTO_SRP_SRCS_FILTER     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/srp/ srptest.c        )
+file(GLOB           LIBCRYPTO_SRP_SRCS_FILTER     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/srp/srptest.c        )
 file(GLOB           LIBCRYPTO_STACK_SRCS_LIST     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/stack/*.c       )
 #file(GLOB           LIBCRYPTO_STORE_SRCS_LIST     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/store/*.c       )
 file(GLOB           LIBCRYPTO_STORE_HDRS_LIST     RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBCRYPTO_TOP_DIR}/store/*.h       )
@@ -237,7 +237,7 @@ set (LIBCRYPTO_SRCS_FILTER_ALL   ${LIBCRYPTO_SRCS_FILTER_ALL}  ${LIBCRYPTO_WHRLP
 set (LIBCRYPTO_SRCS_FILTER_ALL   ${LIBCRYPTO_SRCS_FILTER_ALL}  ${LIBCRYPTO_RAND_SRCS_FILTER}  ${LIBCRYPTO_MDC2_SRCS_FILTER}    ${LIBCRYPTO_MD5_SRCS_FILTER})  
 set (LIBCRYPTO_SRCS_FILTER_ALL   ${LIBCRYPTO_SRCS_FILTER_ALL}  ${LIBCRYPTO_HMAC_SRCS_FILTER}  ${LIBCRYPTO_ENGINE_SRCS_FILTER}    ${LIBCRYPTO_ECDSA_SRCS_FILTER})  
 set (LIBCRYPTO_SRCS_FILTER_ALL   ${LIBCRYPTO_SRCS_FILTER_ALL}  ${LIBCRYPTO_DSA_SRCS_FILTER}  ${LIBCRYPTO_DH_SRCS_FILTER}    ${LIBCRYPTO_ECDSA_SRCS_FILTER})  
-
+set (LIBCRYPTO_SRCS_FILTER_ALL   ${LIBCRYPTO_SRCS_FILTER_ALL}  ${LIBCRYPTO_ECDH_SRCS_FILTER} )
 
 list(REMOVE_ITEM             LIBCRYPTO_SRCS_LIST          ${LIBCRYPTO_SRCS_FILTER_ALL}        )
 source_group(TREE ${OPENSSL_TOP_DIR}       FILES       ${LIBCRYPTO_SRCS_LIST}  )
@@ -263,14 +263,14 @@ target_link_directories   (${LIBCRYPTO_STATIC}   PUBLIC     ./lib/              
 target_link_libraries     (${LIBCRYPTO_STATIC}              ${LIBCRYPTO_DEP_LIBS}           )
 set_target_properties     (${LIBCRYPTO_STATIC}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME "libcrypto_static"   )
 
-set                       (  LIBCRYPTO_SHARED               libcrypto_shared                )
-add_library               (${LIBCRYPTO_SHARED}   SHARED     ${LIBCRYPTO_SRCS_LIST}          ${pre_hdrs_list})
-target_compile_definitions(${LIBCRYPTO_SHARED}   PRIVATE    ${LIBCRYPTO_DEFS}               )
-target_include_directories(${LIBCRYPTO_SHARED}   PUBLIC     ${LIBCRYPTO_INC_DIRS}           ${OPENSSL_INC_DIRS}        ${LIBPROVIDERS_INC_DIRS}   ${LIBSSL_INC_DIRS})
-target_link_directories   (${LIBCRYPTO_SHARED}   PUBLIC     ./lib/                          )
-target_link_libraries     (${LIBCRYPTO_SHARED}              ${LIBCRYPTO_DEP_LIBS}                  libssl_static )
-set_target_properties     (${LIBCRYPTO_SHARED}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME "libcrypto_shared"   )
-set_target_properties     (${LIBCRYPTO_SHARED}   PROPERTIES PUBLIC_HEADER             "${LIBCRYPTO_HDRS_LIST}"         )
+#set                       (  LIBCRYPTO_SHARED               libcrypto_shared                )
+#add_library               (${LIBCRYPTO_SHARED}   SHARED     ${LIBCRYPTO_SRCS_LIST}          ${pre_hdrs_list})
+#target_compile_definitions(${LIBCRYPTO_SHARED}   PRIVATE    ${LIBCRYPTO_DEFS}               )
+#target_include_directories(${LIBCRYPTO_SHARED}   PUBLIC     ${LIBCRYPTO_INC_DIRS}           ${OPENSSL_INC_DIRS}        ${LIBPROVIDERS_INC_DIRS}   ${LIBSSL_INC_DIRS})
+#target_link_directories   (${LIBCRYPTO_SHARED}   PUBLIC     ./lib/                          )
+#target_link_libraries     (${LIBCRYPTO_SHARED}              ${LIBCRYPTO_DEP_LIBS}                  libssl_static )
+#set_target_properties     (${LIBCRYPTO_SHARED}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME "libcrypto_shared"   )
+#set_target_properties     (${LIBCRYPTO_SHARED}   PROPERTIES PUBLIC_HEADER             "${LIBCRYPTO_HDRS_LIST}"         )
 
 
 file(GLOB               LIBSSL_RECORD_SRCS_LIST       RELATIVE    ${OPENSSL_TOP_DIR}      ${LIBSSL_TOP_DIR}/record/*.c         )
@@ -368,18 +368,19 @@ set (OPENSSL_APP_TOP_DIR   ${CMAKE_CURRENT_SOURCE_DIR}/apps)
 set (OPENSSL_APP_INC_DIRS  ${OPENSSL_APP_TOP_DIR}/                                                  ${OPENSSL_APP_TOP_DIR}/lib           ${OPENSSL_APP_TOP_DIR}/include )
 file(GLOB                    OPENSSL_APP_LIB_SRCS_LIST          RELATIVE    ${OPENSSL_TOP_DIR}      ${OPENSSL_APP_TOP_DIR}/lib/*.c    )
 file(GLOB                    OPENSSL_APP_SRCS_LIST              RELATIVE    ${OPENSSL_TOP_DIR}      ${OPENSSL_APP_TOP_DIR}/*.c           ${OPENSSL_APP_TOP_DIR}/*.h       )
-file(GLOB                    OPENSSL_APP_SRCS_FILTER            RELATIVE    ${OPENSSL_TOP_DIR}      ${OPENSSL_APP_TOP_DIR}/md4.c         ${OPENSSL_APP_TOP_DIR}/os2compat.c   )
+file(GLOB                    OPENSSL_APP_SRCS_FILTER            RELATIVE    ${OPENSSL_TOP_DIR}      ${OPENSSL_APP_TOP_DIR}/md4.c         ${OPENSSL_APP_TOP_DIR}/os2compat.c      )
 
 set (OPENSSL_APP_SRCS_LIST ${OPENSSL_APP_SRCS_LIST}                                                 ${OPENSSL_APP_LIB_SRCS_LIST}                                          )
 
-list(REMOVE_ITEM             OPENSSL_APP_SRCS_LIST                                                  ${OPENSSL_APP_SRCS_FILTER}                                      )
+list(REMOVE_ITEM             OPENSSL_APP_SRCS_LIST                                                  ${OPENSSL_APP_SRCS_FILTER}                              )
+
 source_group(TREE          ${OPENSSL_TOP_DIR}        FILES       ${OPENSSL_APP_SRCS_LIST}                                       )
 
 set                       (  OPENSSL_APP_DEFS          ${OPENSSL_ALL_DEFS}   INCLUDE_FUNCTION_TABLE          )
 
 set                       (  OPENSSL_APP                openssl)
 add_executable            (${OPENSSL_APP}               ${OPENSSL_APP_SRCS_LIST}  ${pre_hdrs_list})
-target_compile_definitions(${OPENSSL_APP}   PRIVATE     ${OPENSSL_APP_DEFS}                                               )
+target_compile_definitions(${OPENSSL_APP}   PRIVATE     ${OPENSSL_APP_DEFS}        OPENSSL_NO_AES                        )
 target_include_directories(${OPENSSL_APP}   PUBLIC      ${OPENSSL_APP_INC_DIRS}         ${LIBCRYPTO_INC_DIRS}       ${LIBSSL_INC_DIRS}           ${OPENSSL_INC_DIRS}  )
 target_link_directories   (${OPENSSL_APP}   PUBLIC      ./lib/                                                            )
 target_link_libraries     (${OPENSSL_APP}                         ${LIBSSL_STATIC}          ${LIBCRYPTO_STATIC}           )
@@ -395,7 +396,7 @@ INSTALL(TARGETS ${install_targets}
        )
 
 install(FILES      ${LIBCRYPTO_HDRS_LIST}   DESTINATION ${install_hdr_dir}                             )
-install(DIRECTORY  "inc_sub_dir"            DESTINATION ${install_hdr_dir} FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY  "include/openssl"        DESTINATION ${install_hdr_dir} FILES_MATCHING PATTERN "*.h")
 
 #add_subdirectory(crypto)
 #add_subdirectory(ssl)
