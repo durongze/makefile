@@ -1,0 +1,130 @@
+cmake_minimum_required(VERSION 3.16)
+
+project(wget)
+
+#OBJECTS = bindtextdom.obj dcgettext.obj dgettext.obj gettext.obj finddomain.obj loadmsgcat.obj localealias.obj textdomain.obj l10nflist.obj explodename.obj dcigettext.obj dcngettext.obj dngettext.obj ngettext.obj plural.obj plural-exp.obj localcharset.obj relocatable.obj langprefs.obj localename.obj log.obj printf.obj osdep.obj intl-compat.obj
+
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/source-charset:utf-8>")
+
+set(CMAKE_C_STANDARD 17) 
+set(CMAKE_C_STANDARD_REQUIRED ON) 
+set(CMAKE_CXX_STANDARD 17) 
+set(CMAKE_CXX_STANDARD_REQUIRED ON) 
+set(CMAKE_CXX_EXTENSIONS OFF) 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON) 
+
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON) 
+
+
+set(ENV{HomeDir}  ${CMAKE_CURRENT_LIST_DIR}/out/${CMAKE_SYSTEM_NAME})
+
+#include(cmake/dep_dotnet.cmake)
+#include(cmake/dep_check_libs.cmake)
+#include(cmake/dep_3rdlib_files.cmake)
+
+#gen_dep_lib_dir(all_dep_lib_dir )
+#set(dep_libs ${DepLibs})
+
+#include(cmake/dep_libpcre.cmake)
+
+#include(cmake/find_libpcre.cmake)
+#include(cmake/find_sdl_release.cmake)
+include(cmake/find_openssl.cmake)
+
+#set                (AllDepDotNetLibs   System    System.Core    System.Data   System.Drawing    System.Windows.Forms ) #   System.ComponentModel
+#gen_dotnet_lib_opts(GenDepOpts         ${AllDepDotNetLibs}  )
+#set                (ProjDepOpts        ${AllDepOpts})
+
+
+set (WGET_BIN_DIR  ${CMAKE_CURRENT_BINARY_DIR})
+set (WGET_TOP_DIR  ${CMAKE_CURRENT_SOURCE_DIR}) # CMAKE_SOURCE_DIR
+set (WGET_SRC_DIR  ${WGET_TOP_DIR}/src/wget/1.11.4/wget-1.11.4-src)
+set (WGET_INC_DIRS ${WGET_BIN_DIR}     ${WGET_TOP_DIR}/     ${WGET_SRC_DIR}/src ${WGET_SRC_DIR}/include/   ${WGET_SRC_DIR}/windows   )
+set (WGET_INC_DIRS ${WGET_INC_DIRS}     ${OPENSSL_INCLUDE_DIRS} )
+
+
+
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    message(STATUS "64-bit _O_SRCS: ${_O_SRCS}")
+elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    message(STATUS "32-bit _O_SRCS: ${_O_SRCS}")
+else()
+    message(STATUS "Unknown architecture")
+endif()
+
+
+file(GLOB    LIBWGET_SRCS_LIST RELATIVE ${WGET_TOP_DIR} "${WGET_SRC_DIR}/src/*.c"     "${WGET_SRC_DIR}/src/*.h")
+file(GLOB    WGET_APP_LIST     RELATIVE ${WGET_TOP_DIR} "${WGET_SRC_DIR}/src/main.c"  )
+file(GLOB    TEST_APP_LIST     RELATIVE ${WGET_TOP_DIR} "${WGET_SRC_DIR}/src/test.c"  )
+file(GLOB    GNUTLS_LIST       RELATIVE ${WGET_TOP_DIR} "${WGET_SRC_DIR}/src/gnutls.c"  )
+
+#list(REMOVE_ITEM  WGET_SRCS_LIST ${WGET_SRC_DIR}/os2compat.c)
+
+
+source_group(TREE ${WGET_TOP_DIR}    FILES ${WGET_SRCS_LIST}   ${LIBWGET_SRCS_LIST})
+
+list(REMOVE_ITEM  LIBWGET_SRCS_LIST ${WGET_APP_LIST}  ${TEST_APP_LIST}   ${GNUTLS_LIST})
+
+file(GLOB   WGET_HDRS_LIST RELATIVE ${WGET_TOP_DIR} ${WGET_SRC_DIR}/src/*.h)
+
+#RESOURCES = intl.res
+
+message("[INFO] LIBWGET_SRCS_LIST:${LIBWGET_SRCS_LIST}")
+message("[INFO] WGET_INC_DIRS:${WGET_INC_DIRS}")
+
+
+set(LIBPCRE_DEFS      PCRE_STATIC)
+
+include_directories(${WGET_SRC_DIR})
+
+#configure_file(${WGET_SRC_DIR}/config.h.in             ${WGET_BIN_DIR}/config.h)
+
+#CFLAGS = /arch:IA32 $(MFLAGS) $(WARN_CFLAGS) $(OPTIMFLAGS)  -D LOCALEDIR=\"$(IIlocaledir)\" -DLOCALE_ALIAS_PATH=\"$(IIaliaspath)\" -DIN_wget -DENABLE_RELOCATABLE=1 -D IN_LIBRARY -D INSTALLDIR=\"$(IIbindir)\" -DNO_XMALLOC -Dset_relocation_prefix=wget_set_relocation_prefix -Drelocate=wget_relocate -DDEPENDS_ON_LIBICONV=1
+
+set (sys_dep_libs           setupapi winmm imm32 version      ws2_32                          )
+set (WGET_DEP_LIBS   ${OPENSSL_LIBRARIES}    ${NETTLE_LIBRARIES}   ${SDL_LIBRARIES}   )
+
+#HAVE_INT64_T=1
+set (WGET_DEP_DEFS  WINDOWS  HAVE_VSNPRINTF HAVE_SNPRINTF SYSTEM_WGETRC NO_XMALLOC HAVE_STDBOOL_H=1   HAVE_UINT32_T=1      HAVE_INTPTR_T=1   HAVE_UINTPTR_T=1   HAVE_SSL=1  HAVE_LIBSSL=1)
+
+set                       (  WGET_STATIC              wget_static)
+add_library               (${WGET_STATIC}   STATIC    ${WGET_SRCS_LIST}   ${LIBWGET_SRCS_LIST})
+target_compile_definitions(${WGET_STATIC}   PRIVATE   ${WGET_DEP_DEFS}    WGET_LIB_STATIC)
+target_include_directories(${WGET_STATIC}   PUBLIC    ${WGET_INC_DIRS} )
+target_link_directories   (${WGET_STATIC}   PUBLIC    ${WGET_LIB_DIRS} )
+target_link_libraries     (${WGET_STATIC}             ${WGET_DEP_LIBS}    ${sys_dep_libs}             )
+target_compile_options    (${WGET_STATIC}   PRIVATE     /Z7     /W4          )
+set_target_properties     (${WGET_STATIC}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME "wget"   )
+
+set                       (  WGET_SHARED             wget_shared)
+add_library               (${WGET_SHARED}   SHARED    ${WGET_SRCS_LIST}   ${LIBWGET_SRCS_LIST})
+target_compile_definitions(${WGET_SHARED}   PRIVATE   ${WGET_DEP_DEFS}     WGET_LIB_EXPORTS)
+target_include_directories(${WGET_SHARED}   PUBLIC    ${WGET_INC_DIRS} )
+target_link_directories   (${WGET_SHARED}   PUBLIC    ${WGET_LIB_DIRS} )
+target_link_libraries     (${WGET_SHARED}             ${WGET_DEP_LIBS}    ${sys_dep_libs}             ) #  ${sys_dep_libs}
+target_compile_options    (${WGET_SHARED}   PRIVATE     /Z7     /W4          )
+set_target_properties     (${WGET_SHARED}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME "wget"   )
+set_target_properties     (${WGET_SHARED}   PROPERTIES PUBLIC_HEADER             "${WGET_HDRS_LIST}")
+
+set                       (  WGET_APP                wget_app)
+add_executable            (${WGET_APP}               ${WGET_APP_LIST}     ${LIBWGET_SRCS_LIST}  )
+target_compile_definitions(${WGET_APP}   PRIVATE     ${WGET_DEP_DEFS}           )
+target_include_directories(${WGET_APP}   PUBLIC      ${WGET_INC_DIRS} )
+target_link_directories   (${WGET_APP}   PUBLIC      ${WGET_LIB_DIRS} )
+#target_link_libraries     (${WGET_APP}               ${WGET_STATIC}   )  # WGET_LIB_STATIC
+target_link_libraries     (${WGET_APP}               ${WGET_SHARED}   )  # must be REALSE
+
+SET(install_targets ${WGET_STATIC}    ${WGET_SHARED}    ${WGET_APP})
+SET(install_hdr_dir include)
+
+INSTALL(TARGETS ${install_targets}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION ${install_hdr_dir}
+       )
+
+install(FILES      ${WGET_HDRS_LIST} DESTINATION ${install_hdr_dir})
+#install(DIRECTORY  "inc_sub_dir"            DESTINATION ${install_hdr_dir} FILES_MATCHING PATTERN "*.h")
