@@ -1,0 +1,47 @@
+cmake_minimum_required(VERSION 3.16)
+
+set(DCMAKE_C_COMPILER_FORCED   ON)
+set(DCMAKE_CXX_COMPILER_FORCED ON)
+set(CMAKE_TOOLCHAIN_FILE       "toolchain.cmake")
+
+project("demo" C)
+
+set (MCU_MODEL   -mmcs51           )
+set (MODEL      --model-large      )
+set (CODE_SIZE  --code-size 65536  ) # 64KB 的 Flash 存储器
+set (IRAM_SIZE  --iram-size 2048   ) #  2KB 的内部 SRAM
+set (XRAM_SIZE  --xram-size 32768  ) # 32KB 的内部扩展 RAM
+
+#set (PROJ_DEP_DEFS  ${MCU_MODEL}   ${MODEL}   --out-fmt-ihx )
+set (PROJ_DEP_OPTS  ${MCU_MODEL}   ${MODEL}   ${CODE_SIZE}   ${IRAM_SIZE}   ${XRAM_SIZE}   --out-fmt-ihx)
+
+set (PROJ_BIN_DIR  ${CMAKE_CURRENT_BINARY_DIR})
+set (PROJ_TOP_DIR  ${CMAKE_CURRENT_SOURCE_DIR})  #  CMAKE_SOURCE_DIR
+set (PROJ_SRC_DIR  ${PROJ_TOP_DIR})
+
+set (PROJ_INC_DIRS   ${PROJ_SRC_DIR}/Driver/src/  ${PROJ_SRC_DIR}/Driver/isr/   ${PROJ_SRC_DIR}/App/src/)
+set (PROJ_INC_DIRS   ${PROJ_INC_DIRS}             ${PROJ_SRC_DIR}/Library       ${PROJ_SRC_DIR}/User)
+
+set (PROJ_LIB_DIRS   ${PROJ_SRC_DIR}/SDCC-lib/build)
+
+set (PROJ_DEP_LIBS   USB_CDC_SDCC.lib              )
+
+file(GLOB  PROJ_DRV_SRCS  RELATIVE ${PROJ_TOP_DIR}  ${PROJ_SRC_DIR}/Driver/src/*.c  ${PROJ_SRC_DIR}/Driver/isr/*.c    ${PROJ_SRC_DIR}/App/src/*.c)
+file(GLOB  PROJ_LIB_SRCS  RELATIVE ${PROJ_TOP_DIR}  ${PROJ_SRC_DIR}/Library/*.c)
+file(GLOB  PROJ_USR_SRCS  RELATIVE ${PROJ_TOP_DIR}  ${PROJ_SRC_DIR}/User/*.c   )
+
+set (ALL_LIBRIRY_SRCS   ${PROJ_DRV_SRCS}   ${PROJ_LIB_SRCS}   ${PROJ_USR_SRCS} )
+
+add_executable            (${PROJECT_NAME}             ${ALL_LIBRIRY_SRCS})
+#target_compile_definitions(${PROJECT_NAME}   PRIVATE   ${PROJ_DEP_DEFS}  )
+#target_compile_options    (${PROJECT_NAME}   PRIVATE   ${PROJ_DEP_DEFS}  )
+target_include_directories(${PROJECT_NAME}   PUBLIC    ${PROJ_INC_DIRS}  )
+target_link_directories   (${PROJECT_NAME}   PUBLIC    ${PROJ_LIB_DIRS}  )
+target_link_libraries     (${PROJECT_NAME}   PUBLIC    ${PROJ_DEP_LIBS}  )
+target_link_options       (${PROJECT_NAME}   PUBLIC    ${PROJ_DEP_OPTS}  )
+
+function(ihx_to_hex bin)
+    add_custom_command(TARGET ${bin} POST_BUILD COMMAND  packihx ${bin}.ihx > ${bin}.hex)
+endfunction(ihx_to_hex)
+
+ihx_to_hex(${PROJECT_NAME})
