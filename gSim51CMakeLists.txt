@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.14)
 project (gSim51)
 
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/source-charset:utf-8>")
+
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 11)
@@ -9,9 +11,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-set(TOP_DIR ${CMAKE_CURRENT_LIST_DIR})
-#set(TOP_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-#set(TOP_DIR ${PROJECT_SOURCE_DIR})
+set (GSIM51_BIN_DIR  ${CMAKE_CURRENT_BINARY_DIR})
+set(GSIM51_TOP_DIR ${CMAKE_CURRENT_LIST_DIR})
+#set(GSIM51_TOP_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+#set(GSIM51_TOP_DIR ${PROJECT_SOURCE_DIR})
+
+set (GSIM51_INC_DIRS ${GSIM51_TOP_DIR}/     ${GSIM51_TOP_DIR}/src     ${GSIM51_TOP_DIR}/lib    )
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
@@ -27,14 +32,16 @@ add_definitions(-D _DEBUG)
 #set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKR_FLAGS} /SAFESEH:NO /NODEFAULTLIB:libc.lib")
 #set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} /SAFESEH:NO /NODEFAULTLIB:libc.lib")
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/)
+
 include(cmake/dep_3rdlib_files.cmake)
 include(cmake/dep_pdcurses.cmake)
 
-set(dep_3rdlibs  ${PDCurses_LIBRARY})
+set(dep_3rdinc_dirs  ${PDCurses_INCLUDE_DIRS} )
+set(dep_3rdlib_dirs  ${PDCurses_LIBRARY_DIRS} )
+set(dep_3rdlibs      ${PDCurses_LIBRARY}      )
 
-INCLUDE_DIRECTORIES(${TOP_DIR}/src/)
-
-link_directories(${TOP_DIR}/lib/)
 
 if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
 	set(dep_os_libs pthread m dl)
@@ -48,26 +55,57 @@ endif()
 
 gen_dep_lib_dir(dep_lib_dir)
 
-file(GLOB SimLib_SRCS RELATIVE ${TOP_DIR} ./src/*.c ./src/*.h)
-list(REMOVE_ITEM SimLib_SRCS src/gsim51_funcs3.c)
-file(GLOB SimApp_SRCS RELATIVE ${TOP_DIR} ./app/*.c)
-list(REMOVE_ITEM SimApp_SRCS app/main_win.c)
+file(GLOB        SimLib_SRCS RELATIVE ${GSIM51_TOP_DIR} ./src/*.c ./src/*.h )
+list(REMOVE_ITEM SimLib_SRCS                            src/gsim51_funcs3.c)
+file(GLOB        SimApp_SRCS RELATIVE ${GSIM51_TOP_DIR} ./app/*.c           )
+list(REMOVE_ITEM SimApp_SRCS                            app/main_win.c     )
+
+set (GSIM51_SRCS_LIST   ${SimLib_SRCS}  )
 
 message("SimLib_SRCS ${SimLib_SRCS}")
 message("SimApp_SRCS ${SimApp_SRCS}")
 
-source_group(TREE ${TOP_DIR} FILES ${SimLib_SRCS} ${SimApp_SRCS})
+source_group(TREE ${GSIM51_TOP_DIR} FILES ${SimLib_SRCS} ${SimApp_SRCS})
 
-add_executable(My51Simulator ${SimLib_SRCS} ${SimApp_SRCS})
-target_link_libraries(My51Simulator ${dep_libs} ${dep_3rdlibs})
+set                       (  GSIM51_STATIC              gsim51_static)
+add_library               (${GSIM51_STATIC}   STATIC    ${GSIM51_SRCS_LIST})
+target_compile_definitions(${GSIM51_STATIC}   PRIVATE   ${GSIM51_DEP_DEFS}         GSIM51_LIB_STATIC)
+target_include_directories(${GSIM51_STATIC}   PUBLIC    ${GSIM51_INC_DIRS}         ${dep_3rdinc_dirs}                     )
+target_link_directories   (${GSIM51_STATIC}   PUBLIC    ${GSIM51_LIB_DIRS}         ${dep_3rdlib_dirs}                     )
+target_link_libraries     (${GSIM51_STATIC}             ${GSIM51_DEP_LIBS}         ${dep_3rdlibs}          ${sys_dep_libs})
+target_compile_options    (${GSIM51_STATIC}   PRIVATE     /Z7     /W4          )
+set_target_properties     (${GSIM51_STATIC}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME "gsim51_static" )
+
+set                       (  GSIM51_SHARED              gsim51_shared)
+add_library               (${GSIM51_SHARED}   SHARED    ${GSIM51_SRCS_LIST})
+target_compile_definitions(${GSIM51_SHARED}   PRIVATE   ${GSIM51_DEP_DEFS}         GSIM51_LIB_EXPORTS)
+target_include_directories(${GSIM51_SHARED}   PUBLIC    ${GSIM51_INC_DIRS}         ${dep_3rdinc_dirs}                     )
+target_link_directories   (${GSIM51_SHARED}   PUBLIC    ${GSIM51_LIB_DIRS}         ${dep_3rdlib_dirs}                     )
+target_link_libraries     (${GSIM51_SHARED}             ${GSIM51_DEP_LIBS}         ${dep_3rdlibs}          ${sys_dep_libs}) #  ${sys_dep_libs}
+target_compile_options    (${GSIM51_SHARED}   PRIVATE     /Z7     /W4          )
+set_target_properties     (${GSIM51_SHARED}   PROPERTIES CLEAN_DIRECT_OUTPUT 1     OUTPUT_NAME "gsim51_shared" )
+set_target_properties     (${GSIM51_SHARED}   PROPERTIES PUBLIC_HEADER             "${GSIM51_HDRS_LIST}")
+
+
+set                       (  GSIM51_APP                My51Simulator)
+add_executable            (${GSIM51_APP}               ${SimLib_SRCS} ${SimApp_SRCS})
+target_compile_definitions(${GSIM51_APP}   PRIVATE     ${GSIM51_DEP_DEFS} )
+target_include_directories(${GSIM51_APP}   PUBLIC      ${GSIM51_INC_DIRS}         ${dep_3rdinc_dirs}                     )
+target_link_directories   (${GSIM51_APP}   PUBLIC      ${GSIM51_LIB_DIRS}         ${dep_3rdlib_dirs}                     )
+target_link_libraries     (${GSIM51_APP}               ${GSIM51_STATIC}           ${dep_3rdlibs}          ${sys_dep_libs})  # GSIM51_STATIC
+#target_link_libraries     (${GSIM51_APP}               ${GSIM51_SHARED}           ${dep_3rdlibs}          ${sys_dep_libs})  # must be REALSE
 
 
 
 SET(install_targets My51Simulator )
+SET(install_hdr_dir include)
 
 INSTALL(TARGETS ${install_targets}
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
-        PUBLIC_HEADER DESTINATION include
+        PUBLIC_HEADER DESTINATION ${install_hdr_dir}
        )
+
+install(FILES      ${GSIM51_HDRS_LIST} DESTINATION ${install_hdr_dir})
+#install(DIRECTORY  "inc_sub_dir"            DESTINATION ${install_hdr_dir} FILES_MATCHING PATTERN "*.h")
